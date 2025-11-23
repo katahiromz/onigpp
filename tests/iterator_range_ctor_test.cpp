@@ -9,6 +9,13 @@
 #include <vector>
 #include <cassert>
 
+// --- Additional headers for Windows ---
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
 	namespace op = std;
@@ -291,6 +298,17 @@ void TestIteratorRangeAssignWithFlags() {
 // =================================================================
 
 int main() {
+	// --- Measures to avoid garbled characters on Windows consoles ---
+#ifdef _WIN32
+	// Switch to UTF-8 mode
+	//_setmode(_fileno(stdout), _O_U8TEXT);
+	// Ensure console uses UTF-8 code page for interoperability
+	SetConsoleOutputCP(CP_UTF8);
+#else
+	// For Linux/Mac, setting the locale is usually sufficient
+	std::setlocale(LC_ALL, "");
+#endif
+
 #ifndef USE_STD_FOR_TESTS
 	// Oniguruma initialization
 	op::auto_init init;
