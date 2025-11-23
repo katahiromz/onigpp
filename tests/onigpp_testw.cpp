@@ -63,6 +63,7 @@ void TestCoreFunctions() {
 
 	std::wstring text = L"User ID: u123_abc, User Name: TestUser";
 	wregex re(L"ID: ([a-z0-9_]+), User Name: (.+)");
+	assert(re.pattern() == std::wstring(L"ID: ([a-z0-9_]+), User Name: (.+)"));
 	wmatch m;
 
 	// 1.1. Testing regex_search

@@ -268,6 +268,7 @@ public:
 
 	unsigned mark_count() const;
 	flag_type flags() const { return m_flags; }
+	const string_type& pattern() const noexcept { return m_pattern; }
 
 	void swap(self_type& other) noexcept {
 		std::swap(m_regex, other.m_regex);
