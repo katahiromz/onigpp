@@ -83,6 +83,7 @@ void TestCoreFunctions() {
 	std::string full_text = "start end";
 	sregex re_full("start\\s+end");
 	smatch m_full;
+	assert(re_full.pattern() == std::string("start\\s+end"));
 	assert(op::regex_match(full_text, m_full, re_full));
 	assert(m_full[0].str() == full_text);
 
