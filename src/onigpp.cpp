@@ -476,6 +476,14 @@ basic_regex<CharT, Traits>::_preprocess_pattern_for_locale(const string_type& pa
 		return pattern;
 	}
 	
+	// std::ctype is only defined for char and wchar_t in the standard library.
+	// For char16_t and char32_t, we don't have locale support, so return unchanged.
+	// Use std::is_same to check at compile time which character type we're dealing with.
+	if (!std::is_same<CharT, char>::value && !std::is_same<CharT, wchar_t>::value) {
+		// For char16_t, char32_t, or any other character type, don't preprocess
+		return pattern;
+	}
+	
 	string_type result;
 	result.reserve(pattern.size());
 	
