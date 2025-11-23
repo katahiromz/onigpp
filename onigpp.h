@@ -112,15 +112,22 @@ namespace encoding_constants {
 
 class regex_error : public std::exception {
 public:
-	regex_error(regex_constants::error_type ecode, const OnigErrorInfo& err_info);
-	virtual ~regex_error();
-	regex_constants::error_type code() const;
-	const char* what() const noexcept override;
+	// Construct with error code and OnigErrorInfo (copy)
+	regex_error(regex_constants::error_type ecode, const OnigErrorInfo& err_info) : m_err_code(ecode), m_err_info(err_info) {
+		OnigUChar err_buf[ONIG_MAX_ERROR_MESSAGE_LEN];
+		onig_error_code_to_str(err_buf, static_cast<int>(m_err_code), &m_err_info);
+		m_message.assign(reinterpret_cast<char*>(err_buf));
+	}
+
+	virtual ~regex_error() = default;
+
+	regex_constants::error_type code() const { return m_err_code; }
+	const char* what() const noexcept override { return m_message.c_str(); }
 
 protected:
-	std::string m_what;
 	regex_constants::error_type m_err_code;
 	OnigErrorInfo m_err_info;
+	std::string m_message; // holds the formatted error message to ensure stable lifetime
 };
 
 ////////////////////////////////////////////

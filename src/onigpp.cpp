@@ -204,31 +204,6 @@ OnigEncoding _get_default_encoding_from_char_type() {
 }
 
 ////////////////////////////////////////////
-// Implementation of regex_error
-
-regex_error::regex_error(regex_constants::error_type ecode, const OnigErrorInfo& err_info)
-	: m_err_code(ecode), m_err_info(err_info)
-{
-}
-
-regex_error::~regex_error() { }
-
-regex_constants::error_type regex_error::code() const {
-	return m_err_code;
-}
-
-const char* regex_error::what() const noexcept {
-	static thread_local char err_buf[ONIG_MAX_ERROR_MESSAGE_LEN];
-	if (onig_is_error_code_needs_param(m_err_code)) {
-		onig_error_code_to_str((OnigUChar*)err_buf, m_err_code, &m_err_info);
-	} else {
-		onig_error_code_to_str((OnigUChar*)err_buf, m_err_code);
-	}
-	m_what = err_buf;
-	return m_what.c_str();
-}
-
-////////////////////////////////////////////
 // Implementation of basic_regex
 
 template <class CharT, class Traits>
