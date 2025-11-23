@@ -7,31 +7,33 @@ cmake_minimum_required(VERSION 3.10)
 # enable testing
 enable_testing()
 
-# project name and languages
-project(onigpp C CXX)
+# project info
+project(onigpp VERSION 6.9.11
+	DESCRIPTION "Oniguruma++ (onigpp) regular expression library"
+	LANGUAGES C CXX)
 
 # Set C++11 standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Fallback for older CMake versions that don't support CMAKE_CXX_STANDARD
 if(CMAKE_VERSION VERSION_LESS "3.1")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
 if (MSVC)
-    # replace "/MD" with "/MT" (building without runtime DLLs)
-    set(CompilerFlags
-        CMAKE_C_FLAGS
-        CMAKE_C_FLAGS_DEBUG
-        CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_RELWITHDEBINFO
-        CMAKE_CXX_FLAGS
-        CMAKE_CXX_FLAGS_DEBUG
-        CMAKE_CXX_FLAGS_RELEASE
-        CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-    foreach(CompilerFlags ${CompilerFlags})
-        string(REPLACE "/MD" "/MT" ${CompilerFlags} "${${CompilerFlags}}")
-    endforeach()
+	# replace "/MD" with "/MT" (building without runtime DLLs)
+	set(CompilerFlags
+		CMAKE_C_FLAGS
+		CMAKE_C_FLAGS_DEBUG
+		CMAKE_C_FLAGS_RELEASE
+		CMAKE_C_FLAGS_RELWITHDEBINFO
+		CMAKE_CXX_FLAGS
+		CMAKE_CXX_FLAGS_DEBUG
+		CMAKE_CXX_FLAGS_RELEASE
+		CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+	foreach(CompilerFlags ${CompilerFlags})
+		string(REPLACE "/MD" "/MT" ${CompilerFlags} "${${CompilerFlags}}")
+	endforeach()
 endif()
 
 # We want flat layout
@@ -54,12 +56,12 @@ add_subdirectory(tests)
 
 # CTest tests
 add_test(
-    NAME test1
-    COMMAND $<TARGET_FILE:onigpp_test>
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+	NAME test1
+	COMMAND $<TARGET_FILE:onigpp_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 add_test(
-    NAME test2
-    COMMAND $<TARGET_FILE:onigpp_testw>
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+	NAME test2
+	COMMAND $<TARGET_FILE:onigpp_testw>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 ##############################################################################
