@@ -44,7 +44,7 @@ void _append_replacement(
 			CharT n = fmt[i];
 
 			//--------------------------
-			// "$$" Å® "$"
+			// "$$" ÔøΩÔøΩ "$"
 			//--------------------------
 			if (n == CharT('$')) {
 				result += CharT('$');
@@ -53,7 +53,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "$&" Å® whole match
+			// "$&" ÔøΩÔøΩ whole match
 			//--------------------------
 			if (n == CharT('&')) {
 				if (m.size() > 0 && m[0].matched)
@@ -63,7 +63,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "$`" Å® prefix
+			// "$`" ÔøΩÔøΩ prefix
 			//--------------------------
 			if (n == CharT('`')) {
 				auto pre = m.prefix();
@@ -74,7 +74,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "$'" Å® suffix
+			// "$'" ÔøΩÔøΩ suffix
 			//--------------------------
 			if (n == CharT('\'')) {
 				auto suf = m.suffix();
@@ -85,7 +85,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "$+" Å® last captured group
+			// "$+" ÔøΩÔøΩ last captured group
 			//--------------------------
 			if (n == CharT('+')) {
 				int last = -1;
@@ -100,14 +100,14 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "${name}" Å® named capture
+			// "${name}" ÔøΩÔøΩ named capture
 			//--------------------------
 			if (n == CharT('{')) {
 				size_t start = ++i;
 				while (i < len && fmt[i] != CharT('}')) i++;
 
 				if (i >= len) {
-					// missing '}' Å® treat literally
+					// missing '}' ÔøΩÔøΩ treat literally
 					result += CharT('$');
 					result += CharT('{');
 					continue;
@@ -133,7 +133,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "$n" Å® numeric capture
+			// "$n" ÔøΩÔøΩ numeric capture
 			//--------------------------
 			if (n >= CharT('0') && n <= CharT('9')) {
 				size_t num = 0;
@@ -147,7 +147,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// Unknown pattern Å® literal "$x"
+			// Unknown pattern ÔøΩÔøΩ literal "$x"
 			//--------------------------
 			result += CharT('$');
 			result += n;
@@ -696,7 +696,7 @@ regex_iterator<BidirIt, CharT, Traits>& regex_iterator<BidirIt, CharT, Traits>::
 	// Get the end of the current search result
 	BidirIt current_match_end = m_results[0].second;
 
-	// Åö Zero-width match handling Åö
+	// ÔøΩÔøΩ Zero-width match handling ÔøΩÔøΩ
 	if (m_results[0].first == current_match_end) {
 		if (current_match_end != m_end) {
 			std::advance(current_match_end, 1); // Advance by 1 character
@@ -886,5 +886,89 @@ void uninit() { onig_end(); }
 // onigpp::version
 
 const char* version() { return onig_version(); }
+
+////////////////////////////////////////////
+// Explicit template instantiations
+
+// Instantiate basic_regex for common character types
+template class basic_regex<char, regex_traits<char>>;
+template class basic_regex<wchar_t, regex_traits<wchar_t>>;
+
+// Instantiate regex_iterator for common character types
+template class regex_iterator<const char*, char, regex_traits<char>>;
+template class regex_iterator<string::const_iterator, char, regex_traits<char>>;
+template class regex_iterator<const wchar_t*, wchar_t, regex_traits<wchar_t>>;
+template class regex_iterator<wstring::const_iterator, wchar_t, regex_traits<wchar_t>>;
+
+// Instantiate regex_token_iterator for common character types
+template class regex_token_iterator<const char*, char, regex_traits<char>>;
+template class regex_token_iterator<string::const_iterator, char, regex_traits<char>>;
+template class regex_token_iterator<const wchar_t*, wchar_t, regex_traits<wchar_t>>;
+template class regex_token_iterator<wstring::const_iterator, wchar_t, regex_traits<wchar_t>>;
+
+// Instantiate regex_search for common iterator types and character types
+template bool regex_search<const char*, std::allocator<sub_match<const char*>>, char, regex_traits<char>>(
+	const char*, const char*,
+	match_results<const char*, std::allocator<sub_match<const char*>>>&,
+	const basic_regex<char, regex_traits<char>>&,
+	regex_constants::match_flag_type);
+
+template bool regex_search<string::const_iterator, std::allocator<sub_match<string::const_iterator>>, char, regex_traits<char>>(
+	string::const_iterator, string::const_iterator,
+	match_results<string::const_iterator, std::allocator<sub_match<string::const_iterator>>>&,
+	const basic_regex<char, regex_traits<char>>&,
+	regex_constants::match_flag_type);
+
+template bool regex_search<const wchar_t*, std::allocator<sub_match<const wchar_t*>>, wchar_t, regex_traits<wchar_t>>(
+	const wchar_t*, const wchar_t*,
+	match_results<const wchar_t*, std::allocator<sub_match<const wchar_t*>>>&,
+	const basic_regex<wchar_t, regex_traits<wchar_t>>&,
+	regex_constants::match_flag_type);
+
+template bool regex_search<wstring::const_iterator, std::allocator<sub_match<wstring::const_iterator>>, wchar_t, regex_traits<wchar_t>>(
+	wstring::const_iterator, wstring::const_iterator,
+	match_results<wstring::const_iterator, std::allocator<sub_match<wstring::const_iterator>>>&,
+	const basic_regex<wchar_t, regex_traits<wchar_t>>&,
+	regex_constants::match_flag_type);
+
+// Instantiate regex_match for common iterator types and character types
+template bool regex_match<const char*, std::allocator<sub_match<const char*>>, char, regex_traits<char>>(
+	const char*, const char*,
+	match_results<const char*, std::allocator<sub_match<const char*>>>&,
+	const basic_regex<char, regex_traits<char>>&,
+	regex_constants::match_flag_type);
+
+template bool regex_match<string::const_iterator, std::allocator<sub_match<string::const_iterator>>, char, regex_traits<char>>(
+	string::const_iterator, string::const_iterator,
+	match_results<string::const_iterator, std::allocator<sub_match<string::const_iterator>>>&,
+	const basic_regex<char, regex_traits<char>>&,
+	regex_constants::match_flag_type);
+
+template bool regex_match<const wchar_t*, std::allocator<sub_match<const wchar_t*>>, wchar_t, regex_traits<wchar_t>>(
+	const wchar_t*, const wchar_t*,
+	match_results<const wchar_t*, std::allocator<sub_match<const wchar_t*>>>&,
+	const basic_regex<wchar_t, regex_traits<wchar_t>>&,
+	regex_constants::match_flag_type);
+
+template bool regex_match<wstring::const_iterator, std::allocator<sub_match<wstring::const_iterator>>, wchar_t, regex_traits<wchar_t>>(
+	wstring::const_iterator, wstring::const_iterator,
+	match_results<wstring::const_iterator, std::allocator<sub_match<wstring::const_iterator>>>&,
+	const basic_regex<wchar_t, regex_traits<wchar_t>>&,
+	regex_constants::match_flag_type);
+
+// Instantiate regex_replace for common iterator types and character types
+template std::back_insert_iterator<string> regex_replace<std::back_insert_iterator<string>, string::const_iterator, char, regex_traits<char>>(
+	std::back_insert_iterator<string>,
+	string::const_iterator, string::const_iterator,
+	const basic_regex<char, regex_traits<char>>&,
+	const basic_string<char>&,
+	regex_constants::match_flag_type);
+
+template std::back_insert_iterator<wstring> regex_replace<std::back_insert_iterator<wstring>, wstring::const_iterator, wchar_t, regex_traits<wchar_t>>(
+	std::back_insert_iterator<wstring>,
+	wstring::const_iterator, wstring::const_iterator,
+	const basic_regex<wchar_t, regex_traits<wchar_t>>&,
+	const basic_string<wchar_t>&,
+	regex_constants::match_flag_type);
 
 } // namespace onigpp

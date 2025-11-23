@@ -243,13 +243,13 @@ public:
 		return *this;
 	}
 	self_type& assign(self_type&& other) noexcept {
-		swap(std::move(other));
+		swap(other);
 		return *this;
 	}
 	self_type& assign(const CharT* ptr, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr) {
 		if (!enc) enc = m_encoding;
 		self_type tmp(ptr, f, enc);
-		swap(std::move(tmp));
+		swap(tmp);
 		return *this;
 	}
 	self_type& assign(const string_type& str, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr) {
