@@ -2,7 +2,7 @@
 
 ## What's this?
 
-This is a C++ wrapper of the Oniguruma regular expression engine.
+This is a C++11 wrapper of the Oniguruma regular expression engine, with standard `<regex>` style.
 
 ## Regular expression reference
 
