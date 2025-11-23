@@ -32,7 +32,7 @@ cmake --build build -t test
 ## Platforms
 
 - Windows (Visual Studio 2015 and later)
-- Linux
+- Linux (Ubuntu)
 - macOS
 
 ## License
