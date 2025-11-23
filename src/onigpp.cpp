@@ -320,16 +320,8 @@ ONIGPP_HEADER_INLINE OnigOptionType basic_regex<CharT, Traits>::_options_from_fl
 }
 
 template <class CharT, class Traits>
-ONIGPP_HEADER_INLINE basic_regex<CharT, Traits>::basic_regex(self_type&& other) noexcept 
-	: m_regex(other.m_regex), m_encoding(other.m_encoding), m_flags(other.m_flags), m_pattern(std::move(other.m_pattern)) 
-{
-	other.m_regex = nullptr;
-	other.m_encoding = nullptr;
-}
-
-template <class CharT, class Traits>
 ONIGPP_HEADER_INLINE basic_regex<CharT, Traits>::basic_regex(const CharT* s, size_t count, flag_type f, OnigEncoding enc) 
-	: m_regex(nullptr), m_encoding(nullptr), m_flags(f), m_pattern(s, count) 
+	: m_regex(nullptr), m_encoding(nullptr), m_flags(f), m_pattern(s, count)
 {
 	OnigSyntaxType* syntax = ONIG_SYNTAX_ONIGURUMA;
 	OnigOptionType options = _options_from_flags(f);

@@ -32,9 +32,7 @@ struct auto_init {
 	auto_init(const OnigEncoding *encodings = nullptr, size_t encodings_count = 0) {
 		init(encodings, encodings_count);
 	}
-	~auto_init() {
-		uninit();
-	}
+	~auto_init() { uninit(); }
 };
 
 ////////////////////////////////////////////
@@ -234,7 +232,9 @@ public:
 		: basic_regex(s, Traits::length(s), f, enc) { }
 	basic_regex(const CharT* s, size_t count, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr);
 	basic_regex(const self_type& other);
-	basic_regex(self_type&& other) noexcept;
+	basic_regex(self_type&& other) noexcept : m_regex(nullptr), m_encoding(nullptr), m_flags(regex_constants::normal) {
+		*this = other;
+	}
 	virtual ~basic_regex();
 
 	self_type& operator=(const self_type& other) {
@@ -242,7 +242,21 @@ public:
 		swap(tmp);
 		return *this;
 	}
-	self_type& operator=(self_type&& other) noexcept { swap(other); return *this; }
+	self_type& operator=(self_type&& other) noexcept {
+		if (this == &other) return *this;
+		onig_free(m_regex);
+		// steal
+		m_regex = other.m_regex;
+		m_encoding = other.m_encoding;
+		m_flags = other.m_flags;
+		m_pattern = std::move(other.m_pattern);
+		// reset other
+		other.m_regex = nullptr;
+		other.m_encoding = nullptr;
+		other.m_flags = regex_constants::normal;
+		other.m_pattern.clear();
+		return *this;
+	}
 	self_type& operator=(const CharT* ptr) { return assign(ptr); }
 
 	self_type& assign(const self_type& other) {
