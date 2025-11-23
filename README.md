@@ -8,6 +8,7 @@ This is a C++ wrapper of the Oniguruma regular expression engine.
 
 ```bash
 git clone https://github.com/katahiromz/onigpp
+git submodule update --init --recursive
 cd onigpp
 mkdir build
 cmake -B build
