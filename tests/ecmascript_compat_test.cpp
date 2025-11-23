@@ -192,7 +192,7 @@ void TestNullEscape() {
 	std::string text2 = "\01"; // Octal 01
 	assert(op::regex_search(text2, m2, re2));
 #else
-	std::cout << "⚠️  Skipped octal escape test: GCC's std::regex does not support octal escapes in ECMAScript mode\n";
+	std::cout << "⚠️  Skipped: GCC's std::regex does not support \\0NN octal escape sequences\n";
 #endif
 	
 	TEST_CASE_END("TestNullEscape")
