@@ -851,6 +851,9 @@ unsigned basic_regex<CharT, Traits>::mark_count() const {
 
 ////////////////////////////////////////////
 // regex_search implementation
+// Note: Byte offset conversion assumes fixed-width encodings per CharT unit:
+//   - char with UTF-8: 1 byte per char
+//   - wchar_t/char16_t/char32_t with UTF-16/32: 2/4 bytes per unit
 
 template <class BidirIt, class Alloc, class CharT, class Traits>
 bool regex_search(
@@ -874,7 +877,7 @@ bool regex_search(
 
 	// Get pointer to the search target
 	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
-	static CharT empty_char = CharT();
+	static thread_local CharT empty_char = CharT();
 	const CharT* start_ptr = (len > 0) ? &(*first) : &empty_char;
 	const CharT* end_ptr = start_ptr + len;
 
@@ -973,7 +976,7 @@ bool regex_match(
 
 	// Get pointer to the search target
 	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
-	static CharT empty_char = CharT();
+	static thread_local CharT empty_char = CharT();
 	const CharT* start_ptr = (len > 0) ? &(*first) : &empty_char;
 	const CharT* end_ptr = start_ptr + len;
 
@@ -1090,7 +1093,7 @@ OutputIt regex_replace(
 	// Input data pointers
 	size_t len = std::distance(first, last);
 	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
-	static CharT empty_char = CharT();
+	static thread_local CharT empty_char = CharT();
 	const CharT* start_ptr = (len > 0) ? &(*first) : &empty_char;
 	const CharT* end_ptr = start_ptr + len;
 
