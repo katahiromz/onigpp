@@ -27,3 +27,9 @@ add_executable(benchmark_optimization benchmark_optimization.cpp)
 target_compile_definitions(benchmark_optimization PRIVATE "")
 target_include_directories(benchmark_optimization PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(benchmark_optimization PRIVATE onigpp)
+
+# ecmascript_compat_test.exe
+add_executable(ecmascript_compat_test ecmascript_compat_test.cpp)
+target_compile_definitions(ecmascript_compat_test PRIVATE "")
+target_include_directories(ecmascript_compat_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(ecmascript_compat_test PRIVATE onigpp)

@@ -88,7 +88,8 @@ namespace regex_constants {
 	static constexpr match_flag_type format_literal = (1 << 10);
 
 	// Default values
-	static constexpr syntax_option_type normal = 0;
+	// Note: In std::regex, ECMAScript is the default grammar when no flags are specified
+	static constexpr syntax_option_type normal = ECMAScript;
 	static constexpr match_flag_type format_default = 0;
 	static constexpr match_flag_type match_default = 0;
 }
@@ -299,6 +300,7 @@ protected:
 	static OnigOptionType _options_from_flags(flag_type f);
 	static OnigSyntaxType* _syntax_from_flags(flag_type f);
 	string_type _preprocess_pattern_for_locale(const string_type& pattern) const;
+	string_type _preprocess_pattern_for_ecmascript(const string_type& pattern) const;
 };
 
 ////////////////////////////////////////////
