@@ -135,6 +135,10 @@ void TestHexEscapes() {
 void TestUnicodeEscapes() {
 	TEST_CASE("TestUnicodeEscapes")
 	
+#ifndef USE_STD_FOR_TESTS
+	// Note: GCC's std::regex does not support \uHHHH Unicode escape sequences
+	// These tests only run when using onigpp
+	
 	// Test \u0041 (Unicode 'A')
 	std::string pattern1 = "\\u0041BC";
 	sregex re1(pattern1, op::regex_constants::ECMAScript);
@@ -158,6 +162,9 @@ void TestUnicodeEscapes() {
 	std::string text3 = "I♥you"; // UTF-8 encoded
 	assert(op::regex_search(text3, m3, re3));
 	assert(m3[0].str() == "I♥you");
+#else
+	std::cout << "⚠️  Skipped: GCC's std::regex does not support \\uHHHH Unicode escape sequences\n";
+#endif
 	
 	TEST_CASE_END("TestUnicodeEscapes")
 }
@@ -173,6 +180,10 @@ void TestNullEscape() {
 	std::string text1 = std::string("test") + '\0' + "end";
 	assert(op::regex_search(text1, m1, re1));
 	
+#ifndef USE_STD_FOR_TESTS
+	// Note: GCC's std::regex does not properly support octal escape sequences in ECMAScript mode
+	// This test only runs when using onigpp
+	
 	// \0 followed by digit should NOT be treated as null escape (should be octal)
 	// In this case, we leave it as-is for Oniguruma to handle
 	std::string pattern2 = "\\01";
@@ -180,6 +191,9 @@ void TestNullEscape() {
 	smatch m2;
 	std::string text2 = "\01"; // Octal 01
 	assert(op::regex_search(text2, m2, re2));
+#else
+	std::cout << "⚠️  Skipped: GCC's std::regex does not support \\0NN octal escape sequences\n";
+#endif
 	
 	TEST_CASE_END("TestNullEscape")
 }
