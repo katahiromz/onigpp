@@ -33,16 +33,22 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 # oniguruma
 add_subdirectory(oniguruma)
 
+# onigpp library
+add_library(onigpp STATIC onigpp.cpp)
+target_compile_definitions(onigpp PUBLIC ONIG_STATIC)
+target_include_directories(onigpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(onigpp PUBLIC onig)
+
 # onigpp_test.exe
 add_executable(onigpp_test onigpp_test.cpp)
 target_compile_definitions(onigpp_test PRIVATE ONIG_STATIC)
 target_include_directories(onigpp_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(onigpp_test onig)
+target_link_libraries(onigpp_test onigpp)
 
 # onigpp_testw.exe
 add_executable(onigpp_testw onigpp_testw.cpp)
 target_compile_definitions(onigpp_testw PRIVATE ONIG_STATIC)
 target_include_directories(onigpp_testw PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(onigpp_testw onig)
+target_link_libraries(onigpp_testw onigpp)
 
 ##############################################################################

@@ -535,32 +535,17 @@ bool regex_search(
 ////////////////////////////////////////////
 // onigpp::init
 
-inline int init(const OnigEncoding *encodings = nullptr, size_t encodings_count = 0) {
-	static OnigEncoding use_encodings[] = {
-#define SUPPORTED_ENCODING(enc) enc,
-#include "encodings.h"
-#undef SUPPORTED_ENCODING
-	};
-	if (!encodings) {
-		encodings = use_encodings;
-		encodings_count = sizeof(use_encodings) / sizeof(use_encodings[0]);
-	}
-	int err = onig_initialize((OnigEncoding *)encodings, (int)encodings_count);
-	if (err != ONIG_NORMAL) {
-		throw std::runtime_error("onig_initialize failed");
-	}
-	return err;
-}
+int init(const OnigEncoding *encodings = nullptr, size_t encodings_count = 0);
 
 ////////////////////////////////////////////
 // onigpp::uninit
 
-inline void uninit() { onig_end(); }
+void uninit();
 
 ////////////////////////////////////////////
 // onigpp::version
 
-inline const char* version() { return onig_version(); }
+const char* version();
 
 ////////////////////////////////////////////
 // Implementation helpers
@@ -757,29 +742,7 @@ OnigEncoding _get_default_encoding_from_char_type() {
 	return ONIG_ENCODING_UTF8;
 }
 
-////////////////////////////////////////////
-// Implementation of regex_error
 
-inline regex_error::regex_error(regex_constants::error_type ecode, const OnigErrorInfo& err_info)
-	: m_err_code(ecode), m_err_info(err_info)
-{
-}
-
-inline regex_error::~regex_error() { }
-
-inline regex_constants::error_type regex_error::code() const {
-	return m_err_code;
-}
-
-inline const char* regex_error::what() const noexcept {
-	static thread_local char err_buf[ONIG_MAX_ERROR_MESSAGE_LEN];
-	if (onig_is_error_code_needs_param(m_err_code)) {
-		onig_error_code_to_str((OnigUChar*)err_buf, m_err_code, &m_err_info);
-	} else {
-		onig_error_code_to_str((OnigUChar*)err_buf, m_err_code);
-	}
-	return err_buf;
-}
 
 ////////////////////////////////////////////
 // Implementation of basic_regex
