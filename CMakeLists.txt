@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # project name and languages
-project(onigpp C CXX RC)
+project(onigpp C CXX)
 
 if (MSVC)
     # replace "/MD" with "/MT" (building without runtime DLLs)
