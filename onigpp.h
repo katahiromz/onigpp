@@ -552,3 +552,7 @@ inline bool regex_search(
 }
 
 } // namespace onigpp
+
+#ifdef ONIGPP_HEADER_ONLY
+	#include "src/onigpp.cpp"
+#endif
