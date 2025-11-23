@@ -215,6 +215,15 @@ public:
 	BidirIt m_str_end;   // End iterator of the search range
 };
 
+using cmatch = match_results<const char*>;
+using wcmatch = match_results<const wchar_t*>;
+using u16cmatch = match_results<const char16_t*>;
+using u32cmatch = match_results<const char32_t*>;
+using smatch = match_results<string::const_iterator>;
+using wsmatch = match_results<wstring::const_iterator>;
+using u16smatch = match_results<u16string::const_iterator>;
+using u32smatch = match_results<u32string::const_iterator>;
+
 ////////////////////////////////////////////
 // Forward declarations
 

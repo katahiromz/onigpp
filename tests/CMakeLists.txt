@@ -33,3 +33,9 @@ add_executable(ecmascript_compat_test ecmascript_compat_test.cpp)
 target_compile_definitions(ecmascript_compat_test PRIVATE "")
 target_include_directories(ecmascript_compat_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ecmascript_compat_test PRIVATE onigpp)
+
+# match_results_aliases_test.exe
+add_executable(match_results_aliases_test match_results_aliases_test.cpp)
+target_compile_definitions(match_results_aliases_test PRIVATE "")
+target_include_directories(match_results_aliases_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(match_results_aliases_test PRIVATE onigpp)
