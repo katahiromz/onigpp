@@ -3,10 +3,23 @@
 // License: MIT
 #include "onigpp.h"
 #include <iostream>
-#include <string>
+#include <chrono>
+#include <regex>
 #include <cassert>
 
-namespace op = onigpp;
+// --- Additional headers for Windows ---
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#include <fcntl.h>
+#endif
+
+// Alias namespace for ease of use
+#ifdef USE_STD_FOR_TESTS
+	namespace op = std;
+#else
+	namespace op = onigpp;
+#endif
 
 using sregex = op::basic_regex<char>;
 using smatch = op::match_results<std::string::const_iterator>;
@@ -17,15 +30,15 @@ using smatch = op::match_results<std::string::const_iterator>;
 	try {
 
 #define TEST_CASE_END(name) \
-	std::cerr << "✅ " << (name) << " PASSED.\n"; \
+	std::cout << "✅ " << (name) << " PASSED.\n"; \
 	} catch (const op::regex_error& e) { \
-		std::cerr << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
+		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
-		std::cerr << "❌ " << (name) << " FAILED with std::exception: " << e.what() << "\n"; \
+		std::cout << "❌ " << (name) << " FAILED with std::exception: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (...) { \
-		std::cerr << "❌ " << (name) << " FAILED with unknown exception.\n"; \
+		std::cout << "❌ " << (name) << " FAILED with unknown exception.\n"; \
 		assert(false); \
 	}
 
@@ -183,7 +196,7 @@ void TestNoPreprocessingWithoutECMAScript() {
 	// Let's just verify it compiles and doesn't crash
 	try {
 		std::string pattern = "\\x41";
-		sregex re(pattern, op::regex_constants::normal);
+		sregex re(pattern, op::regex_constants::basic);
 		smatch m;
 		// We don't assert specific behavior here, just that it doesn't crash
 		op::regex_search(text, m, re);
@@ -226,7 +239,21 @@ void TestCombinedFeatures() {
 }
 
 int main() {
+	// --- Measures to avoid garbled characters on Windows consoles ---
+#ifdef _WIN32
+	// Switch to UTF-8 mode
+	//_setmode(_fileno(stdout), _O_U8TEXT);
+	// Ensure console uses UTF-8 code page for interoperability
+	SetConsoleOutputCP(CP_UTF8);
+#else
+	// For Linux/Mac, setting the locale is usually sufficient
+	std::setlocale(LC_ALL, "");
+#endif
+
+#ifndef USE_STD_FOR_TESTS
+	// Oniguruma initialization
 	op::auto_init init;
+#endif
 	
 	std::cout << "========================================================\n";
 	std::cout << " ECMAScript Compatibility Test Suite\n";
