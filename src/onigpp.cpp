@@ -918,16 +918,20 @@ basic_regex<CharT, Traits>::_preprocess_pattern_for_ecmascript(const string_type
 				         hex_value(pattern[i + 5]);
 				
 				// Convert Unicode code point to CharT
-				// For char (UTF-8), we need to encode as UTF-8
-				// For char16_t/char32_t/wchar_t, store the value directly if it fits
+				// Note: \uHHHH can only represent U+0000 to U+FFFF (BMP)
+				// ECMAScript uses UTF-16 surrogate pairs for code points above U+FFFF,
+				// but we handle each \uHHHH independently here (no surrogate pair handling)
+				// For char (UTF-8), we encode as UTF-8 (1-3 bytes for BMP range)
+				// For char16_t/char32_t/wchar_t, store the value directly
 				if (sizeof(CharT) == 1) {
-					// UTF-8 encoding for char
+					// UTF-8 encoding for char (BMP range uses 1-3 bytes)
 					if (val <= 0x7F) {
 						result += static_cast<CharT>(val);
 					} else if (val <= 0x7FF) {
 						result += static_cast<CharT>(0xC0 | (val >> 6));
 						result += static_cast<CharT>(0x80 | (val & 0x3F));
 					} else {
+						// val is 0x800-0xFFFF, needs 3-byte UTF-8
 						result += static_cast<CharT>(0xE0 | (val >> 12));
 						result += static_cast<CharT>(0x80 | ((val >> 6) & 0x3F));
 						result += static_cast<CharT>(0x80 | (val & 0x3F));
