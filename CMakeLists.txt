@@ -35,7 +35,7 @@ add_subdirectory(oniguruma)
 
 # libonigpp.a
 add_library(onigpp STATIC src/onigpp.cpp)
-target_include_directories(onigpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(onigpp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/oniguruma/src)
 target_link_libraries(onigpp PUBLIC onig)
 
 # tests
