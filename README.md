@@ -4,6 +4,10 @@
 
 This is a C++ wrapper of the Oniguruma regular expression engine.
 
+## Regular expression reference
+
+See [RE.md](RE.md) for the Oniguruma regular expression syntax and extensions.
+
 ## Build
 
 ```bash
