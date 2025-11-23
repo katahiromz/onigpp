@@ -250,6 +250,94 @@ void TestReplacement() {
 	TEST_CASE_END("TestReplacement")
 }
 
+// -----------------------------------------------------------------
+// 4b. Comprehensive Zero-Width Match Tests
+// -----------------------------------------------------------------
+
+void TestZeroWidthReplacement() {
+	TEST_CASE("TestZeroWidthReplacement")
+
+	// Test 1: Word boundaries - basic case
+	{
+		std::string s = "hello world";
+		sregex re("\\b");
+		std::string fmt = "|";
+		std::string result = op::regex_replace(s, re, fmt);
+		// Expected: |hello| |world|
+		// Should match at: before 'h', after 'o', before 'w', after 'd'
+		assert(result == "|hello| |world|");
+		std::cerr << "  Test 1 (word boundaries basic): OK\n";
+	}
+
+	// Test 2: Word boundaries - single word
+	{
+		std::string s = "test";
+		sregex re("\\b");
+		std::string fmt = "-";
+		std::string result = op::regex_replace(s, re, fmt);
+		// Expected: -test-
+		assert(result == "-test-");
+		std::cerr << "  Test 2 (word boundaries single word): OK\n";
+	}
+
+	// Test 3: Lookahead (zero-width assertion)
+	{
+		std::string s = "foo bar baz";
+		sregex re("(?=bar)");  // Positive lookahead for "bar"
+		std::string fmt = "[";
+		std::string result = op::regex_replace(s, re, fmt);
+		// Expected: foo [bar baz
+		assert(result == "foo [bar baz");
+		std::cerr << "  Test 3 (lookahead): OK\n";
+	}
+
+	// Test 4: Multiple consecutive zero-width matches should not cause infinite loop
+	{
+		std::string s = "abc";
+		sregex re("(?=.)");  // Lookahead that matches before each character
+		std::string fmt = "*";
+		std::string result = op::regex_replace(s, re, fmt);
+		// Should terminate quickly and produce: *a*b*c
+		assert(result == "*a*b*c");
+		std::cerr << "  Test 4 (multiple zero-width): OK\n";
+	}
+
+	// Test 5: Empty string replacement with word boundary
+	{
+		std::string s = "";
+		sregex re("\\b");
+		std::string fmt = "-";
+		std::string result = op::regex_replace(s, re, fmt);
+		// Empty string has no word boundaries
+		assert(result == "");
+		std::cerr << "  Test 5 (empty string): OK\n";
+	}
+
+	// Test 6: Zero-width match at end of string
+	{
+		std::string s = "end";
+		sregex re("$");  // End of string anchor
+		std::string fmt = "!";
+		std::string result = op::regex_replace(s, re, fmt);
+		// Expected: end!
+		assert(result == "end!");
+		std::cerr << "  Test 6 (end anchor): OK\n";
+	}
+
+	// Test 7: Zero-width match at start of string
+	{
+		std::string s = "start";
+		sregex re("^");  // Start of string anchor
+		std::string fmt = ">";
+		std::string result = op::regex_replace(s, re, fmt);
+		// Expected: >start
+		assert(result == ">start");
+		std::cerr << "  Test 7 (start anchor): OK\n";
+	}
+
+	TEST_CASE_END("TestZeroWidthReplacement")
+}
+
 void TestSpecialReplacementPatterns() {
 	TEST_CASE("TestSpecialReplacementPatterns")
 	
@@ -392,6 +480,7 @@ int main() {
 	TestResourceManagement();
 	TestIterators();
 	TestReplacement();
+	TestZeroWidthReplacement();
 	TestSpecialReplacementPatterns();
 	TestEncodingAndError();
 

@@ -46,7 +46,7 @@ void _append_replacement(
 			CharT n = fmt[i];
 
 			//--------------------------
-			// "$$" ¨ "$"
+			// "$$" ï¿½ï¿½ "$"
 			//--------------------------
 			if (n == CharT('$')) {
 				result += CharT('$');
@@ -55,7 +55,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "$&" ¨ whole match
+			// "$&" ï¿½ï¿½ whole match
 			//--------------------------
 			if (n == CharT('&')) {
 				if (m.size() > 0 && m[0].matched)
@@ -65,7 +65,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "$`" ¨ prefix
+			// "$`" ï¿½ï¿½ prefix
 			//--------------------------
 			if (n == CharT('`')) {
 				auto pre = m.prefix();
@@ -76,7 +76,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "$'" ¨ suffix
+			// "$'" ï¿½ï¿½ suffix
 			//--------------------------
 			if (n == CharT('\'')) {
 				auto suf = m.suffix();
@@ -87,7 +87,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "$+" ¨ last captured group
+			// "$+" ï¿½ï¿½ last captured group
 			//--------------------------
 			if (n == CharT('+')) {
 				int last = -1;
@@ -102,14 +102,14 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "${name}" ¨ named capture
+			// "${name}" ï¿½ï¿½ named capture
 			//--------------------------
 			if (n == CharT('{')) {
 				size_t start = ++i;
 				while (i < len && fmt[i] != CharT('}')) i++;
 
 				if (i >= len) {
-					// missing '}' ¨ treat literally
+					// missing '}' ï¿½ï¿½ treat literally
 					result += CharT('$');
 					result += CharT('{');
 					continue;
@@ -135,7 +135,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// "$n" ¨ numeric capture
+			// "$n" ï¿½ï¿½ numeric capture
 			//--------------------------
 			if (n >= CharT('0') && n <= CharT('9')) {
 				size_t num = 0;
@@ -149,7 +149,7 @@ void _append_replacement(
 			}
 
 			//--------------------------
-			// Unknown pattern ¨ literal "$x"
+			// Unknown pattern ï¿½ï¿½ literal "$x"
 			//--------------------------
 			result += CharT('$');
 			result += n;
@@ -209,6 +209,14 @@ OnigEncoding _get_default_encoding_from_char_type() {
 regex_error::regex_error(regex_constants::error_type ecode, const OnigErrorInfo& err_info)
 	: m_err_code(ecode), m_err_info(err_info)
 {
+	// Format the error message immediately and store it for the lifetime of the exception
+	char err_buf[ONIG_MAX_ERROR_MESSAGE_LEN];
+	if (onig_is_error_code_needs_param(m_err_code)) {
+		onig_error_code_to_str((OnigUChar*)err_buf, m_err_code, &m_err_info);
+	} else {
+		onig_error_code_to_str((OnigUChar*)err_buf, m_err_code);
+	}
+	m_message = err_buf;
 }
 
 regex_error::~regex_error() { }
@@ -218,14 +226,8 @@ regex_constants::error_type regex_error::code() const {
 }
 
 const char* regex_error::what() const noexcept {
-	static thread_local char err_buf[ONIG_MAX_ERROR_MESSAGE_LEN];
-	if (onig_is_error_code_needs_param(m_err_code)) {
-		onig_error_code_to_str((OnigUChar*)err_buf, m_err_code, &m_err_info);
-	} else {
-		onig_error_code_to_str((OnigUChar*)err_buf, m_err_code);
-	}
-	m_what = err_buf;
-	return m_what.c_str();
+	// Return the formatted message that was stored in the constructor
+	return m_message.c_str();
 }
 
 ////////////////////////////////////////////
@@ -610,10 +612,23 @@ OutputIt regex_replace(
 				// Zero-width match: End of output remains the same (match_start)
 				u_last_output = match_start;
 				// Next search start position is advanced by 1 character (considering encoding)
+				// This prevents infinite loops on zero-width matches like \b (word boundary)
 				if (match_start < u_end) {
-					int char_len = enc ? onig_enc_len(enc, match_start, u_end) : 1;
-					if (char_len < 1) char_len = 1;
+					int char_len;
+					// For char type with multibyte encoding, use Oniguruma's encoding-aware length
+					if (enc && std::is_same<CharT, char>::value) {
+						char_len = onig_enc_len(enc, match_start, u_end);
+						if (char_len < 1) char_len = 1;  // Safety fallback
+					} else {
+						// For fixed-width types (wchar_t, char16_t, char32_t), advance by one element
+						char_len = sizeof(CharT);
+					}
 					u_search = match_start + char_len;
+					
+					// Safety check: ensure we don't advance past the end
+					if (u_search > u_end) {
+						u_search = u_end;
+					}
 				} else {
 					// If at the end of the string, terminate
 					u_search = u_end;
@@ -699,7 +714,7 @@ regex_iterator<BidirIt, CharT, Traits>& regex_iterator<BidirIt, CharT, Traits>::
 	// Get the end of the current search result
 	BidirIt current_match_end = m_results[0].second;
 
-	// š Zero-width match handling š
+	// ï¿½ï¿½ Zero-width match handling ï¿½ï¿½
 	if (m_results[0].first == current_match_end) {
 		if (current_match_end != m_end) {
 			std::advance(current_match_end, 1); // Advance by 1 character

@@ -118,7 +118,7 @@ public:
 	const char* what() const noexcept override;
 
 protected:
-	std::string m_what;
+	std::string m_message;  // Formatted error message stored for exception lifetime
 	regex_constants::error_type m_err_code;
 	OnigErrorInfo m_err_info;
 };
