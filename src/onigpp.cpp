@@ -351,7 +351,8 @@ ONIGPP_HEADER_INLINE basic_regex<CharT, Traits>::basic_regex(const self_type& ot
 }
 
 template <class CharT, class Traits>
-ONIGPP_HEADER_INLINE basic_regex<CharT, Traits>::basic_regex(self_type&& other) noexcept : m_regex(other.m_regex), m_encoding(other.m_encoding), m_flags(other.m_flags), m_pattern(std::move(other.m_pattern))
+ONIGPP_HEADER_INLINE basic_regex<CharT, Traits>::basic_regex(self_type&& other) noexcept
+	: m_regex(other.m_regex), m_encoding(other.m_encoding), m_flags(other.m_flags), m_pattern(std::move(other.m_pattern))
 {
 	// leave other in safe state
 	other.m_regex = nullptr;
