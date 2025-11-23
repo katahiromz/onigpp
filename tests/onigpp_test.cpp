@@ -379,6 +379,32 @@ void TestEncodingAndError() {
 	TEST_CASE_END("TestEncodingAndError")
 }
 
+// -----------------------------------------------------------------
+// 6. Syntax Selection Tests
+// -----------------------------------------------------------------
+
+void TestSyntaxSelection() {
+	TEST_CASE("TestSyntaxSelection")
+
+	// 6.1. POSIX Basic: '+' is literal unless escaped
+	std::cerr << "  6.1. POSIX Basic Syntax:\n";
+	sregex re_basic(std::string("a\\+b"), op::regex_constants::basic);
+	smatch m_basic;
+	assert(op::regex_search(std::string("a+b"), m_basic, re_basic));
+	assert(m_basic[0].str() == "a+b");
+	std::cerr << "  POSIX Basic matched 'a+b' as literal\n";
+
+	// 6.2. POSIX Extended: '+' is a quantifier
+	std::cerr << "  6.2. POSIX Extended Syntax:\n";
+	sregex re_ext(std::string("ab+"), op::regex_constants::extended);
+	smatch m_ext;
+	assert(op::regex_search(std::string("abb"), m_ext, re_ext));
+	assert(m_ext[0].str() == "abb");
+	std::cerr << "  POSIX Extended matched 'abb' with '+' as quantifier\n";
+
+	TEST_CASE_END("TestSyntaxSelection")
+}
+
 // =================================================================
 // Main Function
 // =================================================================
@@ -406,6 +432,7 @@ int main() {
 	TestReplacement();
 	TestSpecialReplacementPatterns();
 	TestEncodingAndError();
+	TestSyntaxSelection();
 
 	std::cerr << "\n========================================================\n";
 	std::cerr << "✨ All tests succeeded.\n";

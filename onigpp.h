@@ -63,6 +63,11 @@ namespace regex_constants {
 	static constexpr syntax_option_type icase = (1 << 0);
 	static constexpr syntax_option_type multiline = (1 << 1);
 	static constexpr syntax_option_type extended = (1 << 2);
+	static constexpr syntax_option_type basic = (1 << 11);
+	static constexpr syntax_option_type awk = (1 << 12);
+	static constexpr syntax_option_type grep = (1 << 13);
+	static constexpr syntax_option_type egrep = (1 << 14);
+	static constexpr syntax_option_type ECMAScript = (1 << 15);
 
 	// Search/Match control flags
 	using match_flag_type = unsigned long;
@@ -289,6 +294,7 @@ protected:
 	string_type m_pattern;
 
 	static OnigOptionType _options_from_flags(flag_type f);
+	static OnigSyntaxType* _syntax_from_flags(flag_type f);
 };
 
 ////////////////////////////////////////////
