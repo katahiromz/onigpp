@@ -1,0 +1,71 @@
+# GitHub Actions workflow to build with CMake and run tests on multiple OSes
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-unix:
+    name: Build & Test (Ubuntu and macOS)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        compiler: [gcc, clang]
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies (Linux/macOS)
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            sudo apt-get update
+            sudo apt-get install -y build-essential cmake ninja-build ccache
+          else
+            brew update || true
+            brew install cmake ninja || true
+          fi
+
+      - name: Configure (Ninja)
+        run: cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Run tests (if any)
+        run: |
+          if [ -f build/CTestTestfile.cmake ]; then
+            ctest --test-dir build --output-on-failure
+          else
+            echo "No tests found (CTestTestfile.cmake missing)"
+          fi
+
+  build-windows:
+    name: Build & Test (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure (MSVC x64)
+        run: cmake -S . -B build -A x64 -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build (Release)
+        run: cmake --build build --config Release -- /m
+
+      - name: Run tests (if any)
+        shell: powershell
+        run: |
+          if (Test-Path build\Release\CTestTestfile.cmake) {
+            ctest --test-dir build --output-on-failure -C Release
+          } else {
+            Write-Host "No tests found (CTestTestfile.cmake missing)"
+          }
