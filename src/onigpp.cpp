@@ -525,8 +525,10 @@ basic_regex<CharT, Traits>::_preprocess_pattern_for_locale(const string_type& pa
 						// Expand the POSIX class based on locale
 						string_type expansion;
 						
-						// Test characters in a reasonable range
-						// For char: 0-255, for wider types: similar ASCII-compatible range
+						// Test characters in a reasonable range.
+						// For 8-bit char: all 256 possible values (0-255)
+						// For wider types: limit to ASCII-compatible range for portability and performance
+						// (full Unicode character classification would be more complex and slower)
 						const int max_char = (sizeof(CharT) == 1) ? 256 : 128;
 						
 						// Determine which class we're dealing with
@@ -611,11 +613,12 @@ basic_regex<CharT, Traits>::_preprocess_pattern_for_locale(const string_type& pa
 							}
 							
 							// If expansion is empty (no characters match the class),
-							// we need to ensure the bracket expression isn't empty
-							// Use a character guaranteed not to match (control character that typically won't appear)
+							// we need to ensure the bracket expression isn't empty to avoid
+							// "empty range in char class" errors.
+							// Use a non-printing character unlikely to appear in normal text.
+							static const CharT UNMATCHABLE_CHAR = CharT('\x7F'); // DEL character (ASCII 127)
 							if (expansion.empty()) {
-								// Use DEL character (ASCII 127 / 0x7F) which rarely appears in text
-								expansion += CharT('\x7F');
+								expansion += UNMATCHABLE_CHAR;
 							}
 							
 							result += expansion;
