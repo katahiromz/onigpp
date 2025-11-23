@@ -224,7 +224,8 @@ const char* regex_error::what() const noexcept {
 	} else {
 		onig_error_code_to_str((OnigUChar*)err_buf, m_err_code);
 	}
-	return err_buf;
+	m_what = err_buf;
+	return m_what.c_str();
 }
 
 ////////////////////////////////////////////

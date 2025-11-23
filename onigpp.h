@@ -118,6 +118,7 @@ public:
 	const char* what() const noexcept override;
 
 protected:
+	std::string m_what;
 	regex_constants::error_type m_err_code;
 	OnigErrorInfo m_err_info;
 };
