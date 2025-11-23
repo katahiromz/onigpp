@@ -673,11 +673,13 @@ void _append_replacement(
 				i++; // skip '}'
 
 				// Find named group
-				OnigUChar *name_u = (OnigUChar*)name.c_str();
+				// Convert character pointers to byte pointers for Oniguruma API
+				const OnigUChar *name_start = reinterpret_cast<const OnigUChar*>(name.c_str());
+				const OnigUChar *name_end = reinterpret_cast<const OnigUChar*>(name.c_str() + name.size());
 				int num = onig_name_to_backref_number(
 					regex_access<CharT, regex_traits<CharT>>::get(re),
-					name_u,
-					name_u + name.size(),
+					name_start,
+					name_end,
 					nullptr
 				);
 				if (num > 0 && (size_t)num < m.size() && m[num].matched) {
@@ -812,7 +814,7 @@ basic_regex<CharT, Traits>::basic_regex(const CharT* s, size_t count, flag_type 
 	OnigErrorInfo err_info;
 	if (!enc) enc = _get_default_encoding_from_char_type<CharT>();
 	m_encoding = enc;
-	int err = onig_new(&m_regex, (const OnigUChar*)s, (const OnigUChar*)(s + count), options, enc, syntax, &err_info);
+	int err = onig_new(&m_regex, reinterpret_cast<const OnigUChar*>(s), reinterpret_cast<const OnigUChar*>(s + count), options, enc, syntax, &err_info);
 	if (err != ONIG_NORMAL) throw regex_error(err, err_info);
 }
 
@@ -829,7 +831,7 @@ basic_regex<CharT, Traits>::basic_regex(const self_type& other)
 	const CharT* s = m_pattern.c_str();
 	size_t count = m_pattern.length();
 
-	int err = onig_new(&m_regex, (const OnigUChar*)s, (const OnigUChar*)(s + count), 
+	int err = onig_new(&m_regex, reinterpret_cast<const OnigUChar*>(s), reinterpret_cast<const OnigUChar*>(s + count), 
 					   options, m_encoding, syntax, &err_info);
 	if (err != ONIG_NORMAL) throw regex_error(err, err_info);
 }
@@ -871,7 +873,9 @@ bool regex_search(
 	size_t len = std::distance(first, last);
 
 	// Get pointer to the search target
-	const CharT* start_ptr = (len > 0) ? &(*first) : nullptr;
+	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
+	static CharT empty_char = CharT();
+	const CharT* start_ptr = (len > 0) ? &(*first) : &empty_char;
 	const CharT* end_ptr = start_ptr + len;
 
 	// Cast to Oniguruma pointers
@@ -906,12 +910,16 @@ bool regex_search(
 			int end = region->end[i];
 
 			if (beg != ONIG_REGION_NOTPOS) {
+				// Oniguruma returns byte offsets, convert to character offsets
+				int beg_chars = beg / sizeof(CharT);
+				int end_chars = end / sizeof(CharT);
+
 				// Advance iterators
 				BidirIt sub_start = first;
-				std::advance(sub_start, beg);
+				std::advance(sub_start, beg_chars);
 
 				BidirIt sub_end = first;
-				std::advance(sub_end, end);
+				std::advance(sub_end, end_chars);
 
 				m[i].first = sub_start;
 				m[i].second = sub_end;
@@ -964,7 +972,9 @@ bool regex_match(
 	size_t len = std::distance(first, last);
 
 	// Get pointer to the search target
-	const CharT* start_ptr = (len > 0) ? &(*first) : nullptr;
+	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
+	static CharT empty_char = CharT();
+	const CharT* start_ptr = (len > 0) ? &(*first) : &empty_char;
 	const CharT* end_ptr = start_ptr + len;
 
 	// Cast to Oniguruma pointers
@@ -983,7 +993,8 @@ bool regex_match(
 	if (r >= 0) {
 		// regex_match requires full match with the entire string
 		// Check if the match end position matches the string end
-		if (region->end[0] != (int)len) {
+		// region->end[0] is in bytes, so convert to characters for comparison
+		if (region->end[0] != (int)(len * sizeof(CharT))) {
 			onig_region_free(region, 1);
 			return false;
 		}
@@ -1007,11 +1018,15 @@ bool regex_match(
 			int end = region->end[i];
 
 			if (beg != ONIG_REGION_NOTPOS) {
+				// Oniguruma returns byte offsets, convert to character offsets
+				int beg_chars = beg / sizeof(CharT);
+				int end_chars = end / sizeof(CharT);
+
 				BidirIt sub_start = first;
-				std::advance(sub_start, beg);
+				std::advance(sub_start, beg_chars);
 
 				BidirIt sub_end = first;
-				std::advance(sub_end, end);
+				std::advance(sub_end, end_chars);
 
 				m[i].first = sub_start;
 				m[i].second = sub_end;
@@ -1074,7 +1089,9 @@ OutputIt regex_replace(
 
 	// Input data pointers
 	size_t len = std::distance(first, last);
-	const CharT* start_ptr = (len > 0) ? &(*first) : nullptr;
+	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
+	static CharT empty_char = CharT();
+	const CharT* start_ptr = (len > 0) ? &(*first) : &empty_char;
 	const CharT* end_ptr = start_ptr + len;
 
 	const OnigUChar* u_start = reinterpret_cast<const OnigUChar*>(start_ptr);
@@ -1098,7 +1115,8 @@ OutputIt regex_replace(
 			const OnigUChar* match_finish = u_start + match_end;
 
 			// 1) Output the content from last_output up to match_start (prefix)
-			for (const OnigUChar* p = u_last_output; p < match_start; ++p) {
+			// Iterate by character, not by byte
+			for (const OnigUChar* p = u_last_output; p < match_start; p += sizeof(CharT)) {
 				*out++ = *reinterpret_cast<const CharT*>(p);
 			}
 
@@ -1113,8 +1131,11 @@ OutputIt regex_replace(
 				int beg = region->beg[i];
 				int end = region->end[i];
 				if (beg != ONIG_REGION_NOTPOS) {
-					m[i].first = start_ptr + beg;
-					m[i].second = start_ptr + end;
+					// Oniguruma returns byte offsets, convert to character offsets
+					int beg_chars = beg / sizeof(CharT);
+					int end_chars = end / sizeof(CharT);
+					m[i].first = start_ptr + beg_chars;
+					m[i].second = start_ptr + end_chars;
 					m[i].matched = true;
 				} else {
 					m[i].first = end_ptr;
@@ -1171,7 +1192,8 @@ OutputIt regex_replace(
 	}
 
 	// 5) Output the remainder (u_last_output .. u_end)
-	for (const OnigUChar* p = u_last_output; p < u_end; ++p) {
+	// Iterate by character, not by byte
+	for (const OnigUChar* p = u_last_output; p < u_end; p += sizeof(CharT)) {
 		*out++ = *reinterpret_cast<const CharT*>(p);
 	}
 
