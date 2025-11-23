@@ -34,7 +34,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 add_subdirectory(oniguruma)
 
 # libonigpp.a
-add_library(onigpp STATIC src/onigpp.cpp)
+add_library(onigpp INTERFACE)
 target_include_directories(onigpp INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(onigpp INTERFACE onig)
 
