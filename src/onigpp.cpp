@@ -627,6 +627,18 @@ OutputIt regex_replace(
 	return out;
 }
 
+template <class OutputIt, class BidirIt, class CharT, class Traits>
+OutputIt regex_replace(
+	OutputIt out,
+	BidirIt first, BidirIt last,
+	const basic_regex<CharT, Traits>& e,
+	const CharT* fmt,
+	regex_constants::match_flag_type flags)
+{
+	// Convert the C-string to a basic_string and call the other overload
+	return regex_replace(out, first, last, e, basic_string<CharT>(fmt), flags);
+}
+
 ////////////////////////////////////////////
 // Implementation of regex_iterator
 
@@ -950,5 +962,30 @@ template std::back_insert_iterator<std::basic_string<char32_t>> regex_replace<
 	std::back_insert_iterator<std::basic_string<char32_t>>, u32_iter, u32_iter,
 	const basic_regex<char32_t, regex_traits<char32_t>>&,
 	const basic_string<char32_t>&, regex_constants::match_flag_type);
+
+// regex_replace instantiations with const CharT* format parameter
+template std::back_insert_iterator<std::basic_string<char>> regex_replace<
+	std::back_insert_iterator<std::basic_string<char>>, s_iter, char, regex_traits<char>>(
+	std::back_insert_iterator<std::basic_string<char>>, s_iter, s_iter,
+	const basic_regex<char, regex_traits<char>>&,
+	const char*, regex_constants::match_flag_type);
+
+template std::back_insert_iterator<std::basic_string<wchar_t>> regex_replace<
+	std::back_insert_iterator<std::basic_string<wchar_t>>, ws_iter, wchar_t, regex_traits<wchar_t>>(
+	std::back_insert_iterator<std::basic_string<wchar_t>>, ws_iter, ws_iter,
+	const basic_regex<wchar_t, regex_traits<wchar_t>>&,
+	const wchar_t*, regex_constants::match_flag_type);
+
+template std::back_insert_iterator<std::basic_string<char16_t>> regex_replace<
+	std::back_insert_iterator<std::basic_string<char16_t>>, u16_iter, char16_t, regex_traits<char16_t>>(
+	std::back_insert_iterator<std::basic_string<char16_t>>, u16_iter, u16_iter,
+	const basic_regex<char16_t, regex_traits<char16_t>>&,
+	const char16_t*, regex_constants::match_flag_type);
+
+template std::back_insert_iterator<std::basic_string<char32_t>> regex_replace<
+	std::back_insert_iterator<std::basic_string<char32_t>>, u32_iter, char32_t, regex_traits<char32_t>>(
+	std::back_insert_iterator<std::basic_string<char32_t>>, u32_iter, u32_iter,
+	const basic_regex<char32_t, regex_traits<char32_t>>&,
+	const char32_t*, regex_constants::match_flag_type);
 
 } // namespace onigpp

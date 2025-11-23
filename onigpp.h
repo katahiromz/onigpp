@@ -495,6 +495,14 @@ OutputIt regex_replace(
 	const basic_string<CharT>& fmt,
 	regex_constants::match_flag_type flags = regex_constants::match_default);
 
+template <class OutputIt, class BidirIt, class CharT, class Traits>
+OutputIt regex_replace(
+	OutputIt out,
+	BidirIt first, BidirIt last,
+	const basic_regex<CharT, Traits>& e,
+	const CharT* fmt,
+	regex_constants::match_flag_type flags = regex_constants::match_default);
+
 // Overload taking std::string
 template <class CharT, class Traits>
 inline basic_string<CharT> regex_replace(
