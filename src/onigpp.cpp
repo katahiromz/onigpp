@@ -168,11 +168,12 @@ ONIGPP_HEADER_INLINE void _append_replacement(
 }
 
 // Helper template function specializations for C++11 compatibility
+// Forward declaration of the primary template
 template <class CharT>
-ONIGPP_HEADER_INLINE OnigEncoding _get_default_encoding_from_char_type_impl() {
-	// Generic case: return UTF8 as fallback
-	return ONIG_ENCODING_UTF8;
-}
+ONIGPP_HEADER_INLINE OnigEncoding _get_default_encoding_from_char_type_impl();
+
+// Note: Only the explicit specializations below for char, wchar_t, char16_t, 
+// and char32_t should be used.
 
 template <>
 ONIGPP_HEADER_INLINE OnigEncoding _get_default_encoding_from_char_type_impl<char>() {
