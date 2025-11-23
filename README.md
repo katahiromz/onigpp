@@ -12,8 +12,8 @@ This is a C++11 wrapper of the Oniguruma regular expression engine, with standar
 
 ```bash
 git clone https://github.com/katahiromz/onigpp
-git submodule update --init --recursive
 cd onigpp
+git submodule update --init --recursive
 mkdir build
 cmake -B build
 cmake --build build
