@@ -1302,7 +1302,6 @@ template std::back_insert_iterator<std::basic_string<char32_t>> regex_replace<
 
 // -------------------- Explicit instantiations for non-contiguous iterators --------------------
 // Add explicit instantiations for std::list and std::deque to support non-contiguous containers
-// These are outside the onigpp namespace to properly reference std:: types
 // ---------------------------------------------------------------------------
 
 #include <list>
