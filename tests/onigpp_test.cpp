@@ -236,6 +236,7 @@ void TestReplacement() {
 	sregex re3("\\b"); // Word boundary (zero-width)
 	std::string fmt3 = "-";
 	std::string result3 = op::regex_replace(s3, re3, fmt3);
+	std::cerr << "result3: " << result3 << std::endl;
 	// Expected result: -word-
 	// If it forced the next character output after a zero-width match, it would be "-w-o-r-d-"
 	assert(result3 == "-word-");

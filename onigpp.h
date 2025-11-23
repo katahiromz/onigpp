@@ -320,6 +320,11 @@ protected:
 	const regex_type* m_regex;
 	match_flag_type m_flags;
 
+	// Added: store the original begin iterator of the whole search range so that
+	// onig_search can be called with the correct 'str' (whole begin) and 'start'.
+	// This preserves previous-character context used by \b, \B, etc.
+	BidirIt m_begin;
+
 	// Helper function: search for the next match
 	void do_search(BidirIt first, BidirIt last);
 

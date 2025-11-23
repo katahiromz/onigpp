@@ -203,6 +203,102 @@ OnigEncoding _get_default_encoding_from_char_type() {
 	return ONIG_ENCODING_UTF8;
 }
 
+// This performs search using Oniguruma's str/end/start parameters correctly.
+// whole_first: iterator pointing to the beginning of the entire subject string
+// search_start: iterator where search should begin (may be >= whole_first)
+template <class BidirIt, class Alloc, class CharT, class Traits>
+bool _regex_search_with_context(
+	BidirIt whole_first, BidirIt search_start, BidirIt last,
+	match_results<BidirIt, Alloc>& m,
+	const basic_regex<CharT, Traits>& e,
+	regex_constants::match_flag_type flags)
+{
+	// Get Oniguruma regex object (using accessor hack)
+	OnigRegex reg = regex_access<CharT, Traits>::get(e);
+	if (!reg) return false;
+
+	// Options before search execution
+	OnigOptionType onig_options = 0;
+	if (flags & regex_constants::match_not_bol) onig_options |= ONIG_OPTION_NOTBOL;
+	if (flags & regex_constants::match_not_eol) onig_options |= ONIG_OPTION_NOTEOL;
+
+	// Compute lengths and pointers
+	size_t total_len = std::distance(whole_first, last);
+	size_t search_offset = std::distance(whole_first, search_start);
+
+	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
+	static thread_local CharT empty_char = CharT();
+	const CharT* whole_begin_ptr = (total_len > 0) ? &(*whole_first) : &empty_char;
+	const CharT* end_ptr = whole_begin_ptr + total_len;
+	const CharT* start_ptr = whole_begin_ptr + search_offset;
+
+	const OnigUChar* u_start = reinterpret_cast<const OnigUChar*>(whole_begin_ptr);
+	const OnigUChar* u_end   = reinterpret_cast<const OnigUChar*>(end_ptr);
+	const OnigUChar* u_search_start = reinterpret_cast<const OnigUChar*>(start_ptr);
+	const OnigUChar* u_range = u_end; // Forward search range
+
+	// Allocate OnigRegion
+	OnigRegion* region = onig_region_new();
+	if (!region) throw std::bad_alloc();
+
+	// Execute search: pass whole begin as str, and search_start as start.
+	int r = onig_search(reg, u_start, u_end, u_search_start, u_range, region, onig_options);
+
+	if (r >= 0) {
+		if (flags & regex_constants::match_not_null) {
+			// If match length is zero, treat it as a match failure
+			if (region->beg[0] == region->end[0]) {
+				onig_region_free(region, 1);
+				return false; // Equivalent to ONIG_MISMATCH
+			}
+		}
+
+		// If matched, store results in match_results
+		m.m_str_begin = whole_first;
+		m.m_str_end = last;
+		m.clear();
+		m.resize(region->num_regs);
+
+		for (int i = 0; i < region->num_regs; ++i) {
+			int beg = region->beg[i];
+			int end = region->end[i];
+
+			if (beg != ONIG_REGION_NOTPOS) {
+				int beg_chars = beg / sizeof(CharT);
+				int end_chars = end / sizeof(CharT);
+
+				BidirIt sub_start = whole_first;
+				std::advance(sub_start, beg_chars);
+
+				BidirIt sub_end = whole_first;
+				std::advance(sub_end, end_chars);
+
+				m[i].first = sub_start;
+				m[i].second = sub_end;
+				m[i].matched = true;
+			} else {
+				m[i].first = last;
+				m[i].second = last;
+				m[i].matched = false;
+			}
+		}
+
+		onig_region_free(region, 1);
+		return true;
+	}
+	else if (r == ONIG_MISMATCH) {
+		onig_region_free(region, 1);
+		return false;
+	}
+	else {
+		// On error
+		onig_region_free(region, 1);
+		OnigErrorInfo einfo;
+		std::memset(&einfo, 0, sizeof(einfo));
+		throw regex_error(r, einfo);
+	}
+}
+
 ////////////////////////////////////////////
 // Implementation of basic_regex
 
@@ -284,93 +380,8 @@ bool regex_search(
 	const basic_regex<CharT, Traits>& e,
 	regex_constants::match_flag_type flags)
 {
-	// Get Oniguruma regex object (using accessor hack)
-	OnigRegex reg = regex_access<CharT, Traits>::get(e);
-	if (!reg) return false;
-
-	// Options before search execution
-	OnigOptionType onig_options = 0;
-	// Extract Oniguruma options from match_flag_type
-	if (flags & regex_constants::match_not_bol) onig_options |= ONIG_OPTION_NOTBOL;
-	if (flags & regex_constants::match_not_eol) onig_options |= ONIG_OPTION_NOTEOL;
-
-	// Iterator distance (number of characters)
-	size_t len = std::distance(first, last);
-
-	// Get pointer to the search target
-	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
-	static thread_local CharT empty_char = CharT();
-	const CharT* start_ptr = (len > 0) ? &(*first) : &empty_char;
-	const CharT* end_ptr = start_ptr + len;
-
-	// Cast to Oniguruma pointers
-	const OnigUChar* u_start = reinterpret_cast<const OnigUChar*>(start_ptr);
-	const OnigUChar* u_end   = reinterpret_cast<const OnigUChar*>(end_ptr);
-	const OnigUChar* u_range = u_end; // Forward search range
-
-	// Allocate OnigRegion
-	OnigRegion* region = onig_region_new();
-	if (!region) throw std::bad_alloc();
-
-	// Execute search
-	int r = onig_search(reg, u_start, u_end, u_start, u_range, region, onig_options);
-
-	if (r >= 0) {
-		if (flags & regex_constants::match_not_null) {
-			// If match length is zero, treat it as a match failure
-			if (region->beg[0] == region->end[0]) {
-				onig_region_free(region, 1);
-				return false; // Equivalent to ONIG_MISMATCH
-			}
-		}
-
-		// If matched, store results in match_results
-		m.m_str_begin = first;
-		m.m_str_end = last;
-		m.clear();
-		m.resize(region->num_regs);
-
-		for (int i = 0; i < region->num_regs; ++i) {
-			int beg = region->beg[i];
-			int end = region->end[i];
-
-			if (beg != ONIG_REGION_NOTPOS) {
-				// Oniguruma returns byte offsets, convert to character offsets
-				int beg_chars = beg / sizeof(CharT);
-				int end_chars = end / sizeof(CharT);
-
-				// Advance iterators
-				BidirIt sub_start = first;
-				std::advance(sub_start, beg_chars);
-
-				BidirIt sub_end = first;
-				std::advance(sub_end, end_chars);
-
-				m[i].first = sub_start;
-				m[i].second = sub_end;
-				m[i].matched = true;
-			} else {
-				// Unmatched group
-				m[i].first = last;
-				m[i].second = last;
-				m[i].matched = false;
-			}
-		}
-
-		onig_region_free(region, 1); // 1: Free the region itself too
-		return true;
-	}
-	else if (r == ONIG_MISMATCH) {
-		onig_region_free(region, 1);
-		return false;
-	}
-	else {
-		// On error
-		onig_region_free(region, 1);
-		OnigErrorInfo einfo;
-		std::memset(&einfo, 0, sizeof(einfo));
-		throw regex_error(r, einfo);
-	}
+	// Treat 'first' as both whole_begin and search_start for backward compatibility
+	return _regex_search_with_context(first, first, last, m, e, flags);
 }
 
 ////////////////////////////////////////////
@@ -490,139 +501,73 @@ OutputIt regex_replace(
 	const basic_string<CharT>& fmt,
 	regex_constants::match_flag_type flags)
 {
-	// Get Oniguruma regex object
-	OnigRegex reg = regex_access<CharT, Traits>::get(e);
-	if (!reg) {
-		// If regex object is invalid, output input as is
-		for (auto it = first; it != last; ++it) {
-			*out++ = *it;
+	using iterator_t = regex_iterator<BidirIt, CharT, Traits>;
+
+	BidirIt cur = first;
+	bool first_only = (flags & regex_constants::format_first_only) != 0;
+	bool no_copy = (flags & regex_constants::format_no_copy) != 0;
+	bool literal = (flags & regex_constants::format_literal) != 0;
+
+	// Use regex_iterator to enumerate matches (it already handles zero-width advancement)
+	for (iterator_t it(first, last, e, flags), end; it != end; ++it) {
+		const auto& m = *it; // match_results<BidirIt>
+		// copy text from cur to match start
+		if (!no_copy) {
+			std::copy(cur, m[0].first, out);
 		}
-		return out;
-	}
 
-	// Get encoding
-	OnigEncoding enc = regex_access<CharT, Traits>::get_encoding(e);
-
-	// Search options
-	OnigOptionType onig_options = ONIG_OPTION_NONE;
-
-	// Allocate OnigRegion for repeated searches
-	OnigRegion* region = onig_region_new();
-	if (!region) {
-		throw std::bad_alloc();
-	}
-
-	// Input data pointers
-	size_t len = std::distance(first, last);
-	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
-	static thread_local CharT empty_char = CharT();
-	const CharT* start_ptr = (len > 0) ? &(*first) : &empty_char;
-	const CharT* end_ptr = start_ptr + len;
-
-	const OnigUChar* u_start = reinterpret_cast<const OnigUChar*>(start_ptr);
-	const OnigUChar* u_end   = reinterpret_cast<const OnigUChar*>(end_ptr);
-
-	// last_output: End position already output (initially the beginning)
-	const OnigUChar* u_last_output = u_start;
-	// search_pos: Position to start the next onig_search from
-	const OnigUChar* u_search = u_start;
-
-	bool global_replace = !(flags & regex_constants::format_first_only);
-
-	while (u_search <= u_end) {
-		// Execute search (using u_search as the starting position)
-		int r = onig_search(reg, u_start, u_end, u_search, u_end, region, onig_options);
-
-		if (r >= 0) {
-			int match_beg = region->beg[0];
-			int match_end = region->end[0];
-			const OnigUChar* match_start = u_start + match_beg;
-			const OnigUChar* match_finish = u_start + match_end;
-
-			// 1) Output the content from last_output up to match_start (prefix)
-			// Iterate by character, not by byte
-			for (const OnigUChar* p = u_last_output; p < match_start; p += sizeof(CharT)) {
-				*out++ = *reinterpret_cast<const CharT*>(p);
-			}
-
-			// 2) Convert to match_results and expand replacement
-			match_results<const CharT*> m;
-			m.m_str_begin = start_ptr;
-			m.m_str_end = end_ptr;
-
-			m.resize(region->num_regs);
-
-			for (int i = 0; i < region->num_regs; ++i) {
-				int beg = region->beg[i];
-				int end = region->end[i];
-				if (beg != ONIG_REGION_NOTPOS) {
-					// Oniguruma returns byte offsets, convert to character offsets
-					int beg_chars = beg / sizeof(CharT);
-					int end_chars = end / sizeof(CharT);
-					m[i].first = start_ptr + beg_chars;
-					m[i].second = start_ptr + end_chars;
-					m[i].matched = true;
+		// produce replacement for this match
+		if (literal) {
+			std::copy(fmt.begin(), fmt.end(), out);
+		} else {
+			for (size_t i = 0; i < fmt.size(); ++i) {
+				CharT c = fmt[i];
+				if (c == CharT('$') && i + 1 < fmt.size()) {
+					CharT nx = fmt[i + 1];
+					if (nx == CharT('$')) {
+						*out++ = CharT('$'); ++i;
+					} else if (nx == CharT('&')) {
+						std::copy(m[0].first, m[0].second, out); ++i;
+					} else if (nx == CharT('`')) {
+						std::copy(first, m[0].first, out); ++i;
+					} else if (nx == CharT('\'')) {
+						std::copy(m[0].second, last, out); ++i;
+					} else if (std::isdigit(static_cast<unsigned char>(nx))) {
+						int num = 0;
+						size_t j = i + 1;
+						while (j < fmt.size() && std::isdigit(static_cast<unsigned char>(fmt[j]))) {
+							num = num * 10 + (fmt[j] - CharT('0'));
+							++j;
+						}
+						if (num >= 0 && static_cast<size_t>(num) < m.size()) {
+							std::copy(m[num].first, m[num].second, out);
+						}
+						i = j - 1;
+					} else {
+						*out++ = CharT('$');
+					}
 				} else {
-					m[i].first = end_ptr;
-					m[i].second = end_ptr;
-					m[i].matched = false;
+					*out++ = c;
 				}
 			}
-
-			basic_string<CharT> replacement_str;
-			_append_replacement(replacement_str, fmt, m, e);
-			for (CharT c : replacement_str) *out++ = c;
-
-			// 3) Determine next position
-			// The end of output is the end of the match (normal match)
-			// For zero-width match, the end of output remains match_start (no change)
-			if (match_beg != match_end) {
-				// For normal match, move the end of output to the match end
-				u_last_output = match_finish;
-				// Next search starts from the match end position
-				u_search = match_finish;
-			} else {
-				// Zero-width match: End of output remains the same (match_start)
-				u_last_output = match_start;
-				// Next search start position is advanced by 1 character (considering encoding)
-				if (match_start < u_end) {
-					int char_len = enc ? onig_enc_len(enc, match_start, u_end) : 1;
-					if (char_len < 1) char_len = 1;
-					u_search = match_start + char_len;
-				} else {
-					// If at the end of the string, terminate
-					u_search = u_end;
-					// set u_last_output = u_end in case we need to copy suffix
-					u_last_output = u_end;
-					break;
-				}
-			}
-
-			if (!global_replace) {
-				// If not global replace, output the rest and terminate
-				break;
-			}
 		}
-		else if (r == ONIG_MISMATCH) {
-			// No match found -> Output the rest and terminate
-			break;
-		}
-		else {
-			// Error
-			onig_region_free(region, 1);
-			OnigErrorInfo einfo;
-			std::memset(&einfo, 0, sizeof(einfo));
-			throw regex_error(r, einfo);
+
+		// move cur to end of matched region
+		cur = m[0].second;
+
+		// If first_only requested, copy rest and finish
+		if (first_only) {
+			if (!no_copy) {
+				std::copy(cur, last, out);
+			}
+			return out;
 		}
 	}
 
-	// 5) Output the remainder (u_last_output .. u_end)
-	// Iterate by character, not by byte
-	for (const OnigUChar* p = u_last_output; p < u_end; p += sizeof(CharT)) {
-		*out++ = *reinterpret_cast<const CharT*>(p);
+	// No more matches: copy tail if required
+	if (!no_copy) {
+		std::copy(cur, last, out);
 	}
-
-	onig_region_free(region, 1);
 	return out;
 }
 
@@ -632,7 +577,7 @@ OutputIt regex_replace(
 template <class BidirIt, class CharT, class Traits>
 void regex_iterator<BidirIt, CharT, Traits>::do_search(BidirIt first, BidirIt last) {
 	// If no match found, or end iterator reached
-	if (first == last || !regex_search(first, last, m_results, *m_regex, m_flags)) {
+	if (first == last || !_regex_search_with_context(m_begin, first, last, m_results, *m_regex, m_flags)) {
 		// Invalidate as end iterator
 		m_regex = nullptr;
 		m_results.clear();
@@ -644,7 +589,7 @@ regex_iterator<BidirIt, CharT, Traits>::regex_iterator(
 	BidirIt first, BidirIt last,
 	const regex_type& re,
 	match_flag_type flags)
-	: m_end(last), m_regex(&re), m_flags(flags)
+	: m_begin(first), m_end(last), m_regex(&re), m_flags(flags)
 {
 	// Execute the first search
 	do_search(first, last);
@@ -903,53 +848,53 @@ template class regex_token_iterator<u32_iter, char32_t, regex_traits<char32_t>>;
 
 // regex_search instantiations
 template bool regex_search<s_iter, s_sub_alloc, char, regex_traits<char>>(
-    s_iter, s_iter, match_results<s_iter, s_sub_alloc>&, const basic_regex<char, regex_traits<char>>&, regex_constants::match_flag_type);
+	s_iter, s_iter, match_results<s_iter, s_sub_alloc>&, const basic_regex<char, regex_traits<char>>&, regex_constants::match_flag_type);
 
 template bool regex_search<ws_iter, ws_sub_alloc, wchar_t, regex_traits<wchar_t>>(
-    ws_iter, ws_iter, match_results<ws_iter, ws_sub_alloc>&, const basic_regex<wchar_t, regex_traits<wchar_t>>&, regex_constants::match_flag_type);
+	ws_iter, ws_iter, match_results<ws_iter, ws_sub_alloc>&, const basic_regex<wchar_t, regex_traits<wchar_t>>&, regex_constants::match_flag_type);
 
 template bool regex_search<u16_iter, u16_sub_alloc, char16_t, regex_traits<char16_t>>(
-    u16_iter, u16_iter, match_results<u16_iter, u16_sub_alloc>&, const basic_regex<char16_t, regex_traits<char16_t>>&, regex_constants::match_flag_type);
+	u16_iter, u16_iter, match_results<u16_iter, u16_sub_alloc>&, const basic_regex<char16_t, regex_traits<char16_t>>&, regex_constants::match_flag_type);
 
 template bool regex_search<u32_iter, u32_sub_alloc, char32_t, regex_traits<char32_t>>(
-    u32_iter, u32_iter, match_results<u32_iter, u32_sub_alloc>&, const basic_regex<char32_t, regex_traits<char32_t>>&, regex_constants::match_flag_type);
+	u32_iter, u32_iter, match_results<u32_iter, u32_sub_alloc>&, const basic_regex<char32_t, regex_traits<char32_t>>&, regex_constants::match_flag_type);
 
 // regex_match instantiations
 template bool regex_match<s_iter, s_sub_alloc, char, regex_traits<char>>(
-    s_iter, s_iter, match_results<s_iter, s_sub_alloc>&, const basic_regex<char, regex_traits<char>>&, regex_constants::match_flag_type);
+	s_iter, s_iter, match_results<s_iter, s_sub_alloc>&, const basic_regex<char, regex_traits<char>>&, regex_constants::match_flag_type);
 
 template bool regex_match<ws_iter, ws_sub_alloc, wchar_t, regex_traits<wchar_t>>(
-    ws_iter, ws_iter, match_results<ws_iter, ws_sub_alloc>&, const basic_regex<wchar_t, regex_traits<wchar_t>>&, regex_constants::match_flag_type);
+	ws_iter, ws_iter, match_results<ws_iter, ws_sub_alloc>&, const basic_regex<wchar_t, regex_traits<wchar_t>>&, regex_constants::match_flag_type);
 
 template bool regex_match<u16_iter, u16_sub_alloc, char16_t, regex_traits<char16_t>>(
-    u16_iter, u16_iter, match_results<u16_iter, u16_sub_alloc>&, const basic_regex<char16_t, regex_traits<char16_t>>&, regex_constants::match_flag_type);
+	u16_iter, u16_iter, match_results<u16_iter, u16_sub_alloc>&, const basic_regex<char16_t, regex_traits<char16_t>>&, regex_constants::match_flag_type);
 
 template bool regex_match<u32_iter, u32_sub_alloc, char32_t, regex_traits<char32_t>>(
-    u32_iter, u32_iter, match_results<u32_iter, u32_sub_alloc>&, const basic_regex<char32_t, regex_traits<char32_t>>&, regex_constants::match_flag_type);
+	u32_iter, u32_iter, match_results<u32_iter, u32_sub_alloc>&, const basic_regex<char32_t, regex_traits<char32_t>>&, regex_constants::match_flag_type);
 
 // regex_replace instantiations (OutputIt = back_insert_iterator<std::basic_string<CharT>>)
 template std::back_insert_iterator<std::basic_string<char>> regex_replace<
-    std::back_insert_iterator<std::basic_string<char>>, s_iter, char, regex_traits<char>>(
-    std::back_insert_iterator<std::basic_string<char>>, s_iter, s_iter,
-    const basic_regex<char, regex_traits<char>>&,
-    const basic_string<char>&, regex_constants::match_flag_type);
+	std::back_insert_iterator<std::basic_string<char>>, s_iter, char, regex_traits<char>>(
+	std::back_insert_iterator<std::basic_string<char>>, s_iter, s_iter,
+	const basic_regex<char, regex_traits<char>>&,
+	const basic_string<char>&, regex_constants::match_flag_type);
 
 template std::back_insert_iterator<std::basic_string<wchar_t>> regex_replace<
-    std::back_insert_iterator<std::basic_string<wchar_t>>, ws_iter, wchar_t, regex_traits<wchar_t>>(
-    std::back_insert_iterator<std::basic_string<wchar_t>>, ws_iter, ws_iter,
-    const basic_regex<wchar_t, regex_traits<wchar_t>>&,
-    const basic_string<wchar_t>&, regex_constants::match_flag_type);
+	std::back_insert_iterator<std::basic_string<wchar_t>>, ws_iter, wchar_t, regex_traits<wchar_t>>(
+	std::back_insert_iterator<std::basic_string<wchar_t>>, ws_iter, ws_iter,
+	const basic_regex<wchar_t, regex_traits<wchar_t>>&,
+	const basic_string<wchar_t>&, regex_constants::match_flag_type);
 
 template std::back_insert_iterator<std::basic_string<char16_t>> regex_replace<
-    std::back_insert_iterator<std::basic_string<char16_t>>, u16_iter, char16_t, regex_traits<char16_t>>(
-    std::back_insert_iterator<std::basic_string<char16_t>>, u16_iter, u16_iter,
-    const basic_regex<char16_t, regex_traits<char16_t>>&,
-    const basic_string<char16_t>&, regex_constants::match_flag_type);
+	std::back_insert_iterator<std::basic_string<char16_t>>, u16_iter, char16_t, regex_traits<char16_t>>(
+	std::back_insert_iterator<std::basic_string<char16_t>>, u16_iter, u16_iter,
+	const basic_regex<char16_t, regex_traits<char16_t>>&,
+	const basic_string<char16_t>&, regex_constants::match_flag_type);
 
 template std::back_insert_iterator<std::basic_string<char32_t>> regex_replace<
-    std::back_insert_iterator<std::basic_string<char32_t>>, u32_iter, char32_t, regex_traits<char32_t>>(
-    std::back_insert_iterator<std::basic_string<char32_t>>, u32_iter, u32_iter,
-    const basic_regex<char32_t, regex_traits<char32_t>>&,
-    const basic_string<char32_t>&, regex_constants::match_flag_type);
+	std::back_insert_iterator<std::basic_string<char32_t>>, u32_iter, char32_t, regex_traits<char32_t>>(
+	std::back_insert_iterator<std::basic_string<char32_t>>, u32_iter, u32_iter,
+	const basic_regex<char32_t, regex_traits<char32_t>>&,
+	const basic_string<char32_t>&, regex_constants::match_flag_type);
 
 } // namespace onigpp
