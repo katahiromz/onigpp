@@ -239,6 +239,18 @@ public:
 		: basic_regex(s, Traits::length(s), f, enc) { }
 	basic_regex(const CharT* s, size_type count, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr);
 	basic_regex(const string_type& s, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr);
+	
+	// Iterator-range constructor
+	template <class BidiIterator>
+	basic_regex(BidiIterator first, BidiIterator last, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr, const locale_type& loc = std::locale())
+		: m_regex(nullptr), m_encoding(enc), m_flags(f), m_pattern(), m_locale(loc)
+	{
+		// Build a string_type from iterator range and delegate to existing ctor logic
+		string_type s(first, last);
+		self_type tmp(s.c_str(), s.length(), f, enc);
+		swap(tmp);
+	}
+	
 	basic_regex(const self_type& other);
 	basic_regex(self_type&& other) noexcept;
 	virtual ~basic_regex();
@@ -269,6 +281,16 @@ public:
 	self_type& assign(const string_type& str, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr) {
 		if (!enc) enc = m_encoding;
 		self_type tmp(str.c_str(), str.length(), f, enc);
+		swap(tmp);
+		return *this;
+	}
+	
+	// Iterator-range assign
+	template <class BidiIterator>
+	self_type& assign(BidiIterator first, BidiIterator last, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr) {
+		if (!enc) enc = m_encoding;
+		string_type s(first, last);
+		self_type tmp(s.c_str(), s.length(), f, enc);
 		swap(tmp);
 		return *this;
 	}

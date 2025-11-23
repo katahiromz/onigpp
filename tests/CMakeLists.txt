@@ -33,3 +33,9 @@ add_executable(ecmascript_compat_test ecmascript_compat_test.cpp)
 target_compile_definitions(ecmascript_compat_test PRIVATE "")
 target_include_directories(ecmascript_compat_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ecmascript_compat_test PRIVATE onigpp)
+
+# iterator_range_ctor_test.exe
+add_executable(iterator_range_ctor_test iterator_range_ctor_test.cpp)
+target_compile_definitions(iterator_range_ctor_test PRIVATE "")
+target_include_directories(iterator_range_ctor_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(iterator_range_ctor_test PRIVATE onigpp)
