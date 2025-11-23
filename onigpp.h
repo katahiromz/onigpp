@@ -33,6 +33,7 @@ using basic_string = std::basic_string<CharT>;
 using string = basic_string<char>;
 using wstring = basic_string<wchar_t>;
 using u16string = basic_string<char16_t>;
+using u32string = basic_string<char32_t>;
 
 ////////////////////////////////////////////
 // onigpp::regex_constants
@@ -128,9 +129,11 @@ public:
 typedef sub_match<const char*> csub_match;
 typedef sub_match<const wchar_t*> wcsub_match;
 typedef sub_match<const char16_t*> u16csub_match;
+typedef sub_match<const char32_t*> u32csub_match;
 typedef sub_match<string::const_iterator> ssub_match;
 typedef sub_match<wstring::const_iterator> wssub_match;
 typedef sub_match<u16string::const_iterator> u16ssub_match;
+typedef sub_match<u32string::const_iterator> u32ssub_match;
 
 ////////////////////////////////////////////
 // onigpp::regex_traits<CharT>
@@ -267,6 +270,7 @@ protected:
 typedef basic_regex<char> regex;
 typedef basic_regex<wchar_t> wregex;
 typedef basic_regex<char16_t> u16regex;
+typedef basic_regex<char32_t> u32regex;
 
 ////////////////////////////////////////////
 // onigpp::regex_iterator
@@ -318,10 +322,12 @@ public:
 using cregex_iterator = regex_iterator<const char*>;
 using wcregex_iterator = regex_iterator<const wchar_t*>;
 using u16cregex_iterator = regex_iterator<const char16_t*>;
+using u32cregex_iterator = regex_iterator<const char32_t*>;
 
 using sregex_iterator = regex_iterator<string::const_iterator, char>;
 using wsregex_iterator = regex_iterator<wstring::const_iterator, wchar_t>;
 using u16sregex_iterator = regex_iterator<u16string::const_iterator, char16_t>;
+using u32sregex_iterator = regex_iterator<u32string::const_iterator, char32_t>;
 
 ////////////////////////////////////////////
 // onigpp::regex_token_iterator
