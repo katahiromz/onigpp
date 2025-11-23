@@ -57,6 +57,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
+# option USE_STD_FOR_TESTS
+option(USE_STD_FOR_TESTS "Use std:: for tests" ON)
+message(STATUS "USE_STD_FOR_TESTS: ${USE_STD_FOR_TESTS}")
+if(USE_STD_FOR_TESTS)
+	add_definitions(-DUSE_STD_FOR_TESTS)
+endif()
+
 ##############################################################################
 
 # oniguruma

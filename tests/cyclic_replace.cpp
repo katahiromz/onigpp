@@ -17,8 +17,6 @@
 #include <fcntl.h>
 #endif
 
-//#define USE_STD_FOR_TESTS
-
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
 	namespace op = std;
@@ -163,10 +161,8 @@ void test_cyclic() {
 int main() {
 	// --- Measures to avoid garbled characters on Windows consoles ---
 #ifdef _WIN32
-	// Switch to UTF-16 mode
-	_setmode(_fileno(stdout), _O_U16TEXT);
-	_setmode(_fileno(stderr), _O_U16TEXT);
-	_setmode(_fileno(stdin), _O_U16TEXT);
+	// Switch to UTF-8 mode
+	_setmode(_fileno(stdout), _O_U8TEXT);
 	// Ensure console uses UTF-8 code page for interoperability
 	SetConsoleOutputCP(CP_UTF8);
 #else
@@ -174,8 +170,10 @@ int main() {
 	std::setlocale(LC_ALL, "");
 #endif
 
-	// Oniguruma library initialization (required)
-	onigpp::auto_init auto_init;
+#ifndef USE_STD_FOR_TESTS
+	// Oniguruma initialization
+	op::auto_init init;
+#endif
 
 	// Do tests
 	test_cyclic();

@@ -17,8 +17,6 @@
 #include <fcntl.h>
 #endif
 
-//#define USE_STD_FOR_TESTS
-
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
 	namespace op = std;
@@ -42,15 +40,15 @@ using sregex_token_iterator = op::regex_token_iterator<std::string::const_iterat
 	try {
 
 #define TEST_CASE_END(name) \
-	std::cerr << "✅ " << (name) << " PASSED.\n"; \
+	std::cout << "✅ " << (name) << " PASSED.\n"; \
 	} catch (const op::regex_error& e) { \
-		std::cerr << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
+		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
-		std::cerr << "❌ " << (name) << " FAILED with std::exception: " << e.what() << "\n"; \
+		std::cout << "❌ " << (name) << " FAILED with std::exception: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (...) { \
-		std::cerr << "❌ " << (name) << " FAILED with unknown exception.\n"; \
+		std::cout << "❌ " << (name) << " FAILED with unknown exception.\n"; \
 		assert(false); \
 	}
 
@@ -83,7 +81,9 @@ void TestCoreFunctions() {
 	std::string full_text = "start end";
 	sregex re_full("start\\s+end");
 	smatch m_full;
+#ifndef USE_STD_FOR_TESTS
 	assert(re_full.pattern() == std::string("start\\s+end"));
+#endif
 	assert(op::regex_match(full_text, m_full, re_full));
 	assert(m_full[0].str() == full_text);
 
@@ -153,7 +153,7 @@ void TestIterators() {
 	sregex re("[\\.\\,\\;]"); // Delimiter
 
 	// 3.1. Testing regex_iterator (Normal match)
-	std::cerr << "  3.1. regex_iterator:\n";
+	std::cout << "  3.1. regex_iterator:\n";
 	sregex re_match("\\w+"); // Word match
 	std::vector<std::string> words;
 	for (sregex_iterator it(text.begin(), text.end(), re_match), end; it != end; ++it) {
@@ -164,7 +164,7 @@ void TestIterators() {
 	assert(words[3] == "date");
 
 	// 3.2. Testing regex_iterator (Zero-Width match avoidance)
-	std::cerr << "  3.2. regex_iterator (Zero-Width):\n";
+	std::cout << "  3.2. regex_iterator (Zero-Width):\n";
 	std::string z_text = "abc";
 	sregex re_zero("\\b"); // Word boundary (zero-width)
 	std::vector<std::string> boundaries;
@@ -180,7 +180,7 @@ void TestIterators() {
 
 
 	// 3.3. Testing regex_token_iterator (-1: Non-matching part)
-	std::cerr << "  3.3. regex_token_iterator (Delimiter):\n";
+	std::cout << "  3.3. regex_token_iterator (Delimiter):\n";
 	std::vector<std::string> tokens;
 	// subs = {-1}: Get parts that are NOT the delimiter as tokens
 	sregex_token_iterator token_it(text.begin(), text.end(), re, {-1});
@@ -195,7 +195,7 @@ void TestIterators() {
 	assert(tokens[3] == "date");
 
 	// 3.4. Testing regex_token_iterator (Capture Groups)
-	std::cerr << "  3.4. regex_token_iterator (Capture Groups):\n";
+	std::cout << "  3.4. regex_token_iterator (Capture Groups):\n";
 	std::string data_list = "Item1:ValueA,Item2:ValueB";
 	sregex re_groups("(\\w+):(\\w+)");
 	std::vector<std::string> values;
@@ -238,7 +238,7 @@ void TestReplacement() {
 	sregex re3("\\b"); // Word boundary (zero-width)
 	std::string fmt3 = "-";
 	std::string result3 = op::regex_replace(s3, re3, fmt3);
-	std::cerr << "result3: " << result3 << std::endl;
+	std::cout << "result3: " << result3 << std::endl;
 	// Expected result: -word-
 	// If it forced the next character output after a zero-width match, it would be "-w-o-r-d-"
 	assert(result3 == "-word-");
@@ -290,7 +290,7 @@ void TestSpecialReplacementPatterns() {
 		std::string expected = "Start Found: ABC-123-DEF. Next Word is ABC. End";
 		std::string result = op::regex_replace(text, re, fmt);
 		assert(result == expected);
-		std::cerr << "  $&: OK\n";
+		std::cout << "  $&: OK\n";
 	}
 
 	// --------------------------------------------------
@@ -303,7 +303,7 @@ void TestSpecialReplacementPatterns() {
 		std::string expected = "Start Prefix is: Start . End"; 
 		std::string result = op::regex_replace(text, re, fmt);
 		assert(result == expected);
-		std::cerr << "  $`: OK\n";
+		std::cout << "  $`: OK\n";
 	}
 
 	// --------------------------------------------------
@@ -316,7 +316,7 @@ void TestSpecialReplacementPatterns() {
 		std::string expected = "Start Literal is $, group is ABC. End";
 		std::string result = op::regex_replace(text, re, fmt);
 		assert(result == expected);
-		std::cerr << "  $$: OK\n";
+		std::cout << "  $$: OK\n";
 	}
 
 	TEST_CASE_END("TestSpecialReplacementPatterns")
@@ -358,12 +358,12 @@ void TestEncodingAndError() {
 	assert(m_sjis.str() == pattern_sjis);
 
 	// 5.3. Error Handling Test (Invalid regular expression pattern)
-	std::cerr << "  5.3. Error Handling:\n";
+	std::cout << "  5.3. Error Handling:\n";
 	bool caught_error = false;
 	try {
 		sregex re_invalid("[a-"); // Unclosed character class
 	} catch (const op::regex_error& e) {
-		std::cerr << "  (Caught expected error: " << e.what() << ")\n";
+		std::cout << "  (Caught expected error: " << e.what() << ")\n";
 		caught_error = true;
 	}
 	assert(caught_error);
@@ -387,20 +387,23 @@ void TestSyntaxSelection() {
 	TEST_CASE("TestSyntaxSelection")
 
 	// 6.1. POSIX Basic: '+' is literal unless escaped
-	std::cerr << "  6.1. POSIX Basic Syntax:\n";
+	std::cout << "  6.1. POSIX Basic Syntax:\n";
 	sregex re_basic(std::string("a\\+b"), op::regex_constants::basic);
 	smatch m_basic;
-	assert(op::regex_search(std::string("a+b"), m_basic, re_basic));
+	std::string str1 = "a+b";
+	assert(op::regex_search(str1, m_basic, re_basic));
 	assert(m_basic[0].str() == "a+b");
-	std::cerr << "  POSIX Basic matched 'a+b' as literal\n";
+	std::cout << "  POSIX Basic matched 'a+b' as literal\n";
 
 	// 6.2. POSIX Extended: '+' is a quantifier
-	std::cerr << "  6.2. POSIX Extended Syntax:\n";
-	sregex re_ext(std::string("ab+"), op::regex_constants::extended);
+	std::cout << "  6.2. POSIX Extended Syntax:\n";
+	std::string str2 = "ab+";
+	sregex re_ext(str2, op::regex_constants::extended);
 	smatch m_ext;
-	assert(op::regex_search(std::string("abb"), m_ext, re_ext));
+	std::string str3 = "abb";
+	assert(op::regex_search(str3, m_ext, re_ext));
 	assert(m_ext[0].str() == "abb");
-	std::cerr << "  POSIX Extended matched 'abb' with '+' as quantifier\n";
+	std::cout << "  POSIX Extended matched 'abb' with '+' as quantifier\n";
 
 	TEST_CASE_END("TestSyntaxSelection")
 }
@@ -413,69 +416,83 @@ void TestPOSIXClasses() {
 	TEST_CASE("TestPOSIXClasses")
 
 	// 7.1. Test [:digit:] POSIX class
-	std::cerr << "  7.1. POSIX [:digit:] class:\n";
+	std::cout << "  7.1. POSIX [:digit:] class:\n";
 	sregex re_digit(std::string("[[:digit:]]+"), op::regex_constants::extended);
 	smatch m_digit;
-	assert(op::regex_search(std::string("abc12345def"), m_digit, re_digit));
+	std::string str1 = "abc12345def";
+	assert(op::regex_search(str1, m_digit, re_digit));
 	assert(m_digit[0].str() == "12345");
-	std::cerr << "  [:digit:] matched '12345'\n";
+	std::cout << "  [:digit:] matched '12345'\n";
 	
 	// 7.2. Test [:alpha:] POSIX class
-	std::cerr << "  7.2. POSIX [:alpha:] class:\n";
-	sregex re_alpha(std::string("[[:alpha:]]+"), op::regex_constants::extended);
+	std::cout << "  7.2. POSIX [:alpha:] class:\n";
+	std::string str2 = "[[:alpha:]]+";
+	sregex re_alpha(str2, op::regex_constants::extended);
 	smatch m_alpha;
-	assert(op::regex_search(std::string("123abc456"), m_alpha, re_alpha));
+	std::string str3 = "123abc456";
+	assert(op::regex_search(str3, m_alpha, re_alpha));
 	assert(m_alpha[0].str() == "abc");
-	std::cerr << "  [:alpha:] matched 'abc'\n";
+	std::cout << "  [:alpha:] matched 'abc'\n";
 	
 	// 7.3. Test [:alnum:] POSIX class
-	std::cerr << "  7.3. POSIX [:alnum:] class:\n";
-	sregex re_alnum(std::string("[[:alnum:]]+"), op::regex_constants::extended);
+	std::cout << "  7.3. POSIX [:alnum:] class:\n";
+	std::string str4 = "[[:alnum:]]+";
+	sregex re_alnum(str4, op::regex_constants::extended);
 	smatch m_alnum;
-	assert(op::regex_search(std::string("!@#abc123$%^"), m_alnum, re_alnum));
+	std::string str5 ="!@#abc123$%^";
+	assert(op::regex_search(str5, m_alnum, re_alnum));
 	assert(m_alnum[0].str() == "abc123");
-	std::cerr << "  [:alnum:] matched 'abc123'\n";
+	std::cout << "  [:alnum:] matched 'abc123'\n";
 	
 	// 7.4. Test [:space:] POSIX class
-	std::cerr << "  7.4. POSIX [:space:] class:\n";
+	std::cout << "  7.4. POSIX [:space:] class:\n";
 	sregex re_space(std::string("[[:space:]]+"), op::regex_constants::extended);
 	smatch m_space;
-	assert(op::regex_search(std::string("hello   world"), m_space, re_space));
+	std::string str6 = "hello   world";
+	assert(op::regex_search(str6, m_space, re_space));
 	assert(m_space[0].str() == "   ");
-	std::cerr << "  [:space:] matched three spaces\n";
+	std::cout << "  [:space:] matched three spaces\n";
 	
 	// 7.5. Test [:upper:] POSIX class
-	std::cerr << "  7.5. POSIX [:upper:] class:\n";
-	sregex re_upper(std::string("[[:upper:]]+"), op::regex_constants::extended);
+	std::cout << "  7.5. POSIX [:upper:] class:\n";
+	std::string str7 = "[[:upper:]]+";
+	sregex re_upper(str7, op::regex_constants::extended);
 	smatch m_upper;
-	assert(op::regex_search(std::string("abcDEFghi"), m_upper, re_upper));
+	std::string str8 = "abcDEFghi";
+	assert(op::regex_search(str8, m_upper, re_upper));
 	assert(m_upper[0].str() == "DEF");
-	std::cerr << "  [:upper:] matched 'DEF'\n";
+	std::cout << "  [:upper:] matched 'DEF'\n";
 	
 	// 7.6. Test [:lower:] POSIX class
-	std::cerr << "  7.6. POSIX [:lower:] class:\n";
-	sregex re_lower(std::string("[[:lower:]]+"), op::regex_constants::extended);
+	std::cout << "  7.6. POSIX [:lower:] class:\n";
+	std::string str9 = "[[:lower:]]+";
+	sregex re_lower(str9, op::regex_constants::extended);
 	smatch m_lower;
-	assert(op::regex_search(std::string("ABCdefGHI"), m_lower, re_lower));
+	std::string str10 = "ABCdefGHI";
+	assert(op::regex_search(str10, m_lower, re_lower));
 	assert(m_lower[0].str() == "def");
-	std::cerr << "  [:lower:] matched 'def'\n";
+	std::cout << "  [:lower:] matched 'def'\n";
 	
 	// 7.7. Test [:punct:] POSIX class
-	std::cerr << "  7.7. POSIX [:punct:] class:\n";
-	sregex re_punct(std::string("[[:punct:]]+"), op::regex_constants::extended);
+	std::cout << "  7.7. POSIX [:punct:] class:\n";
+	std::string str11 = "[[:punct:]]+";
+	sregex re_punct(str11, op::regex_constants::extended);
 	smatch m_punct;
-	assert(op::regex_search(std::string("hello!@#world"), m_punct, re_punct));
+	std::string str12 = "hello!@#world";
+	assert(op::regex_search(str12, m_punct, re_punct));
 	// Match should contain punctuation characters
 	assert(m_punct[0].matched);
-	std::cerr << "  [:punct:] matched punctuation\n";
+	std::cout << "  [:punct:] matched punctuation\n";
 	
 	// 7.8. Test [:xdigit:] POSIX class
-	std::cerr << "  7.8. POSIX [:xdigit:] class:\n";
-	sregex re_xdigit(std::string("[[:xdigit:]]+"), op::regex_constants::extended);
+	std::cout << "  7.8. POSIX [:xdigit:] class:\n";
+	std::string str13 = "[[:xdigit:]]+";
+	sregex re_xdigit(str13, op::regex_constants::extended);
 	smatch m_xdigit;
-	assert(op::regex_search(std::string("xyz1A2FGzz"), m_xdigit, re_xdigit));
+	std::string str14 = "xyz1A2FGzz";
+	assert(op::regex_search(str14, m_xdigit, re_xdigit));
 	assert(m_xdigit[0].str() == "1A2F");
-	std::cerr << "  [:xdigit:] matched '1A2F'\n";
+	std::cout << "  [:xdigit:] matched '1A2F'\n";
 
 	TEST_CASE_END("TestPOSIXClasses")
 }
@@ -485,21 +502,25 @@ void TestPOSIXClasses() {
 // =================================================================
 
 int main() {
-	// --- Measures against garbled or non-displaying characters on Windows ---
+	// --- Measures to avoid garbled characters on Windows consoles ---
 #ifdef _WIN32
-	// UTF-8 Code Page
+	// Switch to UTF-8 mode
+	//_setmode(_fileno(stdout), _O_U8TEXT);
+	// Ensure console uses UTF-8 code page for interoperability
 	SetConsoleOutputCP(CP_UTF8);
 #else
-	// For Linux/Mac, standard locale setting is usually sufficient
+	// For Linux/Mac, setting the locale is usually sufficient
 	std::setlocale(LC_ALL, "");
 #endif
 
-	// Oniguruma library initialization (required)
-	onigpp::auto_init auto_init;
+#ifndef USE_STD_FOR_TESTS
+	// Oniguruma initialization
+	op::auto_init init;
+#endif
 
-	std::cerr << "========================================================\n";
-	std::cerr << " Starting onigpp.h Comprehensive Test Suite\n";
-	std::cerr << "========================================================\n";
+	std::cout << "========================================================\n";
+	std::cout << " Starting onigpp.h Comprehensive Test Suite\n";
+	std::cout << "========================================================\n";
 
 	TestCoreFunctions();
 	TestResourceManagement();
@@ -510,9 +531,9 @@ int main() {
 	TestSyntaxSelection();
 	TestPOSIXClasses();
 
-	std::cerr << "\n========================================================\n";
-	std::cerr << "✨ All tests succeeded.\n";
-	std::cerr << "========================================================\n";
+	std::cout << "\n========================================================\n";
+	std::cout << "✨ All tests succeeded.\n";
+	std::cout << "========================================================\n";
 
 	return 0;
 }
