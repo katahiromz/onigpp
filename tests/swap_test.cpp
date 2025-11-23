@@ -75,11 +75,7 @@ void TestNonMemberSwap() {
 	assert(m2[1].str() == "abc");
 
 	// Perform swap using non-member function
-#ifndef USE_STD_FOR_TESTS
-	onigpp::swap(re1, re2);
-#else
-	std::swap(re1, re2);
-#endif
+	op::swap(re1, re2);
 
 	// Test re1 after swap (should now have pattern2)
 	smatch m3;
