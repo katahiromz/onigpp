@@ -36,10 +36,9 @@ struct auto_init {
 };
 
 ////////////////////////////////////////////
-// onigpp::size_t
+// onigpp::size_type
 
-using size_t = std::size_t;
-using size_type = size_t;
+using size_type = std::size_t;
 
 ////////////////////////////////////////////
 // onigpp::basic_string
@@ -230,7 +229,7 @@ public:
 	basic_regex() : m_regex(nullptr), m_encoding(nullptr), m_flags(regex_constants::normal) { }
 	explicit basic_regex(const CharT* s, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr)
 		: basic_regex(s, Traits::length(s), f, enc) { }
-	basic_regex(const CharT* s, size_t count, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr);
+	basic_regex(const CharT* s, size_type count, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr);
 	basic_regex(const self_type& other);
 	basic_regex(self_type&& other) noexcept;
 	virtual ~basic_regex();
@@ -379,7 +378,7 @@ protected:
 	regex_iterator_type m_itor;
 	regex_iterator_type m_end;
 	std::vector<int> m_subs;
-	size_t m_subs_idx;
+	size_type m_subs_idx;
 
 	// Added member to hold the end iterator of the string
 	BidirIt m_last;

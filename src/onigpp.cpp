@@ -36,8 +36,8 @@ ONIGPP_HEADER_INLINE void _append_replacement(
 {
 	using string_t = basic_string<CharT>;
 
-	const size_t len = fmt.size();
-	size_t i = 0;
+	const size_type len = fmt.size();
+	size_type i = 0;
 
 	while (i < len) {
 		CharT c = fmt[i];
@@ -95,7 +95,7 @@ ONIGPP_HEADER_INLINE void _append_replacement(
 			//--------------------------
 			if (n == CharT('+')) {
 				int last = -1;
-				for (size_t gi = 1; gi < m.size(); gi++) {
+				for (size_type gi = 1; gi < m.size(); gi++) {
 					if (m[gi].matched)
 						last = (int)gi;
 				}
@@ -109,7 +109,7 @@ ONIGPP_HEADER_INLINE void _append_replacement(
 			// "${name}" ¨ named capture
 			//--------------------------
 			if (n == CharT('{')) {
-				size_t start = ++i;
+				size_type start = ++i;
 				while (i < len && fmt[i] != CharT('}')) i++;
 
 				if (i >= len) {
@@ -132,7 +132,7 @@ ONIGPP_HEADER_INLINE void _append_replacement(
 					name_end,
 					nullptr
 				);
-				if (num > 0 && (size_t)num < m.size() && m[num].matched) {
+				if (num > 0 && (size_type)num < m.size() && m[num].matched) {
 					result.append(m[num].first, m[num].second);
 				}
 				continue;
@@ -142,7 +142,7 @@ ONIGPP_HEADER_INLINE void _append_replacement(
 			// "$n" ¨ numeric capture
 			//--------------------------
 			if (n >= CharT('0') && n <= CharT('9')) {
-				size_t num = 0;
+				size_type num = 0;
 				while (i < len && fmt[i] >= CharT('0') && fmt[i] <= CharT('9')) {
 					num = num * 10 + (fmt[i] - CharT('0'));
 					i++;
@@ -227,8 +227,8 @@ ONIGPP_HEADER_INLINE bool _regex_search_with_context(
 	if (flags & regex_constants::match_not_eol) onig_options |= ONIG_OPTION_NOTEOL;
 
 	// Compute lengths and pointers
-	size_t total_len = std::distance(whole_first, last);
-	size_t search_offset = std::distance(whole_first, search_start);
+	size_type total_len = std::distance(whole_first, last);
+	size_type search_offset = std::distance(whole_first, search_start);
 
 	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
 	static thread_local CharT empty_char = CharT();
@@ -320,7 +320,7 @@ ONIGPP_HEADER_INLINE OnigOptionType basic_regex<CharT, Traits>::_options_from_fl
 }
 
 template <class CharT, class Traits>
-ONIGPP_HEADER_INLINE basic_regex<CharT, Traits>::basic_regex(const CharT* s, size_t count, flag_type f, OnigEncoding enc) 
+ONIGPP_HEADER_INLINE basic_regex<CharT, Traits>::basic_regex(const CharT* s, size_type count, flag_type f, OnigEncoding enc) 
 	: m_regex(nullptr), m_encoding(nullptr), m_flags(f), m_pattern(s, count)
 {
 	OnigSyntaxType* syntax = ONIG_SYNTAX_ONIGURUMA;
@@ -343,7 +343,7 @@ ONIGPP_HEADER_INLINE basic_regex<CharT, Traits>::basic_regex(const self_type& ot
 	OnigErrorInfo err_info;
 
 	const CharT* s = m_pattern.c_str();
-	size_t count = m_pattern.length();
+	size_type count = m_pattern.length();
 
 	int err = onig_new(&m_regex, reinterpret_cast<const OnigUChar*>(s), reinterpret_cast<const OnigUChar*>(s + count), 
 					   options, m_encoding, syntax, &err_info);
@@ -442,7 +442,7 @@ ONIGPP_HEADER_INLINE bool regex_match(
 	if (flags & regex_constants::match_not_eol) onig_options |= ONIG_OPTION_NOTEOL;
 
 	// Iterator distance (number of characters)
-	size_t len = std::distance(first, last);
+	size_type len = std::distance(first, last);
 
 	// Get pointer to the search target
 	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
@@ -557,7 +557,7 @@ ONIGPP_HEADER_INLINE OutputIt regex_replace(
 		if (literal) {
 			std::copy(fmt.begin(), fmt.end(), out);
 		} else {
-			for (size_t i = 0; i < fmt.size(); ++i) {
+			for (size_type i = 0; i < fmt.size(); ++i) {
 				CharT c = fmt[i];
 				if (c == CharT('$') && i + 1 < fmt.size()) {
 					CharT nx = fmt[i + 1];
@@ -571,12 +571,12 @@ ONIGPP_HEADER_INLINE OutputIt regex_replace(
 						std::copy(m[0].second, last, out); ++i;
 					} else if (std::isdigit(static_cast<unsigned char>(nx))) {
 						int num = 0;
-						size_t j = i + 1;
+						size_type j = i + 1;
 						while (j < fmt.size() && std::isdigit(static_cast<unsigned char>(fmt[j]))) {
 							num = num * 10 + (fmt[j] - CharT('0'));
 							++j;
 						}
-						if (num >= 0 && static_cast<size_t>(num) < m.size()) {
+						if (num >= 0 && static_cast<size_type>(num) < m.size()) {
 							std::copy(m[num].first, m[num].second, out);
 						}
 						i = j - 1;
@@ -818,7 +818,7 @@ ONIGPP_HEADER_INLINE regex_token_iterator<BidirIt, CharT, Traits> regex_token_it
 ////////////////////////////////////////////
 // onigpp::init
 
-ONIGPP_HEADER_INLINE int init(const OnigEncoding *encodings, size_t encodings_count) {
+ONIGPP_HEADER_INLINE int init(const OnigEncoding *encodings, size_type encodings_count) {
 	static OnigEncoding use_encodings[] = {
 #define SUPPORTED_ENCODING(enc) enc,
 #include "encodings.h"
