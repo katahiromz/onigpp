@@ -1,6 +1,6 @@
 // ecmascript_compat_test.cpp --- Tests for ECMAScript compatibility
 // Author: katahiromz
-// License: MIT
+// License: BSD-2-Clause
 #include "onigpp.h"
 #include <iostream>
 #include <chrono>

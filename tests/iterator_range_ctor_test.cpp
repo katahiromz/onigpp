@@ -1,6 +1,6 @@
 // iterator_range_ctor_test.cpp --- Test for iterator-range constructor and assign method
 // Author: katahiromz
-// License: MIT
+// License: BSD-2-Clause
 #include "onigpp.h"
 #include <iostream>
 #include <string>

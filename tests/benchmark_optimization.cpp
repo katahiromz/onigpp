@@ -1,6 +1,6 @@
 // benchmark_optimization.cpp --- Simple benchmark to verify optimization
 // Author: katahiromz
-// License: MIT
+// License: BSD-2-Clause
 #include "onigpp.h"
 #include <iostream>
 #include <string>

@@ -1,6 +1,6 @@
 ﻿// onigpp_test.cpp --- Tests for Oniguruma++ (onigpp)
 // Author: katahiromz
-// License: MIT
+// License: BSD-2-Clause
 #include "onigpp.h"
 #include <iostream>
 #include <string>

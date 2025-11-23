@@ -1,6 +1,6 @@
 // onigpp_testw.cpp --- Wide-character (Unicode) tests for Oniguruma++ (onigpp)
 // Author: katаromz (adapted)
-// License: MIT
+// License: BSD-2-Clause
 #include "onigpp.h"
 #include <iostream>
 #include <string>

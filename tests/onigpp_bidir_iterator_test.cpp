@@ -1,6 +1,6 @@
 // onigpp_bidir_iterator_test.cpp --- Tests for non-contiguous BidirectionalIterators
 // Author: katahiromz
-// License: MIT
+// License: BSD-2-Clause
 #include "onigpp.h"
 #include <iostream>
 #include <string>

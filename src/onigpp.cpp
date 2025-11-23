@@ -1,6 +1,6 @@
 // onigpp.cpp --- Oniguruma++ (onigpp) regular expression engine
 // Author: katahiromz
-// License: MIT
+// License: BSD-2-Clause
 
 #include "../onigpp.h"
 #include <iterator>
