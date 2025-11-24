@@ -11,6 +11,7 @@
 #include <cstring>
 #include <cassert>
 #include <locale>
+#include <limits>
 
 // Oniguruma
 #define ONIG_ESCAPE_UCHAR_COLLISION // Use UnigUChar instead of UChar
@@ -196,6 +197,9 @@ public:
 	using char_type = typename std::iterator_traits<BidirIt>::value_type;
 	using string_type = basic_string<char_type>;
 
+	// Sentinel value for "not found" (matches std::match_results behavior)
+	static constexpr difference_type npos = -1;
+
 	match_results() : m_str_begin(), m_str_end() {}
 
 	// Added convenience functions
@@ -204,6 +208,24 @@ public:
 	// Shortcut to the entire matched string
 	string_type str(size_type n = 0) const {
 		return (*this)[n].str();
+	}
+
+	// Returns the byte/element offset from search-range begin for the n-th submatch
+	difference_type position(size_type n = 0) const {
+		if (n >= this->size())
+			return npos;
+		if (!(*this)[n].matched)
+			return npos;
+		return std::distance(m_str_begin, (*this)[n].first);
+	}
+
+	// Returns the matched length for the n-th submatch
+	difference_type length(size_type n = 0) const {
+		if (n >= this->size())
+			return 0;
+		if (!(*this)[n].matched)
+			return 0;
+		return std::distance((*this)[n].first, (*this)[n].second);
 	}
 
 	// Prefix and suffix

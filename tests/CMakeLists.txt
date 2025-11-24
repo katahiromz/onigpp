@@ -57,3 +57,9 @@ add_executable(initializer_list_test initializer_list_test.cpp)
 target_compile_definitions(initializer_list_test PRIVATE "")
 target_include_directories(initializer_list_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(initializer_list_test PRIVATE onigpp)
+
+# match_results_position_length_test.exe
+add_executable(match_results_position_length_test match_results_position_length_test.cpp)
+target_compile_definitions(match_results_position_length_test PRIVATE "")
+target_include_directories(match_results_position_length_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(match_results_position_length_test PRIVATE onigpp)

@@ -114,5 +114,9 @@ add_test(
 	NAME test9
 	COMMAND $<TARGET_FILE:initializer_list_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
+	NAME test10
+	COMMAND $<TARGET_FILE:match_results_position_length_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 ##############################################################################
