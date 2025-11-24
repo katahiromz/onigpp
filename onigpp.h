@@ -251,8 +251,8 @@ public:
 	
 	// Iterator-range constructor
 	template <class BidiIterator>
-	basic_regex(BidiIterator first, BidiIterator last, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr, const locale_type& loc = std::locale())
-		: m_regex(nullptr), m_encoding(enc), m_flags(f), m_pattern(), m_locale(loc)
+	basic_regex(BidiIterator first, BidiIterator last, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr)
+		: m_regex(nullptr), m_encoding(enc), m_flags(f), m_pattern(), m_locale(std::locale())
 	{
 		// Build a string_type from iterator range and delegate to existing ctor logic
 		string_type s(first, last);
