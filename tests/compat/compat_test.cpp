@@ -370,6 +370,10 @@ private:
             return false;
         }
 
+        // Verify positions array sizes match captures array sizes
+        assert(stdResult.positions.size() == stdResult.captures.size());
+        assert(onigppResult.positions.size() == onigppResult.captures.size());
+
         // Compare each capture
         bool allMatch = true;
         for (size_t i = 0; i < stdResult.captures.size(); ++i) {
