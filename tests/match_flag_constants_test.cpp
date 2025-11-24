@@ -14,7 +14,7 @@ int main() {
 	// Verify constants are defined and have expected bit positions
 	std::cout << "Testing match_flag_type constants..." << std::endl;
 	
-	// Check that new constants are defined
+	// Check that constants are defined (these exist in both std::regex and onigpp)
 	match_flag_type bow = match_not_bow;
 	match_flag_type eow = match_not_eow;
 	match_flag_type cont = match_continuous;
@@ -37,12 +37,29 @@ int main() {
 	assert(bow != match_prev_avail);
 	assert(bow != format_first_only);
 	assert(bow != format_no_copy);
+	
+#ifndef USE_STD_FOR_TESTS
+	// format_literal is only defined in onigpp, not in std::regex
 	assert(bow != format_literal);
 	
-	// Verify expected bit values
+	// onigpp uses different bit positions than std::regex
 	assert(match_not_bow == (1 << 11));
 	assert(match_not_eow == (1 << 12));
 	assert(match_continuous == (1 << 13));
+	
+	std::cout << "match_not_bow = " << match_not_bow << " (bit 11)" << std::endl;
+	std::cout << "match_not_eow = " << match_not_eow << " (bit 12)" << std::endl;
+	std::cout << "match_continuous = " << match_continuous << " (bit 13)" << std::endl;
+#else
+	// std::regex uses different bit positions
+	assert(match_not_bow == (1 << 2));
+	assert(match_not_eow == (1 << 3));
+	assert(match_continuous == (1 << 6));
+	
+	std::cout << "match_not_bow = " << match_not_bow << " (bit 2)" << std::endl;
+	std::cout << "match_not_eow = " << match_not_eow << " (bit 3)" << std::endl;
+	std::cout << "match_continuous = " << match_continuous << " (bit 6)" << std::endl;
+#endif
 	
 	// Test that flags can be combined
 	match_flag_type combined = match_not_bow | match_not_eow | match_continuous;
@@ -51,9 +68,6 @@ int main() {
 	assert((combined & match_not_eow) == match_not_eow);
 	assert((combined & match_continuous) == match_continuous);
 	
-	std::cout << "match_not_bow = " << match_not_bow << " (bit 11)" << std::endl;
-	std::cout << "match_not_eow = " << match_not_eow << " (bit 12)" << std::endl;
-	std::cout << "match_continuous = " << match_continuous << " (bit 13)" << std::endl;
 	std::cout << "All tests passed!" << std::endl;
 	
 	return 0;

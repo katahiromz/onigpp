@@ -16,7 +16,7 @@ void test_nosubs() {
 		assert(found && "Should find a match");
 		// With nosubs, no sub-expressions are captured
 		// onigpp: m.empty() == true, std::regex: m.size() == 1 (only full match)
-		assert(m.size() <= 1 && "Match results should not have sub-expression captures with nosubs");
+		assert((m.empty() || m.size() == 1) && "Match results should not have sub-expression captures with nosubs");
 		std::cout << "  Test 1 passed: nosubs prevents capturing\n";
 	}
 	
@@ -48,7 +48,7 @@ void test_nosubs() {
 		assert(matched && "Should match");
 		// With nosubs, no sub-expressions are captured
 		// onigpp: m.empty() == true, std::regex: m.size() == 1 (only full match)
-		assert(m.size() <= 1 && "Match results should not have sub-expression captures with nosubs");
+		assert((m.empty() || m.size() == 1) && "Match results should not have sub-expression captures with nosubs");
 		std::cout << "  Test 3 passed: nosubs works with regex_match\n";
 	}
 	
@@ -135,7 +135,7 @@ void test_combined_flags() {
 		assert(found && "Should find a match");
 		// With nosubs, no sub-expressions are captured
 		// onigpp: m.empty() == true, std::regex: m.size() == 1 (only full match)
-		assert(m.size() <= 1 && "Match results should not have sub-expression captures with nosubs");
+		assert((m.empty() || m.size() == 1) && "Match results should not have sub-expression captures with nosubs");
 		std::cout << "  Test passed: combined flags work together\n";
 	}
 	
