@@ -147,7 +147,7 @@ onigpp の ECMAScript モードでは以下をサポートしています：
 #include <regex>
 std::string text = "価格: $100";
 std::regex re(R"(\$(\d+))");
-std::string result = std::regex_replace(text, re, "$$1.00");
+std::string result = std::regex_replace(text, re, "$$$1.00");
 // 結果: "価格: $100.00"
 ```
 

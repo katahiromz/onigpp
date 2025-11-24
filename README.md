@@ -147,7 +147,7 @@ Some features may behave differently from `std::regex`:
 #include <regex>
 std::string text = "Price: $100";
 std::regex re(R"(\$(\d+))");
-std::string result = std::regex_replace(text, re, "$$1.00");
+std::string result = std::regex_replace(text, re, "$$$1.00");
 // Result: "Price: $100.00"
 ```
 

@@ -260,13 +260,17 @@ void TestReplacementTemplate() {
 	assert(result2 == "[hello] [world]");
 	
 	// Test $` (prefix) and $' (suffix)
-	// Note: regex_replace copies non-matching parts by default
+	// Note: Both std::regex_replace and onigpp::regex_replace copy non-matching
+	// parts by default (unless format_no_copy flag is used).
 	std::string text3 = "abc123def";
 	std::string pattern3 = "\\d+";
 	sregex re3(pattern3, myns::regex_constants::ECMAScript);
 	std::string fmt3 = "($`)[$&]($')";
 	std::string result3 = myns::regex_replace(text3, re3, fmt3);
-	// Result: "abc" (prefix copy) + "(abc)[123](def)" (replacement) + "def" (suffix copy)
+	// Result breakdown:
+	//   "abc" (non-matching prefix, copied) + 
+	//   "(abc)[123](def)" (replacement where $`=abc, $&=123, $'=def) + 
+	//   "def" (non-matching suffix, copied)
 	assert(result3 == "abc(abc)[123](def)def");
 	
 	// Test $$ (literal $) followed by $& (whole match)
