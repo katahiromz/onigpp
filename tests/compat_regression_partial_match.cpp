@@ -29,10 +29,11 @@ int main() {
 
     // Invoke compat_test binary and check for partial_match_fail result.
     // The test expects to run from the build directory where compat_test is located
-    const char* cmd = "./compat_test 2>&1";
 #ifdef _WIN32
+    const char* cmd = ".\\compat_test.exe 2>&1";
     std::FILE* fp = _popen(cmd, "r");
 #else
+    const char* cmd = "./compat_test 2>&1";
     std::FILE* fp = popen(cmd, "r");
 #endif
     if (!fp) {
