@@ -2029,6 +2029,11 @@ template bool regex_search<cchar_ptr, cchar_ptr_sub_alloc, char, regex_traits<ch
 	cchar_ptr, cchar_ptr, match_results<cchar_ptr, cchar_ptr_sub_alloc>&, 
 	const basic_regex<char, regex_traits<char>>&, regex_constants::match_flag_type);
 
+// regex_match instantiations for const char* (pointer type - optimized)
+template bool regex_match<cchar_ptr, cchar_ptr_sub_alloc, char, regex_traits<char>>(
+	cchar_ptr, cchar_ptr, match_results<cchar_ptr, cchar_ptr_sub_alloc>&, 
+	const basic_regex<char, regex_traits<char>>&, regex_constants::match_flag_type);
+
 // regex_search instantiations for std::list<char>::iterator
 template bool regex_search<list_char_iter, list_char_sub_alloc, char, regex_traits<char>>(
 	list_char_iter, list_char_iter, match_results<list_char_iter, list_char_sub_alloc>&, 

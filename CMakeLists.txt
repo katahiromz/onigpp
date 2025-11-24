@@ -151,6 +151,10 @@ add_test(
 	COMMAND $<TARGET_FILE:nosubs_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 add_test(
+	NAME test19
+	COMMAND $<TARGET_FILE:sub_match_behavior_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
 	NAME compat_test
 	COMMAND $<TARGET_FILE:compat_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})

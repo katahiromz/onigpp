@@ -218,14 +218,17 @@ public:
 	sub_match(const sub_match<OtherBidirIt>& other)
 		: std::pair<BidirIt, BidirIt>(other.first, other.second), matched(other.matched) {}
 
+	// Returns the matched substring as a string, or empty string if unmatched
+	// This matches std::sub_match::str() semantics exactly
 	string_type str() const { 
 		return matched ? string_type(this->first, this->second) : string_type(); 
 	}
 	
-	// Implicit conversion to string_type
+	// Implicit conversion to string_type (preserves str() behavior)
 	operator string_type() const { return str(); }
 	
-	// Length helper (note: O(n) for non-random-access iterators)
+	// Returns the length of the matched substring, or 0 if unmatched
+	// Note: O(n) for non-random-access iterators (uses std::distance)
 	size_type length() const { 
 		return matched ? std::distance(this->first, this->second) : 0; 
 	}
@@ -433,9 +436,16 @@ public:
 	using string_type = basic_string<char_type>;
 
 	// Sentinel value for "not found" (matches std::match_results behavior)
+	// npos is defined as -1 to match std::match_results semantics where
+	// position() returns a signed difference_type and uses -1 to indicate
+	// "not found" for unmatched or out-of-range submatches
 	static constexpr difference_type npos = -1;
 
 	match_results() : m_str_begin(), m_str_end() {}
+	
+	// Static assertion to ensure npos semantics match expectations
+	static_assert(npos == static_cast<difference_type>(-1), 
+	              "npos must be -1 to match std::match_results semantics");
 
 	// Added convenience functions
 	bool empty() const { return this->size() == 0; }
@@ -446,6 +456,9 @@ public:
 	}
 
 	// Returns the byte/element offset from search-range begin for the n-th submatch
+	// Returns npos (-1) if n >= size() or if the n-th submatch is not matched
+	// This matches std::match_results::position() semantics exactly
+	// Note: For non-random-access iterators, this uses std::distance and is O(n)
 	difference_type position(size_type n = 0) const {
 		if (n >= this->size())
 			return npos;
@@ -455,6 +468,9 @@ public:
 	}
 
 	// Returns the matched length for the n-th submatch
+	// Returns 0 if n >= size() or if the n-th submatch is not matched
+	// This matches std::match_results::length() semantics exactly
+	// Note: For non-random-access iterators, this uses std::distance and is O(n)
 	difference_type length(size_type n = 0) const {
 		if (n >= this->size())
 			return 0;
