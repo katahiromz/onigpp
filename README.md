@@ -86,6 +86,90 @@ ctest --output-on-failure
 
 CI runs tests with both `USE_STD_FOR_TESTS=ON` and `OFF` to verify compatibility.
 
+## Migration from std::regex
+
+Onigpp provides an ECMAScript compatibility mode to make migrating from `std::regex` easier. Here's what you need to know:
+
+### Using ECMAScript Mode
+
+To use ECMAScript-compatible syntax, specify the `ECMAScript` flag when creating a regex:
+
+```cpp
+#include "onigpp.h"
+namespace re = onigpp;
+re::auto_init g_auto_init;
+
+// ECMAScript mode (similar to std::regex default)
+re::regex pattern(R"(\d+)", re::regex_constants::ECMAScript);
+```
+
+### What's Supported
+
+The ECMAScript mode in onigpp provides:
+
+1. **Escape Sequences**:
+   - `\xHH` - Hexadecimal escape (e.g., `\x41` for 'A')
+   - `\uHHHH` - Unicode escape (e.g., `\u00E9` for 'é')
+   - `\0` - Null character (when not followed by digit)
+
+2. **Dot Behavior**: 
+   - By default, dot (`.`) does NOT match newline characters (same as std::regex)
+
+3. **Replacement Templates**:
+   - `$&` - Whole match
+   - `$1`, `$2`, ... - Capture groups
+   - `$`` - Text before match (prefix)
+   - `$'` - Text after match (suffix)
+   - `$$` - Literal dollar sign
+   - `${name}` - Named capture groups
+
+### Known Differences
+
+Some features may behave differently from `std::regex`:
+
+1. **Multiline Mode**: 
+   - The `multiline` flag is available but may not perfectly match ECMAScript semantics for `^` and `$` anchors
+   - In ECMAScript, multiline affects whether `^` and `$` match at line boundaries
+   - Oniguruma's MULTILINE option affects both dot and anchors together
+
+2. **Named Captures**:
+   - Oniguruma uses `(?<name>...)` syntax
+   - ECMAScript also supports this syntax
+
+3. **Lookahead/Lookbehind**:
+   - Both positive and negative lookahead are supported
+   - Lookbehind is also available (an extension beyond basic ECMAScript)
+
+### Example Migration
+
+**Before (std::regex):**
+```cpp
+#include <regex>
+std::string text = "Price: $100";
+std::regex re(R"(\$(\d+))");
+std::string result = std::regex_replace(text, re, "$$$1.00");
+// Result: "Price: $100.00"
+```
+
+**After (onigpp with ECMAScript mode):**
+```cpp
+#include "onigpp.h"
+onigpp::auto_init init;
+std::string text = "Price: $100";
+onigpp::regex re(R"(\$(\d+))", onigpp::regex_constants::ECMAScript);
+std::string result = onigpp::regex_replace(text, re, "$$$1.00");
+// Result: "Price: $100.00"
+```
+
+### Testing Your Migration
+
+The test suite includes comprehensive ECMAScript compatibility tests. You can run them with:
+
+```bash
+cmake --build build --target ecmascript_compat_test
+./build/ecmascript_compat_test
+```
+
 ## API / Reference
 
 - [RE.md](RE.md) — Oniguruma regular expression reference (English)

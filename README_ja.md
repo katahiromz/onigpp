@@ -86,6 +86,90 @@ ctest --output-on-failure
 
 CI では `USE_STD_FOR_TESTS=ON` と `OFF` の両方でテストが回っています（互換性確認のため）。
 
+## std::regex からの移行
+
+onigpp は ECMAScript 互換モードを提供しており、`std::regex` からの移行を容易にします。以下に知っておくべき情報を示します。
+
+### ECMAScript モードの使用
+
+ECMAScript 互換の構文を使用するには、正規表現を作成する際に `ECMAScript` フラグを指定します：
+
+```cpp
+#include "onigpp.h"
+namespace re = onigpp;
+re::auto_init g_auto_init;
+
+// ECMAScript モード（std::regex のデフォルトに類似）
+re::regex pattern(R"(\d+)", re::regex_constants::ECMAScript);
+```
+
+### サポートされている機能
+
+onigpp の ECMAScript モードでは以下をサポートしています：
+
+1. **エスケープシーケンス**:
+   - `\xHH` - 16進数エスケープ（例: `\x41` で 'A'）
+   - `\uHHHH` - Unicode エスケープ（例: `\u00E9` で 'é'）
+   - `\0` - ヌル文字（数字が後続しない場合）
+
+2. **ドット（.）の振る舞い**: 
+   - デフォルトで、ドット（`.`）は改行文字にマッチしません（std::regex と同じ）
+
+3. **置換テンプレート**:
+   - `$&` - マッチ全体
+   - `$1`, `$2`, ... - キャプチャグループ
+   - `$`` - マッチ前のテキスト（プレフィックス）
+   - `$'` - マッチ後のテキスト（サフィックス）
+   - `$$` - リテラルのドル記号
+   - `${name}` - 名前付きキャプチャグループ
+
+### 既知の違い
+
+いくつかの機能は `std::regex` と異なる動作をする場合があります：
+
+1. **マルチラインモード**: 
+   - `multiline` フラグは利用可能ですが、`^` と `$` アンカーについて ECMAScript のセマンティクスと完全には一致しない場合があります
+   - ECMAScript では、multiline は `^` と `$` が行境界にマッチするかどうかに影響します
+   - Oniguruma の MULTILINE オプションはドットとアンカーの両方に影響します
+
+2. **名前付きキャプチャ**:
+   - Oniguruma は `(?<name>...)` 構文を使用します
+   - ECMAScript もこの構文をサポートしています
+
+3. **先読み/後読み**:
+   - 肯定・否定の先読みがサポートされています
+   - 後読みも利用可能です（基本的な ECMAScript を超えた拡張）
+
+### 移行例
+
+**移行前（std::regex）:**
+```cpp
+#include <regex>
+std::string text = "価格: $100";
+std::regex re(R"(\$(\d+))");
+std::string result = std::regex_replace(text, re, "$$$1.00");
+// 結果: "価格: $100.00"
+```
+
+**移行後（onigpp の ECMAScript モード）:**
+```cpp
+#include "onigpp.h"
+onigpp::auto_init init;
+std::string text = "価格: $100";
+onigpp::regex re(R"(\$(\d+))", onigpp::regex_constants::ECMAScript);
+std::string result = onigpp::regex_replace(text, re, "$$$1.00");
+// 結果: "価格: $100.00"
+```
+
+### 移行のテスト
+
+テストスイートには包括的な ECMAScript 互換性テストが含まれています。以下のコマンドで実行できます：
+
+```bash
+cmake --build build --target ecmascript_compat_test
+./build/ecmascript_compat_test
+```
+
 ## API / Reference
 
 - [RE.md](RE.md) — Oniguruma 正規表現リファレンス（英語）

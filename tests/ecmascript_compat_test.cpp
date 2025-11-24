@@ -239,6 +239,184 @@ void TestCombinedFeatures() {
 	TEST_CASE_END("TestCombinedFeatures")
 }
 
+// Test replacement template with $ syntax (std::regex compatible)
+void TestReplacementTemplate() {
+	TEST_CASE("TestReplacementTemplate")
+	
+	// Test $1, $2 numeric capture replacement
+	std::string text1 = "John Doe, Jane Smith";
+	std::string pattern1 = "(\\w+)\\s+(\\w+)";
+	sregex re1(pattern1, myns::regex_constants::ECMAScript);
+	std::string fmt1 = "$2, $1";
+	std::string result1 = myns::regex_replace(text1, re1, fmt1);
+	assert(result1 == "Doe, John, Smith, Jane");
+	
+	// Test $& (whole match)
+	std::string text2 = "hello world";
+	std::string pattern2 = "\\w+";
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
+	std::string fmt2 = "[$&]";
+	std::string result2 = myns::regex_replace(text2, re2, fmt2);
+	assert(result2 == "[hello] [world]");
+	
+	// Test $` (prefix) and $' (suffix)
+	// Note: Both std::regex_replace and onigpp::regex_replace copy non-matching
+	// parts by default (unless format_no_copy flag is used).
+	std::string text3 = "abc123def";
+	std::string pattern3 = "\\d+";
+	sregex re3(pattern3, myns::regex_constants::ECMAScript);
+	std::string fmt3 = "($`)[$&]($')";
+	std::string result3 = myns::regex_replace(text3, re3, fmt3);
+	// Result breakdown:
+	//   "abc" (non-matching prefix, copied) + 
+	//   "(abc)[123](def)" (replacement where $`=abc, $&=123, $'=def) + 
+	//   "def" (non-matching suffix, copied)
+	assert(result3 == "abc(abc)[123](def)def");
+	
+	// Test $$ (literal $) followed by $& (whole match)
+	std::string text4 = "price: 100";
+	std::string pattern4 = "\\d+";
+	sregex re4(pattern4, myns::regex_constants::ECMAScript);
+	std::string fmt4 = "$$$&";  // First $$ = literal "$", then $& = whole match "100"
+	std::string result4 = myns::regex_replace(text4, re4, fmt4);
+	assert(result4 == "price: $100");
+	
+	TEST_CASE_END("TestReplacementTemplate")
+}
+
+// Test character class behavior
+void TestCharacterClasses() {
+	TEST_CASE("TestCharacterClasses")
+	
+	// Test \d (digits)
+	std::string pattern1 = "\\d+";
+	sregex re1(pattern1, myns::regex_constants::ECMAScript);
+	smatch m1;
+	std::string text1 = "abc123def";
+	assert(myns::regex_search(text1, m1, re1));
+	assert(m1[0].str() == "123");
+	
+	// Test \w (word characters)
+	std::string pattern2 = "\\w+";
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
+	smatch m2;
+	std::string text2 = "hello-world";
+	assert(myns::regex_search(text2, m2, re2));
+	assert(m2[0].str() == "hello");
+	
+	// Test \s (whitespace)
+	std::string pattern3 = "\\s+";
+	sregex re3(pattern3, myns::regex_constants::ECMAScript);
+	smatch m3;
+	std::string text3 = "one   two";
+	assert(myns::regex_search(text3, m3, re3));
+	assert(m3[0].str() == "   ");
+	
+	TEST_CASE_END("TestCharacterClasses")
+}
+
+// Test capture groups
+void TestCaptureGroups() {
+	TEST_CASE("TestCaptureGroups")
+	
+	// Test basic capture groups
+	std::string pattern1 = "(\\w+)@(\\w+)\\.(\\w+)";
+	sregex re1(pattern1, myns::regex_constants::ECMAScript);
+	smatch m1;
+	std::string text1 = "user@example.com";
+	assert(myns::regex_search(text1, m1, re1));
+	assert(m1.size() == 4);
+	assert(m1[0].str() == "user@example.com");
+	assert(m1[1].str() == "user");
+	assert(m1[2].str() == "example");
+	assert(m1[3].str() == "com");
+	
+	// Test non-capturing groups (?:...)
+	std::string pattern2 = "(?:\\w+)@(\\w+)";
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
+	smatch m2;
+	std::string text2 = "user@example.com";
+	assert(myns::regex_search(text2, m2, re2));
+	assert(m2.size() == 2); // Only 2: whole match + 1 capture
+	assert(m2[0].str() == "user@example");
+	assert(m2[1].str() == "example");
+	
+	TEST_CASE_END("TestCaptureGroups")
+}
+
+// Test quantifiers
+void TestQuantifiers() {
+	TEST_CASE("TestQuantifiers")
+	
+	// Test * (zero or more)
+	std::string pattern1 = "a*b";
+	sregex re1(pattern1, myns::regex_constants::ECMAScript);
+	smatch m1;
+	std::string text1 = "aaab";
+	assert(myns::regex_search(text1, m1, re1));
+	assert(m1[0].str() == "aaab");
+	
+	// Test + (one or more)
+	std::string pattern2 = "a+b";
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
+	smatch m2;
+	std::string text2 = "aaab";
+	assert(myns::regex_search(text2, m2, re2));
+	assert(m2[0].str() == "aaab");
+	
+	// Test ? (zero or one)
+	std::string pattern3 = "colou?r";
+	sregex re3(pattern3, myns::regex_constants::ECMAScript);
+	smatch m3;
+	std::string text3a = "color";
+	std::string text3b = "colour";
+	assert(myns::regex_search(text3a, m3, re3));
+	assert(m3[0].str() == "color");
+	assert(myns::regex_search(text3b, m3, re3));
+	assert(m3[0].str() == "colour");
+	
+	// Test {n,m} (between n and m)
+	std::string pattern4 = "a{2,4}";
+	sregex re4(pattern4, myns::regex_constants::ECMAScript);
+	smatch m4;
+	std::string text4 = "aaaa";
+	assert(myns::regex_search(text4, m4, re4));
+	assert(m4[0].str() == "aaaa");
+	
+	TEST_CASE_END("TestQuantifiers")
+}
+
+// Test lookahead assertions (if supported)
+void TestLookaheadAssertions() {
+	TEST_CASE("TestLookaheadAssertions")
+	
+	// Test positive lookahead (?=...)
+	std::string pattern1 = "\\d+(?= dollars)";
+	sregex re1(pattern1, myns::regex_constants::ECMAScript);
+	smatch m1;
+	std::string text1 = "100 dollars and 50 cents";
+	assert(myns::regex_search(text1, m1, re1));
+	assert(m1[0].str() == "100");
+	
+	// Test negative lookahead (?!...)
+	// Match a number NOT followed by " dollars"
+	std::string pattern2 = "\\b\\d+(?! dollars)";
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
+	smatch m2;
+	std::string text2 = "100 dollars and 50 cents";
+	assert(myns::regex_search(text2, m2, re2));
+	// The first match will be "50" since "100" is followed by " dollars"
+	// However, \d+ is greedy, and "10" from "100" is also not followed by " dollars"
+	// The actual behavior depends on how the regex engine processes this
+	// Let's use a simpler test case
+	std::string text2b = "give me 50 euros";
+	smatch m2b;
+	assert(myns::regex_search(text2b, m2b, re2));
+	assert(m2b[0].str() == "50");
+	
+	TEST_CASE_END("TestLookaheadAssertions")
+}
+
 int main() {
 	TESTS_OUTPUT_INIT();
 
@@ -256,6 +434,11 @@ int main() {
 	TestNullEscape();
 	TestNoPreprocessingWithoutECMAScript();
 	TestCombinedFeatures();
+	TestReplacementTemplate();
+	TestCharacterClasses();
+	TestCaptureGroups();
+	TestQuantifiers();
+	TestLookaheadAssertions();
 	
 	std::cout << "\n========================================================\n";
 	std::cout << "✨ All ECMAScript compatibility tests passed!\n";
