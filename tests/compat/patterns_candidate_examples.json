@@ -1,0 +1,122 @@
+[
+  {
+    "id": "simple_exact_match",
+    "description": "Basic exact match with anchors",
+    "pattern": "^hello$",
+    "flags": "ECMAScript",
+    "input": "hello",
+    "operation": "match",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "partial_match_anchor_failure",
+    "description": "Match should fail when input has extra text",
+    "pattern": "^hello$",
+    "flags": "ECMAScript",
+    "input": "hello world",
+    "operation": "match",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "basic_search",
+    "description": "Simple search for substring",
+    "pattern": "world",
+    "flags": "ECMAScript",
+    "input": "hello world",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "capture_groups_basic",
+    "description": "Extract capture groups",
+    "pattern": "(\\w+):(\\w+)",
+    "flags": "ECMAScript",
+    "input": "a:1",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "zero_width_boundary",
+    "description": "Word boundary assertion",
+    "pattern": "\\bword\\b",
+    "flags": "ECMAScript",
+    "input": "word",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "replace_dollar_refs",
+    "description": "Replacement with $1, $2 references",
+    "pattern": "(a)(b)",
+    "flags": "ECMAScript",
+    "input": "abx",
+    "operation": "replace",
+    "replace_template": "$2$1",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "nosubs_flag_behavior",
+    "description": "Verify nosubs flag prevents submatch storage",
+    "pattern": "(x)",
+    "flags": "nosubs",
+    "input": "x",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "icase_flag_behavior",
+    "description": "Case-insensitive matching",
+    "pattern": "abc",
+    "flags": "icase",
+    "input": "AbC",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "utf8_multibyte_char",
+    "description": "UTF-8 multibyte character matching",
+    "pattern": "あ",
+    "flags": "ECMAScript",
+    "input": "あいう",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "sjis_byte_sequence",
+    "description": "SJIS encoding character match",
+    "pattern": "test",
+    "flags": "ECMAScript",
+    "input": "test string",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "SJIS"
+  },
+  {
+    "id": "lookahead_positive",
+    "description": "Positive lookahead assertion",
+    "pattern": "a(?=b)",
+    "flags": "ECMAScript",
+    "input": "ab",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "backreference_simple",
+    "description": "Backreference to capture group",
+    "pattern": "(\\w+)\\s+\\1",
+    "flags": "ECMAScript",
+    "input": "hi hi",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  }
+]
