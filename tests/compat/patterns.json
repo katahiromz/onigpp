@@ -13,7 +13,7 @@
     "pattern": "^hello$",
     "flags": "ECMAScript",
     "input": "hello world",
-    "operation": "match"
+    "operation": "search"
   },
   {
     "id": "search_basic",
