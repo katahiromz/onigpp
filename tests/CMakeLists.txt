@@ -75,3 +75,9 @@ add_executable(sub_match_compat_test sub_match_compat_test.cpp)
 target_compile_definitions(sub_match_compat_test PRIVATE "")
 target_include_directories(sub_match_compat_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sub_match_compat_test PRIVATE onigpp)
+
+# nosubs_collate_test.exe
+add_executable(nosubs_collate_test nosubs_collate_test.cpp)
+target_compile_definitions(nosubs_collate_test PRIVATE "")
+target_include_directories(nosubs_collate_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(nosubs_collate_test PRIVATE onigpp)

@@ -65,6 +65,12 @@ namespace regex_constants {
 	static constexpr syntax_option_type icase = (1 << 0);
 	static constexpr syntax_option_type multiline = (1 << 1);
 	static constexpr syntax_option_type extended = (1 << 2);
+	
+	// std::regex compatible flags (bits 3-5, avoiding collision with existing bits 0-2 and 11-15)
+	static constexpr syntax_option_type nosubs = (1 << 3);   // std::nosubs - don't store submatches in match_results
+	static constexpr syntax_option_type optimize = (1 << 4); // std::optimize - currently no-op (reserved for future optimization)
+	static constexpr syntax_option_type collate = (1 << 5);  // std::collate - enable locale-dependent collation
+	
 	static constexpr syntax_option_type basic = (1 << 11);
 	static constexpr syntax_option_type awk = (1 << 12);
 	static constexpr syntax_option_type grep = (1 << 13);

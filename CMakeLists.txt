@@ -126,5 +126,9 @@ add_test(
 	NAME test12
 	COMMAND $<TARGET_FILE:sub_match_compat_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
+	NAME test13
+	COMMAND $<TARGET_FILE:nosubs_collate_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 ##############################################################################

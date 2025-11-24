@@ -324,6 +324,14 @@ _regex_search_with_context_impl(
 		m.m_str_begin = whole_first;
 		m.m_str_end = last;
 		m.clear();
+		
+		// Check if nosubs flag is set on the regex - if so, don't populate submatches
+		if (e.flags() & regex_constants::nosubs) {
+			// nosubs: only indicate match success, don't store submatches
+			onig_region_free(region, 1);
+			return true;
+		}
+		
 		m.resize(region->num_regs);
 
 		for (int i = 0; i < region->num_regs; ++i) {
@@ -414,6 +422,14 @@ _regex_search_with_context_impl(
 		m.m_str_begin = whole_first;
 		m.m_str_end = last;
 		m.clear();
+		
+		// Check if nosubs flag is set on the regex - if so, don't populate submatches
+		if (e.flags() & regex_constants::nosubs) {
+			// nosubs: only indicate match success, don't store submatches
+			onig_region_free(region, 1);
+			return true;
+		}
+		
 		m.resize(region->num_regs);
 
 		for (int i = 0; i < region->num_regs; ++i) {
@@ -496,6 +512,12 @@ OnigOptionType basic_regex<CharT, Traits>::_options_from_flags(flag_type f) {
 	bool extended = !!(f & regex_constants::extended);
 	bool ecmascript = !!(f & regex_constants::ECMAScript);
 
+	// Note: New std::regex compatible flags are handled as follows:
+	// - nosubs: handled at match/search time by not populating match_results
+	// - optimize: currently a no-op (reserved for future optimization)
+	// - collate: handled by _preprocess_pattern_for_locale in constructors
+	// These flags don't map directly to Oniguruma options
+
 	OnigOptionType options = 0;
 	options |= (icase ? ONIG_OPTION_IGNORECASE : 0);
 	
@@ -560,8 +582,10 @@ basic_regex<CharT, Traits>::basic_regex(const CharT* s, size_type count, flag_ty
 		compiled_pattern = _preprocess_pattern_for_ecmascript(compiled_pattern);
 	}
 	
-	// Preprocess pattern for locale support
-	compiled_pattern = _preprocess_pattern_for_locale(compiled_pattern);
+	// Preprocess pattern for locale support (when collate flag is set)
+	if (f & regex_constants::collate) {
+		compiled_pattern = _preprocess_pattern_for_locale(compiled_pattern);
+	}
 	const CharT* pattern_ptr = compiled_pattern.c_str();
 	size_type pattern_len = compiled_pattern.length();
 	
@@ -587,8 +611,10 @@ basic_regex<CharT, Traits>::basic_regex(const self_type& other)
 		compiled_pattern = _preprocess_pattern_for_ecmascript(compiled_pattern);
 	}
 	
-	// Preprocess pattern for locale support
-	compiled_pattern = _preprocess_pattern_for_locale(compiled_pattern);
+	// Preprocess pattern for locale support (when collate flag is set)
+	if (m_flags & regex_constants::collate) {
+		compiled_pattern = _preprocess_pattern_for_locale(compiled_pattern);
+	}
 	const CharT* s = compiled_pattern.c_str();
 	size_type count = compiled_pattern.length();
 
@@ -983,8 +1009,10 @@ basic_regex<CharT, Traits>::imbue(locale_type loc) {
 			compiled_pattern = _preprocess_pattern_for_ecmascript(compiled_pattern);
 		}
 		
-		// Preprocess pattern with new locale
-		compiled_pattern = _preprocess_pattern_for_locale(compiled_pattern);
+		// Preprocess pattern with new locale (when collate flag is set)
+		if (m_flags & regex_constants::collate) {
+			compiled_pattern = _preprocess_pattern_for_locale(compiled_pattern);
+		}
 		
 		// Compile with the preprocessed pattern
 		OnigSyntaxType* syntax = _syntax_from_flags(m_flags);
@@ -1081,6 +1109,14 @@ _regex_match_impl(
 		m.m_str_begin = first;
 		m.m_str_end = last;
 		m.clear();
+		
+		// Check if nosubs flag is set on the regex - if so, don't populate submatches
+		if (e.flags() & regex_constants::nosubs) {
+			// nosubs: only indicate match success, don't store submatches
+			onig_region_free(region, 1);
+			return true;
+		}
+		
 		m.resize(region->num_regs);
 
 		for (int i = 0; i < region->num_regs; ++i) {
@@ -1179,6 +1215,14 @@ _regex_match_impl(
 		m.m_str_begin = first;
 		m.m_str_end = last;
 		m.clear();
+		
+		// Check if nosubs flag is set on the regex - if so, don't populate submatches
+		if (e.flags() & regex_constants::nosubs) {
+			// nosubs: only indicate match success, don't store submatches
+			onig_region_free(region, 1);
+			return true;
+		}
+		
 		m.resize(region->num_regs);
 
 		for (int i = 0; i < region->num_regs; ++i) {
