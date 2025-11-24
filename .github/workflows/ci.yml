@@ -11,6 +11,8 @@ jobs:
   build-unix:
     name: ${{ matrix.os }} / ${{ matrix.compiler }} / USE_STD=${{ matrix.use_std_for_tests }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -58,6 +60,8 @@ jobs:
   build-windows:
     name: Windows / MSVC / USE_STD=${{ matrix.use_std_for_tests }}
     runs-on: windows-latest
+    permissions:
+      contents: read
     strategy:
       matrix:
         use_std_for_tests: [ON, OFF]
