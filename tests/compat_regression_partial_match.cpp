@@ -18,6 +18,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <clocale>
 
 #ifdef _WIN32
 	#include <windows.h>
@@ -64,7 +65,7 @@ int main() {
 	std::cout << "  Capture count: " << stdMatch.size() << std::endl;
 	
 	// Test with onigpp
-	onigpp::basic_regex<char> onigppRe(pattern, onigpp::regex_constants::ECMAScript, ONIG_ENCODING_UTF8);
+	onigpp::basic_regex<char> onigppRe(pattern, onigpp::regex_constants::ECMAScript, onigpp::encoding_constants::UTF8);
 	onigpp::match_results<std::string::const_iterator> onigppMatch;
 	bool onigppMatched = onigpp::regex_match(input, onigppMatch, onigppRe);
 
