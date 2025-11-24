@@ -104,3 +104,17 @@ To add new test cases:
 - Compatibility improvements to the onigpp library should be handled in separate PRs
 - The JSON parser is minimal and purpose-built; it can be replaced with a full JSON library if needed
 - Some differences are expected due to implementation-specific features or limitations
+
+## Related Tests
+
+In addition to this compat test harness, the following focused unit tests validate specific semantics and edge cases:
+
+- **sub_match_behavior_test**: Comprehensive test suite for `match_results` and `sub_match` behavior
+  - Tests `position()` and `length()` for matched/unmatched groups and out-of-range indices
+  - Tests `prefix()` and `suffix()` behavior for empty and non-empty match results
+  - Tests `sub_match::str()` and implicit string conversion for matched and unmatched submatches
+  - Tests nosubs flag behavior (constructor flag honored, size=1, no capture groups stored)
+  - Tests with non-random-access iterators (std::list) to ensure position/length correctness
+  - Validates npos sentinel value (-1) semantics matching std::match_results
+
+These tests ensure that onigpp maintains std::regex-compatible semantics for match results and submatches across various scenarios and iterator categories.
