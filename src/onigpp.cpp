@@ -1522,6 +1522,30 @@ regex_token_iterator<BidirIt, CharT, Traits>::regex_token_iterator(
 	}
 }
 
+// Convenience constructor with std::initializer_list
+template <class BidirIt, class CharT, class Traits>
+regex_token_iterator<BidirIt, CharT, Traits>::regex_token_iterator(
+	BidirIt first, BidirIt last,
+	const regex_type& re,
+	std::initializer_list<int> subs,
+	match_flag_type flags)
+	: regex_token_iterator(first, last, re, std::vector<int>(subs), flags)
+{
+	// Delegate to vector constructor
+}
+
+// Convenience constructor with single int
+template <class BidirIt, class CharT, class Traits>
+regex_token_iterator<BidirIt, CharT, Traits>::regex_token_iterator(
+	BidirIt first, BidirIt last,
+	const regex_type& re,
+	int sub,
+	match_flag_type flags)
+	: regex_token_iterator(first, last, re, std::vector<int>{sub}, flags)
+{
+	// Delegate to vector constructor
+}
+
 template <class BidirIt, class CharT, class Traits>
 bool regex_token_iterator<BidirIt, CharT, Traits>::operator==(const regex_token_iterator& other) const {
 	// Check for termination

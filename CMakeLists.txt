@@ -110,5 +110,9 @@ add_test(
 	NAME test8
 	COMMAND $<TARGET_FILE:swap_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
+	NAME test9
+	COMMAND $<TARGET_FILE:initializer_list_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 ##############################################################################

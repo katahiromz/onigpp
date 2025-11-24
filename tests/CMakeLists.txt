@@ -51,3 +51,9 @@ add_executable(swap_test swap_test.cpp)
 target_compile_definitions(swap_test PRIVATE "")
 target_include_directories(swap_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(swap_test PRIVATE onigpp)
+
+# initializer_list_test.exe
+add_executable(initializer_list_test initializer_list_test.cpp)
+target_compile_definitions(initializer_list_test PRIVATE "")
+target_include_directories(initializer_list_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(initializer_list_test PRIVATE onigpp)

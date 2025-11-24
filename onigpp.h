@@ -452,6 +452,18 @@ public:
 						 const regex_type& re,
 						 const std::vector<int>& subs = {-1},
 						 match_flag_type flags = regex_constants::match_default);
+	
+	// 2a. Convenience constructor with std::initializer_list
+	regex_token_iterator(BidirIt first, BidirIt last,
+						 const regex_type& re,
+						 std::initializer_list<int> subs,
+						 match_flag_type flags = regex_constants::match_default);
+	
+	// 2b. Convenience constructor with single int (common case)
+	regex_token_iterator(BidirIt first, BidirIt last,
+						 const regex_type& re,
+						 int sub,
+						 match_flag_type flags = regex_constants::match_default);
 
 	// 3. Reference, pointer, comparison
 	reference operator*() const { return m_sub_match; }
