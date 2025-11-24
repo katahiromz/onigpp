@@ -19,13 +19,13 @@
 
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
-	namespace op = std;
+	namespace myns = std;
 #else
-	namespace op = onigpp;
+	namespace myns = onigpp;
 #endif
 
 // Type aliases for match_results
-using smatch = op::match_results<std::string::const_iterator>;
+using smatch = myns::match_results<std::string::const_iterator>;
 
 // =================================================================
 // Helper Functions
@@ -38,7 +38,7 @@ using smatch = op::match_results<std::string::const_iterator>;
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const op::regex_error& e) { \
+	} catch (const myns::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -61,12 +61,12 @@ void TestIteratorRangeCtorWithList() {
 	std::list<char> pattern_list(pattern_str.begin(), pattern_str.end());
 
 	// Create regex using iterator-range constructor
-	op::regex re(pattern_list.begin(), pattern_list.end());
+	myns::regex re(pattern_list.begin(), pattern_list.end());
 
 	// Test the regex on a subject string
 	std::string subject = "Hello World 123";
 	smatch m;
-	bool found = op::regex_search(subject, m, re);
+	bool found = myns::regex_search(subject, m, re);
 
 	assert(found);
 	assert(m.size() == 2); // Entire match + 1 capture group
@@ -88,12 +88,12 @@ void TestIteratorRangeCtorWithDeque() {
 	std::deque<char> pattern_deque(pattern_str.begin(), pattern_str.end());
 
 	// Create regex using iterator-range constructor
-	op::regex re(pattern_deque.begin(), pattern_deque.end());
+	myns::regex re(pattern_deque.begin(), pattern_deque.end());
 
 	// Test the regex on a subject string
 	std::string subject = "test123";
 	smatch m;
-	bool matched = op::regex_match(subject, m, re);
+	bool matched = myns::regex_match(subject, m, re);
 
 	assert(matched);
 	assert(m.size() == 1);
@@ -114,12 +114,12 @@ void TestIteratorRangeCtorWithVector() {
 	std::vector<char> pattern_vec(pattern_str.begin(), pattern_str.end());
 
 	// Create regex using iterator-range constructor
-	op::regex re(pattern_vec.begin(), pattern_vec.end());
+	myns::regex re(pattern_vec.begin(), pattern_vec.end());
 
 	// Test the regex on a subject string
 	std::string subject = "test vector 42";
 	smatch m;
-	bool found = op::regex_search(subject, m, re);
+	bool found = myns::regex_search(subject, m, re);
 
 	assert(found);
 	assert(m.size() == 2);
@@ -138,12 +138,12 @@ void TestIteratorRangeCtorWithStringIterators() {
 
 	// Create regex using string iterators directly
 	std::string pattern_str = "Name: (\\w+)";
-	op::regex re(pattern_str.begin(), pattern_str.end());
+	myns::regex re(pattern_str.begin(), pattern_str.end());
 
 	// Test the regex on a subject string
 	std::string subject = "Name: John";
 	smatch m;
-	bool found = op::regex_search(subject, m, re);
+	bool found = myns::regex_search(subject, m, re);
 
 	assert(found);
 	assert(m.size() == 2);
@@ -161,7 +161,7 @@ void TestIteratorRangeAssignWithList() {
 	TEST_CASE("TestIteratorRangeAssignWithList")
 
 	// Create an initial regex
-	op::regex re("initial");
+	myns::regex re("initial");
 
 	// Create a list containing a new regex pattern
 	std::string pattern_str = "Age: (\\d+)";
@@ -173,7 +173,7 @@ void TestIteratorRangeAssignWithList() {
 	// Test the regex on a subject string
 	std::string subject = "Age: 30";
 	smatch m;
-	bool found = op::regex_search(subject, m, re);
+	bool found = myns::regex_search(subject, m, re);
 
 	assert(found);
 	assert(m.size() == 2);
@@ -191,7 +191,7 @@ void TestIteratorRangeAssignWithDeque() {
 	TEST_CASE("TestIteratorRangeAssignWithDeque")
 
 	// Create an initial regex
-	op::regex re("initial");
+	myns::regex re("initial");
 
 	// Create a deque containing a new regex pattern
 	std::string pattern_str = "abc\\d+";
@@ -203,7 +203,7 @@ void TestIteratorRangeAssignWithDeque() {
 	// Test the regex on a subject string
 	std::string subject = "abc123";
 	smatch m;
-	bool matched = op::regex_match(subject, m, re);
+	bool matched = myns::regex_match(subject, m, re);
 
 	assert(matched);
 	assert(m.size() == 1);
@@ -220,7 +220,7 @@ void TestIteratorRangeAssignWithStringIterators() {
 	TEST_CASE("TestIteratorRangeAssignWithStringIterators")
 
 	// Create an initial regex
-	op::regex re("initial");
+	myns::regex re("initial");
 
 	// Assign using string iterators directly
 	std::string pattern_str = "City: (\\w+)";
@@ -229,7 +229,7 @@ void TestIteratorRangeAssignWithStringIterators() {
 	// Test the regex on a subject string
 	std::string subject = "City: Paris";
 	smatch m;
-	bool found = op::regex_search(subject, m, re);
+	bool found = myns::regex_search(subject, m, re);
 
 	assert(found);
 	assert(m.size() == 2);
@@ -251,12 +251,12 @@ void TestIteratorRangeCtorWithFlags() {
 	std::list<char> pattern_list(pattern_str.begin(), pattern_str.end());
 
 	// Create regex using iterator-range constructor with icase flag
-	op::regex re(pattern_list.begin(), pattern_list.end(), op::regex_constants::icase);
+	myns::regex re(pattern_list.begin(), pattern_list.end(), myns::regex_constants::icase);
 
 	// Test the regex on a subject string with different case
 	std::string subject = "TEST";
 	smatch m;
-	bool matched = op::regex_match(subject, m, re);
+	bool matched = myns::regex_match(subject, m, re);
 
 	assert(matched);
 	assert(m.size() == 1);
@@ -273,19 +273,19 @@ void TestIteratorRangeAssignWithFlags() {
 	TEST_CASE("TestIteratorRangeAssignWithFlags")
 
 	// Create an initial regex
-	op::regex re("initial");
+	myns::regex re("initial");
 
 	// Create a deque containing a new regex pattern
 	std::string pattern_str = "hello";
 	std::deque<char> pattern_deque(pattern_str.begin(), pattern_str.end());
 
 	// Assign using iterator-range with icase flag
-	re.assign(pattern_deque.begin(), pattern_deque.end(), op::regex_constants::icase);
+	re.assign(pattern_deque.begin(), pattern_deque.end(), myns::regex_constants::icase);
 
 	// Test the regex on a subject string with different case
 	std::string subject = "HELLO";
 	smatch m;
-	bool matched = op::regex_match(subject, m, re);
+	bool matched = myns::regex_match(subject, m, re);
 
 	assert(matched);
 	assert(m.size() == 1);
@@ -312,7 +312,7 @@ int main() {
 
 #ifndef USE_STD_FOR_TESTS
 	// Oniguruma initialization
-	op::auto_init init;
+	myns::auto_init init;
 #endif
 
 	std::cout << "========================================\n";

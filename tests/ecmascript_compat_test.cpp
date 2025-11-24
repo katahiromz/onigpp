@@ -16,13 +16,13 @@
 
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
-	namespace op = std;
+	namespace myns = std;
 #else
-	namespace op = onigpp;
+	namespace myns = onigpp;
 #endif
 
-using sregex = op::basic_regex<char>;
-using smatch = op::match_results<std::string::const_iterator>;
+using sregex = myns::basic_regex<char>;
+using smatch = myns::match_results<std::string::const_iterator>;
 
 // Helper to print test case start and result
 #define TEST_CASE(name) \
@@ -31,7 +31,7 @@ using smatch = op::match_results<std::string::const_iterator>;
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const op::regex_error& e) { \
+	} catch (const myns::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -49,19 +49,19 @@ void TestDotBehaviorDefault() {
 	// In ECMAScript mode, dot should NOT match newline by default
 	std::string text = "abc\ndef";
 	std::string pattern1 = "a.c";
-	sregex re(pattern1, op::regex_constants::ECMAScript);
+	sregex re(pattern1, myns::regex_constants::ECMAScript);
 	smatch m;
 	
 	// Should match "abc" but not across the newline
-	bool found = op::regex_search(text, m, re);
+	bool found = myns::regex_search(text, m, re);
 	assert(found);
 	assert(m[0].str() == "abc");
 	
 	// Pattern with dot should NOT match across newline
 	std::string pattern2 = "a.*f";
-	sregex re2(pattern2, op::regex_constants::ECMAScript);
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
 	smatch m2;
-	bool found2 = op::regex_search(text, m2, re2);
+	bool found2 = myns::regex_search(text, m2, re2);
 	assert(!found2); // Should not match because dot doesn't match newline
 	
 	TEST_CASE_END("TestDotBehaviorDefault")
@@ -75,23 +75,23 @@ void TestMultilineAnchors() {
 	
 	// Test that ^ matches at string start
 	std::string pattern1 = "^line1";
-	sregex re1(pattern1, op::regex_constants::ECMAScript);
+	sregex re1(pattern1, myns::regex_constants::ECMAScript);
 	smatch m1;
-	assert(op::regex_search(text, m1, re1)); // Should match at start
+	assert(myns::regex_search(text, m1, re1)); // Should match at start
 	assert(m1[0].str() == "line1");
 	
 	// Test that $ matches at string end
 	std::string pattern2 = "line3$";
-	sregex re2(pattern2, op::regex_constants::ECMAScript);
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
 	smatch m2;
-	assert(op::regex_search(text, m2, re2)); // Should match at end
+	assert(myns::regex_search(text, m2, re2)); // Should match at end
 	assert(m2[0].str() == "line3");
 	
 	// Even with multiline, dot should NOT match newline in ECMAScript
 	std::string pattern3 = "line1.*line2";
-	sregex re3(pattern3, op::regex_constants::ECMAScript | op::regex_constants::multiline);
+	sregex re3(pattern3, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
 	smatch m3;
-	assert(!op::regex_search(text, m3, re3)); // Should not match because dot doesn't match \n
+	assert(!myns::regex_search(text, m3, re3)); // Should not match because dot doesn't match \n
 	
 	// Note: Full ECMAScript multiline semantics (^/$ matching at line boundaries)
 	// would require pattern transformation, which is complex. For now, we focus on
@@ -106,26 +106,26 @@ void TestHexEscapes() {
 	
 	// Test \x41 (ASCII 'A')
 	std::string pattern1 = "\\x41BC";
-	sregex re1(pattern1, op::regex_constants::ECMAScript);
+	sregex re1(pattern1, myns::regex_constants::ECMAScript);
 	smatch m1;
 	std::string text1 = "ABC";
-	assert(op::regex_search(text1, m1, re1));
+	assert(myns::regex_search(text1, m1, re1));
 	assert(m1[0].str() == "ABC");
 	
 	// Test \x20 (space)
 	std::string pattern2 = "test\\x20space";
-	sregex re2(pattern2, op::regex_constants::ECMAScript);
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
 	smatch m2;
 	std::string text2 = "test space";
-	assert(op::regex_search(text2, m2, re2));
+	assert(myns::regex_search(text2, m2, re2));
 	assert(m2[0].str() == "test space");
 	
 	// Test \x0A (newline)
 	std::string pattern3 = "line1\\x0Aline2";
-	sregex re3(pattern3, op::regex_constants::ECMAScript);
+	sregex re3(pattern3, myns::regex_constants::ECMAScript);
 	smatch m3;
 	std::string text3 = "line1\nline2";
-	assert(op::regex_search(text3, m3, re3));
+	assert(myns::regex_search(text3, m3, re3));
 	assert(m3[0].str() == "line1\nline2");
 	
 	TEST_CASE_END("TestHexEscapes")
@@ -141,26 +141,26 @@ void TestUnicodeEscapes() {
 	
 	// Test \u0041 (Unicode 'A')
 	std::string pattern1 = "\\u0041BC";
-	sregex re1(pattern1, op::regex_constants::ECMAScript);
+	sregex re1(pattern1, myns::regex_constants::ECMAScript);
 	smatch m1;
 	std::string text1 = "ABC";
-	assert(op::regex_search(text1, m1, re1));
+	assert(myns::regex_search(text1, m1, re1));
 	assert(m1[0].str() == "ABC");
 	
 	// Test \u00E9 (é - Unicode U+00E9)
 	std::string pattern2 = "caf\\u00E9";
-	sregex re2(pattern2, op::regex_constants::ECMAScript);
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
 	smatch m2;
 	std::string text2 = "café"; // UTF-8 encoded
-	assert(op::regex_search(text2, m2, re2));
+	assert(myns::regex_search(text2, m2, re2));
 	assert(m2[0].str() == "café");
 	
 	// Test \u2665 (heart symbol - Unicode U+2665)
 	std::string pattern3 = "I\\u2665you";
-	sregex re3(pattern3, op::regex_constants::ECMAScript);
+	sregex re3(pattern3, myns::regex_constants::ECMAScript);
 	smatch m3;
 	std::string text3 = "I♥you"; // UTF-8 encoded
-	assert(op::regex_search(text3, m3, re3));
+	assert(myns::regex_search(text3, m3, re3));
 	assert(m3[0].str() == "I♥you");
 #else
 	std::cout << "⚠️  Skipped: GCC's std::regex does not support \\uHHHH Unicode escape sequences\n";
@@ -175,10 +175,10 @@ void TestNullEscape() {
 	
 	// Test \0 (null character) not followed by digit
 	std::string pattern1 = "test\\0end";
-	sregex re1(pattern1, op::regex_constants::ECMAScript);
+	sregex re1(pattern1, myns::regex_constants::ECMAScript);
 	smatch m1;
 	std::string text1 = std::string("test") + '\0' + "end";
-	assert(op::regex_search(text1, m1, re1));
+	assert(myns::regex_search(text1, m1, re1));
 	
 #ifndef USE_STD_FOR_TESTS
 	// Note: GCC's std::regex does not properly support octal escape sequences in ECMAScript mode
@@ -187,10 +187,10 @@ void TestNullEscape() {
 	// \0 followed by digit should NOT be treated as null escape (should be octal)
 	// In this case, we leave it as-is for Oniguruma to handle
 	std::string pattern2 = "\\01";
-	sregex re2(pattern2, op::regex_constants::ECMAScript);
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
 	smatch m2;
 	std::string text2 = "\01"; // Octal 01
-	assert(op::regex_search(text2, m2, re2));
+	assert(myns::regex_search(text2, m2, re2));
 #else
 	std::cout << "⚠️  Skipped: GCC's std::regex does not support \\0NN octal escape sequences\n";
 #endif
@@ -210,10 +210,10 @@ void TestNoPreprocessingWithoutECMAScript() {
 	// Let's just verify it compiles and doesn't crash
 	try {
 		std::string pattern = "\\x41";
-		sregex re(pattern, op::regex_constants::basic);
+		sregex re(pattern, myns::regex_constants::basic);
 		smatch m;
 		// We don't assert specific behavior here, just that it doesn't crash
-		op::regex_search(text, m, re);
+		myns::regex_search(text, m, re);
 	} catch (...) {
 		// Some syntaxes may not support \x, that's OK
 	}
@@ -227,26 +227,26 @@ void TestCombinedFeatures() {
 	
 	// Test hex escape + case insensitive
 	std::string pattern1 = "\\x41bc";
-	sregex re1(pattern1, op::regex_constants::ECMAScript | op::regex_constants::icase);
+	sregex re1(pattern1, myns::regex_constants::ECMAScript | myns::regex_constants::icase);
 	smatch m1;
 	std::string text1 = "ABC";
-	assert(op::regex_search(text1, m1, re1));
+	assert(myns::regex_search(text1, m1, re1));
 	assert(m1[0].str() == "ABC");
 	
 	// Test Unicode escape at start of string
 	std::string pattern2 = "^test\\u0020end";
-	sregex re2(pattern2, op::regex_constants::ECMAScript);
+	sregex re2(pattern2, myns::regex_constants::ECMAScript);
 	smatch m2;
 	std::string text2 = "test end";
-	assert(op::regex_search(text2, m2, re2));
+	assert(myns::regex_search(text2, m2, re2));
 	assert(m2[0].str() == "test end");
 	
 	// Test multiple escapes in one pattern
 	std::string pattern3 = "\\x48\\x65\\x6C\\x6C\\x6F"; // "Hello"
-	sregex re3(pattern3, op::regex_constants::ECMAScript);
+	sregex re3(pattern3, myns::regex_constants::ECMAScript);
 	smatch m3;
 	std::string text3 = "Say Hello!";
-	assert(op::regex_search(text3, m3, re3));
+	assert(myns::regex_search(text3, m3, re3));
 	assert(m3[0].str() == "Hello");
 	
 	TEST_CASE_END("TestCombinedFeatures")
@@ -266,7 +266,7 @@ int main() {
 
 #ifndef USE_STD_FOR_TESTS
 	// Oniguruma initialization
-	op::auto_init init;
+	myns::auto_init init;
 #endif
 	
 	std::cout << "========================================================\n";

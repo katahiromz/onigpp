@@ -18,9 +18,9 @@
 
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
-	namespace op = std;
+	namespace myns = std;
 #else
-	namespace op = onigpp;
+	namespace myns = onigpp;
 #endif
 
 // Test helper macro
@@ -40,7 +40,7 @@ int main() {
 
 #ifndef USE_STD_FOR_TESTS
 	// Oniguruma initialization
-	op::auto_init init;
+	myns::auto_init init;
 #endif
 
 	TEST_CASE("Testing regex_token_iterator with std::initializer_list overloads");
@@ -49,12 +49,12 @@ int main() {
 	{
 		std::cout << "  Test 1: initializer_list with {-1} for delimiter\n";
 		std::string text = "apple,banana,cherry,date";
-		op::regex delim(",");
+		myns::regex delim(",");
 		
 		std::vector<std::string> tokens;
 		// Using initializer_list overload explicitly
-		op::sregex_token_iterator token_it(text.begin(), text.end(), delim, {-1});
-		op::sregex_token_iterator token_end;
+		myns::sregex_token_iterator token_it(text.begin(), text.end(), delim, {-1});
+		myns::sregex_token_iterator token_end;
 		
 		for (; token_it != token_end; ++token_it) {
 			tokens.push_back(token_it->str());
@@ -72,12 +72,12 @@ int main() {
 	{
 		std::cout << "  Test 2: initializer_list with {0, 1, 2}\n";
 		std::string data = "Item1:ValueA,Item2:ValueB";
-		op::regex re("(\\w+):(\\w+)");
+		myns::regex re("(\\w+):(\\w+)");
 		
 		std::vector<std::string> parts;
 		// Using initializer_list with multiple values
-		op::sregex_token_iterator it(data.begin(), data.end(), re, {0, 1, 2});
-		op::sregex_token_iterator end;
+		myns::sregex_token_iterator it(data.begin(), data.end(), re, {0, 1, 2});
+		myns::sregex_token_iterator end;
 		
 		for (; it != end; ++it) {
 			parts.push_back(it->str());
@@ -98,12 +98,12 @@ int main() {
 	{
 		std::cout << "  Test 3: single int parameter (2nd capture group)\n";
 		std::string data = "Item1:ValueA,Item2:ValueB";
-		op::regex re("(\\w+):(\\w+)");
+		myns::regex re("(\\w+):(\\w+)");
 		
 		std::vector<std::string> values;
 		// Using single int overload (get only 2nd capture group)
-		op::sregex_token_iterator it(data.begin(), data.end(), re, 2);
-		op::sregex_token_iterator end;
+		myns::sregex_token_iterator it(data.begin(), data.end(), re, 2);
+		myns::sregex_token_iterator end;
 		
 		for (; it != end; ++it) {
 			values.push_back(it->str());
@@ -119,12 +119,12 @@ int main() {
 	{
 		std::cout << "  Test 4: single int parameter (-1 for non-matching parts)\n";
 		std::string text = "one:two:three";
-		op::regex delim(":");
+		myns::regex delim(":");
 		
 		std::vector<std::string> tokens;
 		// Using single int overload with -1
-		op::sregex_token_iterator it(text.begin(), text.end(), delim, -1);
-		op::sregex_token_iterator end;
+		myns::sregex_token_iterator it(text.begin(), text.end(), delim, -1);
+		myns::sregex_token_iterator end;
 		
 		for (; it != end; ++it) {
 			tokens.push_back(it->str());
@@ -141,11 +141,11 @@ int main() {
 	{
 		std::cout << "  Test 5: wide string with initializer_list\n";
 		std::wstring text = L"alpha,beta,gamma";
-		op::wregex delim(L",");
+		myns::wregex delim(L",");
 		
 		std::vector<std::wstring> tokens;
-		op::wsregex_token_iterator it(text.begin(), text.end(), delim, {-1});
-		op::wsregex_token_iterator end;
+		myns::wsregex_token_iterator it(text.begin(), text.end(), delim, {-1});
+		myns::wsregex_token_iterator end;
 		
 		for (; it != end; ++it) {
 			tokens.push_back(it->str());

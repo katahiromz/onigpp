@@ -19,9 +19,9 @@
 
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
-	namespace op = std;
+	namespace myns = std;
 #else
-	namespace op = onigpp;
+	namespace myns = onigpp;
 #endif
 
 // ユーザーが指定するパターンの種類を区別するための構造体
@@ -29,24 +29,24 @@
 struct PatternKey {
 	std::wstring pattern;
 	bool is_regex;
-	op::wregex compiled_regex;
+	myns::wregex compiled_regex;
 
 	// 文字列リテラルの場合
 	static PatternKey Literal(const std::wstring& s) {
-		return {s, false, op::wregex()};
+		return {s, false, myns::wregex()};
 	}
 
 	// 正規表現の場合
 	static PatternKey Regex(const std::wstring& s) {
-		return {s, true, op::wregex(s)};
+		return {s, true, myns::wregex(s)};
 	}
 };
 
 // Pythonのre.escape相当の関数 (ワイド文字版)
 std::wstring regex_escape(const std::wstring& s) {
 	// ワイド文字列リテラル L"..." を使用
-	static const op::wregex special_chars(LR"([.^$|()\[\]{}*+?\\])");
-	return op::regex_replace(s, special_chars, LR"(\$&)");
+	static const myns::wregex special_chars(LR"([.^$|()\[\]{}*+?\\])");
+	return myns::regex_replace(s, special_chars, LR"(\$&)");
 }
 
 /**
@@ -81,18 +81,18 @@ std::wstring multi_replace(const std::wstring& input, const std::vector<std::pai
 		current_group_idx += 1 + internal_groups;
 	}
 
-	op::wregex catch_all_re(combined_pattern_str);
+	myns::wregex catch_all_re(combined_pattern_str);
 
 	// 2. イテレータを使って検索と置換を実行
 	std::wstring result;
 	std::wstring::const_iterator last_pos = input.begin();
 
-	// op::regex_iterator<std::wstring::const_iterator, wchar_t> を使用
-	auto begin = op::regex_iterator<std::wstring::const_iterator, wchar_t>(input.begin(), input.end(), catch_all_re);
-	auto end = op::regex_iterator<std::wstring::const_iterator, wchar_t>();
+	// myns::regex_iterator<std::wstring::const_iterator, wchar_t> を使用
+	auto begin = myns::regex_iterator<std::wstring::const_iterator, wchar_t>(input.begin(), input.end(), catch_all_re);
+	auto end = myns::regex_iterator<std::wstring::const_iterator, wchar_t>();
 
 	for (auto i = begin; i != end; ++i) {
-		op::match_results<std::wstring::const_iterator> match = *i;
+		myns::match_results<std::wstring::const_iterator> match = *i;
 
 		result.append(last_pos, match[0].first);
 		last_pos = match[0].second;
@@ -172,7 +172,7 @@ int main() {
 
 #ifndef USE_STD_FOR_TESTS
 	// Oniguruma initialization
-	op::auto_init init;
+	myns::auto_init init;
 #endif
 
 	// Do tests

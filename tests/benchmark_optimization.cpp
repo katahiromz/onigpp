@@ -18,20 +18,20 @@
 
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
-	namespace op = std;
+	namespace myns = std;
 #else
-	namespace op = onigpp;
+	namespace myns = onigpp;
 #endif
 
 template<typename Container>
-long long benchmark_regex_search(const Container& subject, const op::regex& re, int iterations) {
+long long benchmark_regex_search(const Container& subject, const myns::regex& re, int iterations) {
 	using iter_type = typename Container::const_iterator;
-	op::match_results<iter_type> m;
+	myns::match_results<iter_type> m;
 	
 	auto start = std::chrono::high_resolution_clock::now();
 	
 	for (int i = 0; i < iterations; ++i) {
-		op::regex_search(subject.begin(), subject.end(), m, re);
+		myns::regex_search(subject.begin(), subject.end(), m, re);
 	}
 	
 	auto end = std::chrono::high_resolution_clock::now();
@@ -52,7 +52,7 @@ int main() {
 
 #ifndef USE_STD_FOR_TESTS
 	// Oniguruma initialization
-	op::auto_init init;
+	myns::auto_init init;
 #endif
 
 	std::cout << "===== Optimization Benchmark =====" << std::endl;
@@ -64,15 +64,15 @@ int main() {
 	std::vector<char> subject_vec(subject_str.begin(), subject_str.end());
 	std::list<char> subject_list(subject_str.begin(), subject_str.end());
 	
-	op::regex re("\\d+");
+	myns::regex re("\\d+");
 	const int iterations = 10000;
 	
 	// Benchmark with pointer (const char* - optimized path)
 	{
-		op::match_results<const char*> m;
+		myns::match_results<const char*> m;
 		auto start = std::chrono::high_resolution_clock::now();
 		for (int i = 0; i < iterations; ++i) {
-			op::regex_search(subject_str.c_str(), subject_str.c_str() + subject_str.size(), m, re);
+			myns::regex_search(subject_str.c_str(), subject_str.c_str() + subject_str.size(), m, re);
 		}
 		auto end = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();

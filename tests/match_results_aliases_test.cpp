@@ -15,9 +15,9 @@
 
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
-	namespace op = std;
+	namespace myns = std;
 #else
-	namespace op = onigpp;
+	namespace myns = onigpp;
 #endif
 
 // Test that the new match_results aliases are defined and usable
@@ -43,10 +43,10 @@ int main() {
     // Test cmatch (const char*)
     {
         const char* text = "Hello World 123";
-        op::regex re("World (\\d+)");
-        op::cmatch m;
+        myns::regex re("World (\\d+)");
+        myns::cmatch m;
 
-        bool found = op::regex_search(text, m, re);
+        bool found = myns::regex_search(text, m, re);
         assert(found);
         assert(m.size() == 2);
         assert(m[0].str() == "World 123");
@@ -57,10 +57,10 @@ int main() {
     // Test smatch (string::const_iterator)
     {
         std::string text = "Test smatch 456";
-        op::regex re("smatch (\\d+)");
-        op::smatch m;
+        myns::regex re("smatch (\\d+)");
+        myns::smatch m;
 
-        bool found = op::regex_search(text, m, re);
+        bool found = myns::regex_search(text, m, re);
         assert(found);
         assert(m.size() == 2);
         assert(m[0].str() == "smatch 456");
@@ -71,10 +71,10 @@ int main() {
     // Test wsmatch (wstring::const_iterator)
     {
         std::wstring text = L"wsmatch test 789";
-        op::wregex re(L"test (\\d+)");
-        op::wsmatch m;
+        myns::wregex re(L"test (\\d+)");
+        myns::wsmatch m;
 
-        bool found = op::regex_search(text, m, re);
+        bool found = myns::regex_search(text, m, re);
         assert(found);
         assert(m.size() == 2);
         assert(m[0].str() == L"test 789");
@@ -86,10 +86,10 @@ int main() {
     // Test u16smatch (u16string::const_iterator)
     {
         std::u16string text = u"u16smatch 999";
-        op::u16regex re(u"u16smatch (\\d+)");
-        op::u16smatch m;
+        myns::u16regex re(u"u16smatch (\\d+)");
+        myns::u16smatch m;
 
-        bool found = op::regex_search(text, m, re);
+        bool found = myns::regex_search(text, m, re);
         assert(found);
         assert(m.size() == 2);
         assert(m[0].str() == u"u16smatch 999");
@@ -100,10 +100,10 @@ int main() {
     // Test u32smatch (u32string::const_iterator)
     {
         std::u32string text = U"u32smatch 777";
-        op::u32regex re(U"u32smatch (\\d+)");
-        op::u32smatch m;
+        myns::u32regex re(U"u32smatch (\\d+)");
+        myns::u32smatch m;
 
-        bool found = op::regex_search(text, m, re);
+        bool found = myns::regex_search(text, m, re);
         assert(found);
         assert(m.size() == 2);
         assert(m[0].str() == U"u32smatch 777");

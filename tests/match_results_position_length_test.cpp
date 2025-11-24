@@ -15,9 +15,9 @@
 
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
-	namespace op = std;
+	namespace myns = std;
 #else
-	namespace op = onigpp;
+	namespace myns = onigpp;
 #endif
 
 int main() {
@@ -38,10 +38,10 @@ int main() {
     // Test 1: Basic position() and length() test with cmatch
     {
         const char* text = "Hello World 123";
-        op::regex re("World (\\d+)");
-        op::cmatch m;
+        myns::regex re("World (\\d+)");
+        myns::cmatch m;
 
-        bool found = op::regex_search(text, m, re);
+        bool found = myns::regex_search(text, m, re);
         assert(found);
         assert(m.size() == 2);
         
@@ -71,10 +71,10 @@ int main() {
     // Test 2: Test with smatch (string iterator)
     {
         std::string text = "Test smatch 456";
-        op::regex re("smatch (\\d+)");
-        op::smatch m;
+        myns::regex re("smatch (\\d+)");
+        myns::smatch m;
 
-        bool found = op::regex_search(text, m, re);
+        bool found = myns::regex_search(text, m, re);
         assert(found);
         assert(m.size() == 2);
         
@@ -104,15 +104,15 @@ int main() {
     // Test 3: Test npos constant for invalid submatch
     {
         const char* text = "Hello World";
-        op::regex re("World");
-        op::cmatch m;
+        myns::regex re("World");
+        myns::cmatch m;
 
-        bool found = op::regex_search(text, m, re);
+        bool found = myns::regex_search(text, m, re);
         assert(found);
         
         // Test position() for out-of-bounds submatch index
         auto pos_invalid = m.position(5);
-        assert(pos_invalid == op::cmatch::npos);
+        assert(pos_invalid == myns::cmatch::npos);
         std::cout << "  position(5) = npos ✓\n";
         
         // Test length() for out-of-bounds submatch index
@@ -126,10 +126,10 @@ int main() {
     // Test 4: Test with multiple capture groups
     {
         std::string text = "Date: 2024-11-24";
-        op::regex re("(\\d{4})-(\\d{2})-(\\d{2})");
-        op::smatch m;
+        myns::regex re("(\\d{4})-(\\d{2})-(\\d{2})");
+        myns::smatch m;
 
-        bool found = op::regex_search(text, m, re);
+        bool found = myns::regex_search(text, m, re);
         assert(found);
         assert(m.size() == 4); // Full match + 3 capture groups
         
@@ -158,10 +158,10 @@ int main() {
     // Test 5: Test with wstring
     {
         std::wstring text = L"wsmatch test 789";
-        op::wregex re(L"test (\\d+)");
-        op::wsmatch m;
+        myns::wregex re(L"test (\\d+)");
+        myns::wsmatch m;
 
-        bool found = op::regex_search(text, m, re);
+        bool found = myns::regex_search(text, m, re);
         assert(found);
         assert(m.size() == 2);
         

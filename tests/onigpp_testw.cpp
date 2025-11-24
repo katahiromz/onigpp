@@ -19,16 +19,16 @@
 
 // Alias namespace for ease of use
 #ifdef USE_STD_FOR_TESTS
-	namespace op = std;
+	namespace myns = std;
 #else
-	namespace op = onigpp;
+	namespace myns = onigpp;
 #endif
 
 // Using aliases for wide-character types defined for onigpp
-using wregex = op::basic_regex<wchar_t>;
-using wmatch = op::match_results<std::wstring::const_iterator>;
-using wsregex_iterator = op::regex_iterator<std::wstring::const_iterator, wchar_t>;
-using wsregex_token_iterator = op::regex_token_iterator<std::wstring::const_iterator, wchar_t>;
+using wregex = myns::basic_regex<wchar_t>;
+using wmatch = myns::match_results<std::wstring::const_iterator>;
+using wsregex_iterator = myns::regex_iterator<std::wstring::const_iterator, wchar_t>;
+using wsregex_token_iterator = myns::regex_token_iterator<std::wstring::const_iterator, wchar_t>;
 
 // =================================================================
 // Helper Macros
@@ -41,7 +41,7 @@ using wsregex_token_iterator = op::regex_token_iterator<std::wstring::const_iter
 
 #define TEST_CASE_END(name) \
 	std::wcout << L"✅ " << (name) << L" PASSED.\n"; \
-	} catch (const op::regex_error& e) { \
+	} catch (const myns::regex_error& e) { \
 		std::wcout << L"❌ " << (name) << L" FAILED with regex_error: " << e.what() << L"\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -64,7 +64,7 @@ void TestCoreFunctions() {
 	wmatch m;
 
 	// 1.1. Testing regex_search
-	bool found = op::regex_search(text, m, re);
+	bool found = myns::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() == 3); // Entire match + 2 capture groups
 
@@ -84,13 +84,13 @@ void TestCoreFunctions() {
 #ifndef USE_STD_FOR_TESTS
 	assert(re_full.pattern() == std::wstring(L"start\\s+end"));
 #endif
-	assert(op::regex_match(full_text, m_full, re_full));
+	assert(myns::regex_match(full_text, m_full, re_full));
 	assert(m_full[0].str() == full_text);
 
 	// 1.4. Testing regex_match (should fail for partial)
 	std::wstring partial_text = L"start end extra";
 	wmatch m_partial;
-	assert(!op::regex_match(partial_text, m_partial, re_full));
+	assert(!myns::regex_match(partial_text, m_partial, re_full));
 
 	TEST_CASE_END(L"TestCoreFunctions")
 }
@@ -114,9 +114,9 @@ void TestResourceManagement() {
 	std::wstring data = L"abbbc";
 	wmatch m1, m2, m3;
 
-	assert(op::regex_search(data, m1, re1));
-	assert(op::regex_search(data, m2, re2));
-	assert(op::regex_search(data, m3, re3));
+	assert(myns::regex_search(data, m1, re1));
+	assert(myns::regex_search(data, m2, re2));
+	assert(myns::regex_search(data, m3, re3));
 	assert(m1[1].str() == L"bbb");
 	assert(m2[1].str() == L"bbb");
 	assert(m3[1].str() == L"bbb");
@@ -134,7 +134,7 @@ void TestResourceManagement() {
 	re_target = std::move(re_source);
 
 	std::wstring test_str = L"uvvvw";
-	assert(op::regex_search(test_str, m1, re_target));
+	assert(myns::regex_search(test_str, m1, re_target));
 	assert(m1[1].str() == L"vvv");
 
 	TEST_CASE_END(L"TestResourceManagement")
@@ -216,21 +216,21 @@ void TestReplacement() {
 	std::wstring s1 = L"a b c a b c";
 	wregex re1(L"b");
 	std::wstring fmt1 = L"X";
-	std::wstring result1 = op::regex_replace(s1, re1, fmt1);
+	std::wstring result1 = myns::regex_replace(s1, re1, fmt1);
 	assert(result1 == L"a X c a X c");
 
 	// 4.2 Capture group replacement
 	std::wstring s2 = L"Name: John Doe, ID: 123";
 	wregex re2(L"Name: (.*?), ID: (\\d+)");
 	std::wstring fmt2 = L"ID $2, Name $1"; // Using $1, $2
-	std::wstring result2 = op::regex_replace(s2, re2, fmt2);
+	std::wstring result2 = myns::regex_replace(s2, re2, fmt2);
 	assert(result2 == L"ID 123, Name John Doe");
 
 	// 4.3 Zero-width match replacement (word boundary)
 	std::wstring s3 = L"word";
 	wregex re3(L"\\b");
 	std::wstring fmt3 = L"-";
-	std::wstring result3 = op::regex_replace(s3, re3, fmt3);
+	std::wstring result3 = myns::regex_replace(s3, re3, fmt3);
 	// Expected: -word-
 	assert(result3 == L"-word-");
 	// Additional check: the correct number of '-'s (2 at the beginning and 2 at the end)
@@ -240,12 +240,12 @@ void TestReplacement() {
 	// 4.3a Zero-width anchors: '^' and '$'
 	{
 		wregex re_start(L"^");
-		std::wstring res_start = op::regex_replace(s3, re_start, fmt3);
+		std::wstring res_start = myns::regex_replace(s3, re_start, fmt3);
 		assert(res_start == L"-word");
 		assert(std::count(res_start.begin(), res_start.end(), L'-') == 1);
 
 		wregex re_end(L"$");
-		std::wstring res_end = op::regex_replace(s3, re_end, fmt3);
+		std::wstring res_end = myns::regex_replace(s3, re_end, fmt3);
 		assert(res_end == L"word-");
 		assert(std::count(res_end.begin(), res_end.end(), L'-') == 1);
 	}
@@ -254,7 +254,7 @@ void TestReplacement() {
 	std::wstring s4 = L"1 2 3 4";
 	wregex re4(L" ");
 	std::wstring fmt4 = L"-";
-	std::wstring result4 = op::regex_replace(s4, re4, fmt4, op::regex_constants::format_first_only);
+	std::wstring result4 = myns::regex_replace(s4, re4, fmt4, myns::regex_constants::format_first_only);
 	assert(result4 == L"1-2 3 4");
 
 	TEST_CASE_END(L"TestReplacement")
@@ -271,7 +271,7 @@ void TestSpecialReplacementPatterns() {
 	{
 		std::wstring fmt = L"Found: $&. Next Word is $1.";
 		std::wstring expected = L"Start Found: ABC-123-DEF. Next Word is ABC. End";
-		std::wstring result = op::regex_replace(text, re, fmt);
+		std::wstring result = myns::regex_replace(text, re, fmt);
 		assert(result == expected);
 		std::wcout << L"  $&: OK\n";
 	}
@@ -280,7 +280,7 @@ void TestSpecialReplacementPatterns() {
 	{
 		std::wstring fmt = L"Prefix is: $`.";
 		std::wstring expected = L"Start Prefix is: Start . End";
-		std::wstring result = op::regex_replace(text, re, fmt);
+		std::wstring result = myns::regex_replace(text, re, fmt);
 		assert(result == expected);
 		std::wcout << L"  $`: OK\n";
 	}
@@ -289,7 +289,7 @@ void TestSpecialReplacementPatterns() {
 	{
 		std::wstring fmt = L"Literal is $$, group is $1.";
 		std::wstring expected = L"Start Literal is $, group is ABC. End";
-		std::wstring result = op::regex_replace(text, re, fmt);
+		std::wstring result = myns::regex_replace(text, re, fmt);
 		assert(result == expected);
 		std::wcout << L"  $$: OK\n";
 	}
@@ -305,13 +305,13 @@ void TestEncodingAndError() {
 	TEST_CASE(L"TestEncodingAndError")
 
 //#ifndef USE_STD_FOR_TESTS
-//	auto UTF_ENCODING = op::encoding_constants::UTF8; // reference available, but wchar_t default differs
+//	auto UTF_ENCODING = myns::encoding_constants::UTF8; // reference available, but wchar_t default differs
 //	// 5.1 Wide-character (Unicode) matching test (Japanese Hiragana)
 //	// The pattern and subject are wide-character literals.
 //	std::wstring text_utf = L"あいうえお";
-//	wregex re_utf(L"あ", op::regex_constants::normal /*, encoding is determined by wchar_t type */);
+//	wregex re_utf(L"あ", myns::regex_constants::normal /*, encoding is determined by wchar_t type */);
 //	wmatch m_utf;
-//	assert(op::regex_search(text_utf, m_utf, re_utf));
+//	assert(myns::regex_search(text_utf, m_utf, re_utf));
 //	assert(m_utf.str() == L"あ");
 //
 //	// 5.2 Error handling: invalid pattern should throw regex_error
@@ -319,7 +319,7 @@ void TestEncodingAndError() {
 //	bool caught_error = false;
 //	try {
 //		wregex re_invalid(L"[a-"); // Unclosed character class - should throw
-//	} catch (const op::regex_error& e) {
+//	} catch (const myns::regex_error& e) {
 //		std::wcout << L"  (Caught expected error: " << e.what() << L")\n";
 //		caught_error = true;
 //	}
@@ -327,9 +327,9 @@ void TestEncodingAndError() {
 //
 //	// 5.3 basic_regex::assign with wide-character assignment
 //	wregex re_test;
-//	re_test.assign(std::wstring(L"(x+)"), op::regex_constants::icase /*, encoding left as default for wchar_t */);
+//	re_test.assign(std::wstring(L"(x+)"), myns::regex_constants::icase /*, encoding left as default for wchar_t */);
 //	std::wstring test_str = L"AXA";
-//	assert(op::regex_search(test_str, m_utf, re_test));
+//	assert(myns::regex_search(test_str, m_utf, re_test));
 //	// The capture group should be "X"
 //	assert(m_utf.str() == L"X");
 //#endif
@@ -355,7 +355,7 @@ int main() {
 
 #ifndef USE_STD_FOR_TESTS
 	// Oniguruma initialization
-	op::auto_init init;
+	myns::auto_init init;
 #endif
 
 	std::wcout << L"========================================================\n";
