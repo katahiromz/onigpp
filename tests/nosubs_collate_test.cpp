@@ -99,6 +99,55 @@ void test_collate() {
 		std::cout << "  Test 2 passed: pattern works without collate flag\n";
 	}
 	
+	// Test 3: POSIX character class expansion with collate and locale
+	// Test with [:lower:] class to verify locale-aware expansion
+	{
+		try {
+			// Try to imbue with the user's default locale
+			std::string pattern = "[[:lower:]]+";
+			myns::regex re;
+			re.imbue(std::locale(""));  // User's default locale
+			re.assign(pattern, myns::regex_constants::collate);
+			
+			std::string text = "hello WORLD";
+			myns::smatch m;
+			
+			bool found = myns::regex_search(text, m, re);
+			assert(found && "Should find lowercase match with [:lower:] and locale");
+			assert(m[0].str() == "hello" && "Should match only lowercase text");
+			std::cout << "  Test 3 passed: POSIX class [:lower:] with locale expansion works\n";
+		} catch (const std::runtime_error& e) {
+			// Locale may not be available on all systems, skip gracefully
+			std::cout << "  Test 3 skipped: locale not available (" << e.what() << ")\n";
+		}
+	}
+	
+	// Test 4: POSIX character class [:digit:] with collate
+	{
+		std::string pattern = "[[:digit:]]+";
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::collate);
+		std::string text = "abc123def";
+		myns::smatch m;
+		
+		bool found = myns::regex_search(text, m, re);
+		assert(found && "Should find digits with [:digit:]");
+		assert(m[0].str() == "123" && "Should match digit sequence");
+		std::cout << "  Test 4 passed: POSIX class [:digit:] works\n";
+	}
+	
+	// Test 5: POSIX character class [:graph:] with collate
+	{
+		std::string pattern = "[[:graph:]]+";
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::collate);
+		std::string text = "abc 123";  // space is not in [:graph:]
+		myns::smatch m;
+		
+		bool found = myns::regex_search(text, m, re);
+		assert(found && "Should find graphical characters with [:graph:]");
+		assert(m[0].str() == "abc" && "Should match graphical characters before space");
+		std::cout << "  Test 5 passed: POSIX class [:graph:] works\n";
+	}
+	
 	std::cout << "All collate tests passed!\n";
 }
 
