@@ -76,7 +76,7 @@ jobs:
       - name: Run tests (if any)
         shell: powershell
         run: |
-          if (Test-Path build\Release\CTestTestfile.cmake) {
+          if (Test-Path build\CTestTestfile.cmake) {
             ctest --test-dir build --output-on-failure -C Release
           } else {
             Write-Host "No tests found (CTestTestfile.cmake missing)"
