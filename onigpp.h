@@ -269,19 +269,27 @@ private:
 		}
 	}
 	
-	// Transform implementation for wchar_t (same as char)
+	// Transform implementation for non-char types
 	string_type transform_impl(const char_type* first, const char_type* last, std::false_type) const {
-		// Check if this is wchar_t
-		if (std::is_same<char_type, wchar_t>::value) {
-			try {
-				const std::collate<wchar_t>& col = std::use_facet<std::collate<wchar_t>>(m_locale);
-				return reinterpret_cast<const std::collate<char_type>&>(col).transform(first, last);
-			} catch (...) {
-				// Fallback if facet not available
-				return string_type(first, last);
-			}
+		// For wchar_t, use locale's collate facet
+		// For char16_t and char32_t, fall back to simple copy (portable default)
+		return transform_wchar_impl(first, last, typename std::is_same<char_type, wchar_t>::type());
+	}
+	
+	// Transform implementation for wchar_t
+	string_type transform_wchar_impl(const char_type* first, const char_type* last, std::true_type) const {
+		try {
+			const std::collate<char_type>& col = std::use_facet<std::collate<char_type>>(m_locale);
+			return col.transform(first, last);
+		} catch (...) {
+			// Fallback if facet not available
+			return string_type(first, last);
 		}
-		// For char16_t and char32_t, use simple copy (portable default)
+	}
+	
+	// Transform implementation for char16_t and char32_t
+	string_type transform_wchar_impl(const char_type* first, const char_type* last, std::false_type) const {
+		// Simple copy for char16_t and char32_t (portable default)
 		return string_type(first, last);
 	}
 	
@@ -299,17 +307,26 @@ private:
 	
 	// isctype implementation for non-char types
 	bool isctype_impl(char_type c, char_class_type f, std::false_type) const {
-		// Check if this is wchar_t
-		if (std::is_same<char_type, wchar_t>::value) {
-			try {
-				const std::ctype<wchar_t>& ct = std::use_facet<std::ctype<wchar_t>>(m_locale);
-				return reinterpret_cast<const std::ctype<char_type>&>(ct).is(
-					static_cast<std::ctype_base::mask>(f), c);
-			} catch (...) {
-				return false;
-			}
-		}
+		// For wchar_t, use locale's ctype facet
 		// For char16_t and char32_t, provide basic fallback
+		return isctype_wchar_impl(c, f, typename std::is_same<char_type, wchar_t>::type());
+	}
+	
+	// isctype implementation for wchar_t
+	bool isctype_wchar_impl(char_type c, char_class_type f, std::true_type) const {
+		try {
+			const std::ctype<char_type>& ct = std::use_facet<std::ctype<char_type>>(m_locale);
+			return ct.is(static_cast<std::ctype_base::mask>(f), c);
+		} catch (...) {
+			return false;
+		}
+	}
+	
+	// isctype implementation for char16_t and char32_t
+	bool isctype_wchar_impl(char_type c, char_class_type f, std::false_type) const {
+		// Basic fallback for char16_t and char32_t
+		(void)c;
+		(void)f;
 		return false;
 	}
 };
