@@ -63,3 +63,9 @@ add_executable(match_results_position_length_test match_results_position_length_
 target_compile_definitions(match_results_position_length_test PRIVATE "")
 target_include_directories(match_results_position_length_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(match_results_position_length_test PRIVATE onigpp)
+
+# regex_traits_test.exe
+add_executable(regex_traits_test regex_traits_test.cpp)
+target_compile_definitions(regex_traits_test PRIVATE "")
+target_include_directories(regex_traits_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(regex_traits_test PRIVATE onigpp)

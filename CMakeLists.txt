@@ -118,5 +118,9 @@ add_test(
 	NAME test10
 	COMMAND $<TARGET_FILE:match_results_position_length_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
+	NAME test11
+	COMMAND $<TARGET_FILE:regex_traits_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 ##############################################################################
