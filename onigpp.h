@@ -121,7 +121,7 @@ namespace regex_constants {
 	// supports backreferences, but this flag can be used to explicitly document intent.
 	// WARNING: Enabling backreferences can introduce exponential-time backtracking for certain
 	// patterns. Consider using possessive quantifiers or atomic groups for performance-critical code.
-	static constexpr syntax_option_type ONIGPP_SYNTAX_ONIG_BACKREF = (1 << 6);
+	static constexpr syntax_option_type oniguruma = (1 << 6);
 	
 	static constexpr syntax_option_type basic = (1 << 11);
 	static constexpr syntax_option_type awk = (1 << 12);
@@ -536,7 +536,7 @@ public:
 		multiline  = regex_constants::multiline,
 		collate    = regex_constants::collate,
 		normal     = regex_constants::normal,
-		ONIGPP_SYNTAX_ONIG_BACKREF = regex_constants::ONIGPP_SYNTAX_ONIG_BACKREF
+		oniguruma  = regex_constants::oniguruma
 	};
 
 	basic_regex() : m_regex(nullptr), m_encoding(nullptr), m_flags(regex_constants::normal), m_locale(std::locale()) { }

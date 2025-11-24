@@ -4,7 +4,7 @@
 
 - Added tools/re_replace.
 - Added nested flag constants to `basic_regex` class (e.g., `onigpp::regex::ECMAScript`, `onigpp::regex::icase`) for std::regex compatibility.
-- Added `ONIGPP_SYNTAX_ONIG_BACKREF` flag to explicitly enable/document Oniguruma-style backreference support.
+- Added `oniguruma` flag to explicitly enable/document Oniguruma-style backreference support.
   - Numeric backreferences: `\1`, `\2`, ..., `\9` (and multi-digit like `\10` when 10+ groups defined)
   - Named backreferences: `\k<name>`, `\k'name'`
   - Warning: Backreferences can introduce exponential-time backtracking for certain patterns.

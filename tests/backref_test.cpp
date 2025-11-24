@@ -289,21 +289,21 @@ void TestForwardReference() {
 	TEST_CASE_END("TestForwardReference")
 }
 
-// Test the ONIGPP_SYNTAX_ONIG_BACKREF flag (should work the same since Oniguruma already supports it)
+// Test the oniguruma flag (should work the same since Oniguruma already supports it)
 void TestBackrefFlagExplicit() {
 	TEST_CASE("TestBackrefFlagExplicit")
 	
 #ifndef USE_STD_FOR_TESTS
-	// Test with explicit ONIGPP_SYNTAX_ONIG_BACKREF flag
+	// Test with explicit oniguruma flag
 	std::string pattern = "(\\w+)\\s+\\1";
-	sregex re(pattern, myns::regex_constants::ECMAScript | myns::regex_constants::ONIGPP_SYNTAX_ONIG_BACKREF);
+	sregex re(pattern, myns::regex_constants::ECMAScript | myns::regex_constants::oniguruma);
 	smatch m;
 	
 	std::string input = "test test";
 	bool found = myns::regex_search(input, m, re);
 	assert(found);
 	assert(m[0].str() == "test test");
-	std::cout << "  ONIGPP_SYNTAX_ONIG_BACKREF flag works correctly" << std::endl;
+	std::cout << "  oniguruma flag works correctly" << std::endl;
 #else
 	std::cout << "  Skipping (USE_STD_FOR_TESTS mode)" << std::endl;
 #endif
