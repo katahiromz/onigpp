@@ -1,4 +1,4 @@
-[English](README.md) [License](LICENSE.txt)
+[English](README.md) | [License](LICENSE.txt) | [Changelog](CHANGELOG.md)
 
 ---
 
@@ -108,7 +108,3 @@ CI では `USE_STD_FOR_TESTS=ON` と `OFF` の両方でテストが回ってい�
 
 - Maintainer: Katayama Hirofumi MZ <katayama.hirofumi.mz@gmail.com>
 - Issues: https://github.com/katahiromz/onigpp/issues
-
-## Changelog
-
-主要な変更点は [CHANGELOG.md](CHANGELOG.md) にまとめることを推奨します。
