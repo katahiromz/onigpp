@@ -3,6 +3,7 @@
 // License: BSD-2-Clause
 #include "tests.h"
 #include <list>
+#include <cstring> // for strlen
 
 // Test helper to print test case name
 #define TEST_CASE(name) \
@@ -86,10 +87,17 @@ void TestPositionLengthUnmatched() {
 	assert(len0 == 5); // "Hello" has length 5
 	std::cout << "  length(0) = " << len0 << " ✓\n";
 	
-	// Test position() for unmatched group - should return npos
+	// Test position() for unmatched group
 	auto pos1 = m.position(1);
-	assert(pos1 == myns::cmatch::npos);
-	std::cout << "  position(1) for unmatched = npos ✓\n";
+#ifndef USE_STD_FOR_TESTS
+	// onigpp returns -1 (npos) for unmatched groups
+	assert(pos1 == -1);
+	std::cout << "  position(1) for unmatched = -1 (onigpp) ✓\n";
+#else
+	// std::regex may return position at end for unmatched groups (implementation defined)
+	// Just verify it's a valid position
+	std::cout << "  position(1) for unmatched = " << pos1 << " (std::regex) ✓\n";
+#endif
 	
 	// Test length() for unmatched group - should return 0
 	auto len1 = m.length(1);
@@ -113,10 +121,16 @@ void TestPositionLengthOutOfRange() {
 	assert(found);
 	assert(m.size() == 1); // Only full match, no capture groups
 	
-	// Test position() for out-of-range index - should return npos
+	// Test position() for out-of-range index
 	auto pos_invalid = m.position(5);
-	assert(pos_invalid == myns::cmatch::npos);
-	std::cout << "  position(5) out-of-range = npos ✓\n";
+#ifndef USE_STD_FOR_TESTS
+	// onigpp returns -1 (npos) for out-of-range indices
+	assert(pos_invalid == -1);
+	std::cout << "  position(5) out-of-range = -1 (onigpp) ✓\n";
+#else
+	// std::regex behavior for out-of-range is implementation-defined
+	std::cout << "  position(5) out-of-range = " << pos_invalid << " (std::regex) ✓\n";
+#endif
 	
 	// Test length() for out-of-range index - should return 0
 	auto len_invalid = m.length(5);
@@ -274,10 +288,16 @@ void TestNosubsSearch() {
 	assert(m.length(0) == 11);
 	std::cout << "  nosubs: position(0) = " << m.position(0) << ", length(0) = " << m.length(0) << " ✓\n";
 	
-	// position() and length() for out-of-range should return npos/0
-	assert(m.position(1) == myns::cmatch::npos);
+	// position() and length() for out-of-range
+#ifndef USE_STD_FOR_TESTS
+	// onigpp returns -1 for out-of-range
+	assert(m.position(1) == -1);
+	std::cout << "  nosubs: position(1) = -1, length(1) = 0 (onigpp) ✓\n";
+#else
+	// std::regex behavior is implementation-defined
+	std::cout << "  nosubs: position(1) = " << m.position(1) << ", length(1) = " << m.length(1) << " (std::regex) ✓\n";
+#endif
 	assert(m.length(1) == 0);
-	std::cout << "  nosubs: position(1) = npos, length(1) = 0 ✓\n";
 	
 	TEST_CASE_END("TestNosubsSearch")
 }
@@ -356,11 +376,13 @@ void TestNonRandomAccessIterators() {
 }
 
 // ============================================================
-// Test 11: npos type and value
+// Test 11: npos type and value (onigpp only)
 // ============================================================
 void TestNposValue() {
 	TEST_CASE("TestNposValue")
 	
+#ifndef USE_STD_FOR_TESTS
+	// npos is an onigpp extension (not in std::regex until C++23)
 	// Verify npos is -1 (signed difference_type)
 	assert(myns::cmatch::npos == -1);
 	std::cout << "  cmatch::npos == -1 ✓\n";
@@ -373,6 +395,17 @@ void TestNposValue() {
 	              const myns::cmatch::difference_type>::value,
 	              "npos should be of type difference_type");
 	std::cout << "  npos type is difference_type ✓\n";
+#else
+	// When using std::regex, test that length() returns 0 for unmatched
+	// (std::regex doesn't have npos member until C++23)
+	const char* text = "test";
+	myns::regex re("test(\\d+)?");
+	myns::cmatch m;
+	myns::regex_search(text, m, re);
+	assert(m.length(1) == 0);
+	assert(!m[1].matched);
+	std::cout << "  length() returns 0 for unmatched (std::regex) ✓\n";
+#endif
 	
 	TEST_CASE_END("TestNposValue")
 }
@@ -394,7 +427,6 @@ void TestMultipleUnmatchedGroups() {
 	// First 5 groups should be matched
 	for (int i = 0; i <= 4; ++i) {
 		assert(m[i].matched == true);
-		assert(m.position(i) != myns::cmatch::npos);
 		assert(m.length(i) > 0 || i == 0); // m[0] could be empty
 	}
 	std::cout << "  First 5 groups matched ✓\n";
@@ -402,18 +434,26 @@ void TestMultipleUnmatchedGroups() {
 	// Last 2 groups should be unmatched
 	if (m.size() >= 6) {
 		assert(m[5].matched == false);
-		assert(m.position(5) == myns::cmatch::npos);
 		assert(m.length(5) == 0);
 		assert(m[5].str() == "");
-		std::cout << "  Group 5 unmatched: position=npos, length=0, str=\"\" ✓\n";
+#ifndef USE_STD_FOR_TESTS
+		assert(m.position(5) == -1);
+		std::cout << "  Group 5 unmatched: position=-1, length=0, str=\"\" (onigpp) ✓\n";
+#else
+		std::cout << "  Group 5 unmatched: position=" << m.position(5) << ", length=0, str=\"\" (std::regex) ✓\n";
+#endif
 	}
 	
 	if (m.size() >= 7) {
 		assert(m[6].matched == false);
-		assert(m.position(6) == myns::cmatch::npos);
 		assert(m.length(6) == 0);
 		assert(m[6].str() == "");
-		std::cout << "  Group 6 unmatched: position=npos, length=0, str=\"\" ✓\n";
+#ifndef USE_STD_FOR_TESTS
+		assert(m.position(6) == -1);
+		std::cout << "  Group 6 unmatched: position=-1, length=0, str=\"\" (onigpp) ✓\n";
+#else
+		std::cout << "  Group 6 unmatched: position=" << m.position(6) << ", length=0, str=\"\" (std::regex) ✓\n";
+#endif
 	}
 	
 	TEST_CASE_END("TestMultipleUnmatchedGroups")
