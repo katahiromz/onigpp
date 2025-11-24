@@ -9,12 +9,13 @@ on:
 
 jobs:
   build-unix:
-    name: Build & Test (Ubuntu and macOS)
+    name: ${{ matrix.os }} / ${{ matrix.compiler }} / USE_STD=${{ matrix.use_std_for_tests }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
         compiler: [gcc, clang]
+        use_std_for_tests: [ON, OFF]
     steps:
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4
@@ -33,7 +34,7 @@ jobs:
           fi
 
       - name: Configure (Ninja)
-        run: cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17
+        run: cmake -S . -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 -DUSE_STD_FOR_TESTS=${{ matrix.use_std_for_tests }}
 
       - name: Build
         run: cmake --build build -j
@@ -45,10 +46,21 @@ jobs:
           else
             echo "No tests found (CTestTestfile.cmake missing)"
           fi
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.compiler }}-std${{ matrix.use_std_for_tests }}
+          path: build/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore
 
   build-windows:
-    name: Build & Test (Windows)
+    name: Windows / MSVC / USE_STD=${{ matrix.use_std_for_tests }}
     runs-on: windows-latest
+    strategy:
+      matrix:
+        use_std_for_tests: [ON, OFF]
     steps:
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4
@@ -56,7 +68,7 @@ jobs:
           submodules: recursive
 
       - name: Configure (MSVC x64)
-        run: cmake -S . -B build -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 -DBUILD_SHARED_LIBS=OFF
+        run: cmake -S . -B build -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 -DBUILD_SHARED_LIBS=OFF -DUSE_STD_FOR_TESTS=${{ matrix.use_std_for_tests }}
 
       - name: Build (Release)
         run: cmake --build build --config Release -- /m
@@ -69,3 +81,11 @@ jobs:
           } else {
             Write-Host "No tests found (CTestTestfile.cmake missing)"
           }
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-windows-msvc-std${{ matrix.use_std_for_tests }}
+          path: build/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore

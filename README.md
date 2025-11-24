@@ -25,6 +25,8 @@ cmake --build build
 cmake --build build -t test
 ```
 
+The CI automatically tests both `USE_STD_FOR_TESTS=ON` and `USE_STD_FOR_TESTS=OFF` configurations to ensure compatibility with both standard library and custom implementations.
+
 ## Header
 
 - [onigpp.h](onigpp.h)
