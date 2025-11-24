@@ -220,7 +220,7 @@ public:
 	
 	// Convert character to numeric value
 	int value(char_type c, int base = 10) const {
-		// Handle common bases: 8, 10, 16
+		// Support bases 2-36 (digits 0-9 and letters a-z/A-Z)
 		if (base < 2 || base > 36)
 			return -1;
 		
@@ -300,7 +300,7 @@ private:
 			const std::ctype<char_type>& ct = std::use_facet<std::ctype<char_type>>(m_locale);
 			return ct.is(static_cast<std::ctype_base::mask>(f), c);
 		} catch (...) {
-			// Fallback: basic ASCII checks
+			// Fallback: return false as safe default
 			return false;
 		}
 	}
