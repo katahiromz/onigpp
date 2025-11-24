@@ -530,7 +530,6 @@ public:
 		normal     = regex_constants::normal
 	};
 
-public:
 	basic_regex() : m_regex(nullptr), m_encoding(nullptr), m_flags(regex_constants::normal), m_locale(std::locale()) { }
 	explicit basic_regex(const CharT* s, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr)
 		: basic_regex(s, Traits::length(s), f, enc) { }
