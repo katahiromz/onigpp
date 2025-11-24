@@ -208,6 +208,10 @@ int main() {
 	TEST_CASE_END("wchar_t traits")
 
 	// Test 9: char16_t and char32_t traits (basic functionality)
+	// Note: std::regex_traits<char16_t> and std::regex_traits<char32_t> require
+	// std::ctype<char16_t> and std::ctype<char32_t>, which are not available in libc++
+	// (used on macOS). Skip this test when USE_STD_FOR_TESTS is enabled and libc++ is detected.
+#if !defined(USE_STD_FOR_TESTS) || !defined(_LIBCPP_VERSION)
 	TEST_CASE("char16_t and char32_t traits")
 		myns::regex_traits<char16_t> u16traits;
 		myns::regex_traits<char32_t> u32traits;
@@ -233,6 +237,10 @@ int main() {
 
 		std::cout << "char16_t and char32_t traits work correctly\n";
 	TEST_CASE_END("char16_t and char32_t traits")
+#else
+	std::cout << "\n--- char16_t and char32_t traits ---\n";
+	std::cout << "⚠️  Skipped (std::ctype<char16_t> and std::ctype<char32_t> not available in libc++)\n";
+#endif
 
 	// Test 10: length (existing method)
 	TEST_CASE("length")
