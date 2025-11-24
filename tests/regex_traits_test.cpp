@@ -2,6 +2,7 @@
 // Author: katahiromz
 // License: BSD-2-Clause
 #include "onigpp.h"
+#include "use_std_for_tests.h"
 #include <iostream>
 #include <string>
 #include <locale>
@@ -13,13 +14,6 @@
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
-#endif
-
-// Alias namespace for ease of use
-#ifdef USE_STD_FOR_TESTS
-	namespace myns = std;
-#else
-	namespace myns = onigpp;
 #endif
 
 // Helper macros for test cases
@@ -49,10 +43,8 @@ int main() {
 	std::setlocale(LC_ALL, "");
 #endif
 
-#ifndef USE_STD_FOR_TESTS
-	// Oniguruma initialization
-	myns::auto_init init;
-#endif
+	// Oniguruma initialization (no-op for std::regex)
+	ONIGPP_TEST_INIT;
 
 	std::cout << "=== regex_traits Tests ===\n";
 
