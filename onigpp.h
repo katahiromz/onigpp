@@ -58,26 +58,28 @@ using u32string = basic_string<char32_t>;
 
 namespace regex_constants {
 	// Error types (std::regex compatibility)
-	// These constants correspond to std::regex_constants::error_type values.
+	// These constants match std::regex_constants::error_type values exactly.
 	enum error_type {
-		error_collate    = 1,   // Corresponds to std::regex_constants::error_collate
-		error_ctype      = 2,   // Corresponds to std::regex_constants::error_ctype
-		error_escape     = 3,   // Corresponds to std::regex_constants::error_escape
-		error_backref    = 4,   // Corresponds to std::regex_constants::error_backref
-		error_brack      = 5,   // Corresponds to std::regex_constants::error_brack
-		error_paren      = 6,   // Corresponds to std::regex_constants::error_paren
-		error_range      = 7,   // Corresponds to std::regex_constants::error_range
-		error_space      = 8,   // Corresponds to std::regex_constants::error_space
-		error_badrepeat  = 9,   // Corresponds to std::regex_constants::error_badrepeat
-		error_badbrace   = 10,  // Corresponds to std::regex_constants::error_badbrace
-		error_complexity = 11,  // Corresponds to std::regex_constants::error_complexity
-		error_stack      = 12   // Corresponds to std::regex_constants::error_stack
+		error_collate    = 0,   // Same as std::regex_constants::error_collate
+		error_ctype      = 1,   // Same as std::regex_constants::error_ctype
+		error_escape     = 2,   // Same as std::regex_constants::error_escape
+		error_backref    = 3,   // Same as std::regex_constants::error_backref
+		error_brack      = 4,   // Same as std::regex_constants::error_brack
+		error_paren      = 5,   // Same as std::regex_constants::error_paren
+		error_brace      = 6,   // Same as std::regex_constants::error_brace
+		error_badbrace   = 7,   // Same as std::regex_constants::error_badbrace
+		error_range      = 8,   // Same as std::regex_constants::error_range
+		error_space      = 9,   // Same as std::regex_constants::error_space
+		error_badrepeat  = 10,  // Same as std::regex_constants::error_badrepeat
+		error_complexity = 11,  // Same as std::regex_constants::error_complexity
+		error_stack      = 12   // Same as std::regex_constants::error_stack
 	};
 	
 	// Map Oniguruma error codes to onigpp error_type
 	inline error_type map_oniguruma_error(int onig_error) {
 		// Pattern syntax errors
-		if (onig_error == -100 || onig_error == -101) return error_brack;      // LEFT_BRACE, LEFT_BRACKET
+		if (onig_error == -100) return error_brace;                             // LEFT_BRACE
+		if (onig_error == -101) return error_brack;                             // LEFT_BRACKET
 		if (onig_error == -102 || onig_error == -103) return error_brack;      // EMPTY_CHAR_CLASS, PREMATURE_END
 		if (onig_error == -104 || onig_error == -105 || onig_error == -106) return error_escape;  // END_AT_ESCAPE, META, CONTROL
 		if (onig_error == -108 || onig_error == -109) return error_escape;     // META/CONTROL_CODE_SYNTAX
