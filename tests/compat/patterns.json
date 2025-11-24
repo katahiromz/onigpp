@@ -358,5 +358,45 @@
     "operation": "search",
     "replace_template": "",
     "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "backref_numeric_basic",
+    "description": "Basic numeric backreference matching repeated word",
+    "pattern": "(\\w+)\\s+\\1",
+    "flags": "ECMAScript",
+    "input": "test test",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "backref_multiple_groups",
+    "description": "Multiple groups with backreferences for palindrome",
+    "pattern": "(.)(.)(.)(.)\\4\\3\\2\\1",
+    "flags": "ECMAScript",
+    "input": "abcddcba",
+    "operation": "match",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "backref_replacement",
+    "description": "Replacement with backreference to swap captures",
+    "pattern": "(\\w+):(\\w+)",
+    "flags": "ECMAScript",
+    "input": "key:value",
+    "operation": "replace",
+    "replace_template": "$2=$1",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "named_backref_angle",
+    "description": "Named backreference with angle bracket syntax",
+    "pattern": "(?<word>\\w+)\\s+\\k<word>",
+    "flags": "ECMAScript",
+    "input": "hello hello",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   }
 ]

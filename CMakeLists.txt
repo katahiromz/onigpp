@@ -168,5 +168,9 @@ add_test(
 	NAME compat_test
 	COMMAND $<TARGET_FILE:compat_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
+	NAME backref_test
+	COMMAND $<TARGET_FILE:backref_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 ##############################################################################
