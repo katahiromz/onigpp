@@ -29,7 +29,7 @@ Oniguruma の正規表現エンジンを C++11 向けに `std::regex` ライク�
 簡易例:
 
 ```cpp
-#define USE_ONIGPP
+#define USE_ONIGPP // onigpp と std を切り替え可能
 
 #ifdef USE_ONIGPP
     #include "onigpp.h"
