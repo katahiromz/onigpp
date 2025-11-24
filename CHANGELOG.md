@@ -2,6 +2,8 @@
 
 ## 2025-XX-YY Ver.6.9.13
 
+- Added tools/re_replace.
+
 ## 2025-11-24 Ver.6.9.12
 
 - Bumped project version to 6.9.12.

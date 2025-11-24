@@ -64,6 +64,13 @@ if(USE_STD_FOR_TESTS)
 	add_definitions(-DUSE_STD_FOR_TESTS)
 endif()
 
+# option USE_STD_FOR_TOOLS
+option(USE_STD_FOR_TOOLS "Use std:: for tools" OFF)
+message(STATUS "USE_STD_FOR_TOOLS: ${USE_STD_FOR_TOOLS}")
+if(USE_STD_FOR_TOOLS)
+	add_definitions(-DUSE_STD_FOR_TOOLS)
+endif()
+
 ##############################################################################
 
 # oniguruma
