@@ -10,23 +10,23 @@ int main() {
 
 	using namespace myns::regex_constants;
 	
-	// Test that constants are defined with correct values
-	assert(error_collate == 1);
-	assert(error_ctype == 2);
-	assert(error_escape == 3);
-	assert(error_backref == 4);
-	assert(error_brack == 5);
-	assert(error_paren == 6);
-	assert(error_range == 7);
-	assert(error_space == 8);
-	assert(error_badrepeat == 9);
-	assert(error_badbrace == 10);
-	assert(error_badpattern == 11);
-	assert(error_complexity == 12);
-	assert(error_stack == 13);
+	// Both onigpp and std::regex now use the same error constant values (starting from 0)
+	assert(error_collate == 0);
+	assert(error_ctype == 1);
+	assert(error_escape == 2);
+	assert(error_backref == 3);
+	assert(error_brack == 4);
+	assert(error_paren == 5);
+	assert(error_brace == 6);
+	assert(error_badbrace == 7);
+	assert(error_range == 8);
+	assert(error_space == 9);
+	assert(error_badrepeat == 10);
+	assert(error_complexity == 11);
+	assert(error_stack == 12);
 	
-	// Test that error_type is the correct type (int)
-	static_assert(std::is_same<error_type, int>::value, "error_type should be int");
+	// error_type is now an enum in both onigpp and std::regex (for compatibility)
+	static_assert(std::is_enum<error_type>::value, "error_type should be an enum");
 	
 	// Test that constants are constexpr (can be used in constant expressions)
 	constexpr error_type test_constexpr = error_collate;

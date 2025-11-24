@@ -57,25 +57,52 @@ using u32string = basic_string<char32_t>;
 // onigpp::regex_constants
 
 namespace regex_constants {
-	// Error types
-	using error_type = int;
+	// Error types (std::regex compatibility)
+	// These constants match std::regex_constants::error_type values exactly.
+	enum error_type {
+		error_collate    = 0,   // Same as std::regex_constants::error_collate
+		error_ctype      = 1,   // Same as std::regex_constants::error_ctype
+		error_escape     = 2,   // Same as std::regex_constants::error_escape
+		error_backref    = 3,   // Same as std::regex_constants::error_backref
+		error_brack      = 4,   // Same as std::regex_constants::error_brack
+		error_paren      = 5,   // Same as std::regex_constants::error_paren
+		error_brace      = 6,   // Same as std::regex_constants::error_brace
+		error_badbrace   = 7,   // Same as std::regex_constants::error_badbrace
+		error_range      = 8,   // Same as std::regex_constants::error_range
+		error_space      = 9,   // Same as std::regex_constants::error_space
+		error_badrepeat  = 10,  // Same as std::regex_constants::error_badrepeat
+		error_complexity = 11,  // Same as std::regex_constants::error_complexity
+		error_stack      = 12   // Same as std::regex_constants::error_stack
+	};
 	
-	// Error type constants (std::regex compatibility)
-	// These constants correspond to std::regex_constants::error_type values.
-	// Mapping from Oniguruma error codes to these constants will be implemented in a future PR.
-	static constexpr error_type error_collate    = 1;   // Corresponds to std::regex_constants::error_collate
-	static constexpr error_type error_ctype      = 2;   // Corresponds to std::regex_constants::error_ctype
-	static constexpr error_type error_escape     = 3;   // Corresponds to std::regex_constants::error_escape
-	static constexpr error_type error_backref    = 4;   // Corresponds to std::regex_constants::error_backref
-	static constexpr error_type error_brack      = 5;   // Corresponds to std::regex_constants::error_brack
-	static constexpr error_type error_paren      = 6;   // Corresponds to std::regex_constants::error_paren
-	static constexpr error_type error_range      = 7;   // Corresponds to std::regex_constants::error_range
-	static constexpr error_type error_space      = 8;   // Corresponds to std::regex_constants::error_space
-	static constexpr error_type error_badrepeat  = 9;   // Corresponds to std::regex_constants::error_badrepeat
-	static constexpr error_type error_badbrace   = 10;  // Corresponds to std::regex_constants::error_badbrace
-	static constexpr error_type error_badpattern = 11;  // Corresponds to std::regex_constants::error_badpattern
-	static constexpr error_type error_complexity = 12;  // Corresponds to std::regex_constants::error_complexity
-	static constexpr error_type error_stack      = 13;  // Corresponds to std::regex_constants::error_stack
+	// Map Oniguruma error codes to onigpp error_type
+	inline error_type map_oniguruma_error(int onig_error) {
+		// Pattern syntax errors
+		if (onig_error == -100) return error_brace;                             // LEFT_BRACE
+		if (onig_error == -101) return error_brack;                             // LEFT_BRACKET
+		if (onig_error == -102 || onig_error == -103) return error_brack;      // EMPTY_CHAR_CLASS, PREMATURE_END
+		if (onig_error == -104 || onig_error == -105 || onig_error == -106) return error_escape;  // END_AT_ESCAPE, META, CONTROL
+		if (onig_error == -108 || onig_error == -109) return error_escape;     // META/CONTROL_CODE_SYNTAX
+		if (onig_error >= -112 && onig_error <= -110) return error_range;      // CHAR_CLASS range errors
+		if (onig_error >= -115 && onig_error <= -113) return error_badrepeat;  // REPEAT_OPERATOR errors
+		if (onig_error >= -120 && onig_error <= -116) return error_paren;      // PARENTHESIS/GROUP errors
+		if (onig_error >= -135 && onig_error <= -121) return error_badbrace;   // BRACE/QUANTIFIER errors
+		if (onig_error >= -138 && onig_error <= -136) return error_backref;    // BACKREF errors
+		if (onig_error >= -223 && onig_error <= -139) return error_escape;     // Various syntax errors
+		
+		// Resource/complexity errors
+		if (onig_error == -5) return error_space;                               // MEMORY
+		if (onig_error >= -20 && onig_error <= -15) return error_complexity;   // STACK/LIMIT errors
+		if (onig_error >= -12 && onig_error <= -11) return error_stack;        // BUG errors
+		
+		// Encoding/type errors
+		if (onig_error >= -403 && onig_error <= -400) return error_ctype;      // ENCODING/CODE_POINT errors
+		if (onig_error >= -405 && onig_error <= -404) return error_collate;    // TOO_MANY/TOO_LONG errors
+		if (onig_error == -406) return error_complexity;                        // VERY_INEFFICIENT_PATTERN
+		
+		// Default to error_escape for unknown errors
+		return error_escape;
+	}
 
 	// Syntax options
 	using syntax_option_type = unsigned long;
@@ -191,13 +218,17 @@ public:
 	sub_match(const sub_match<OtherBidirIt>& other)
 		: std::pair<BidirIt, BidirIt>(other.first, other.second), matched(other.matched) {}
 
-	string_type str() const { return string_type(this->first, this->second); }
+	string_type str() const { 
+		return matched ? string_type(this->first, this->second) : string_type(); 
+	}
 	
 	// Implicit conversion to string_type
 	operator string_type() const { return str(); }
 	
 	// Length helper (note: O(n) for non-random-access iterators)
-	size_type length() const { return std::distance(this->first, this->second); }
+	size_type length() const { 
+		return matched ? std::distance(this->first, this->second) : 0; 
+	}
 };
 
 using csub_match = sub_match<const char*>;

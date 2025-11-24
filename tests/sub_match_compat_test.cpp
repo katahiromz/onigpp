@@ -89,7 +89,8 @@ void TestDefaultIsMatched() {
 	csm_false.second = end;
 	csm_false.matched = false;
 	assert(csm_false.matched == false);
-	assert(csm_false.str() == "test");
+	// str() should return empty string when matched is false (std::regex compatible)
+	assert(csm_false.str() == "");
 	
 	// Explicitly set to true
 	myns::csub_match csm_true;

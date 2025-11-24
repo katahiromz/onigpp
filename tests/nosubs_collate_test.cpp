@@ -2,32 +2,32 @@
 // License: BSD-2-Clause
 #include "tests.h"
 
-using namespace onigpp;
-
 void test_nosubs() {
 	std::cout << "Testing nosubs flag...\n";
 	
 	// Test 1: nosubs flag should prevent capturing submatches
 	{
 		std::string pattern = R"((\w+)\s+(\w+))";
-		regex re(pattern.c_str(), pattern.length(), regex_constants::nosubs);
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::nosubs);
 		std::string text = "hello world";
-		smatch m;
+		myns::smatch m;
 		
-		bool found = regex_search(text, m, re);
+		bool found = myns::regex_search(text, m, re);
 		assert(found && "Should find a match");
-		assert(m.empty() && "Match results should be empty with nosubs");
+		// With nosubs, no sub-expressions are captured
+		// onigpp: m.empty() == true, std::regex: m.size() == 1 (only full match)
+		assert((m.empty() || m.size() == 1) && "Match results should not have sub-expression captures with nosubs");
 		std::cout << "  Test 1 passed: nosubs prevents capturing\n";
 	}
 	
 	// Test 2: Without nosubs, submatches should be captured
 	{
 		std::string pattern = R"((\w+)\s+(\w+))";
-		regex re(pattern.c_str(), pattern.length(), regex_constants::normal);
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::ECMAScript);
 		std::string text = "hello world";
-		smatch m;
+		myns::smatch m;
 		
-		bool found = regex_search(text, m, re);
+		bool found = myns::regex_search(text, m, re);
 		assert(found && "Should find a match");
 		assert(!m.empty() && "Match results should not be empty without nosubs");
 		assert(m.size() == 3 && "Should have 3 matches (full match + 2 groups)");
@@ -40,24 +40,26 @@ void test_nosubs() {
 	// Test 3: nosubs with regex_match
 	{
 		std::string pattern = R"((\d+))";
-		regex re(pattern.c_str(), pattern.length(), regex_constants::nosubs);
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::nosubs);
 		std::string text = "123";
-		smatch m;
+		myns::smatch m;
 		
-		bool matched = regex_match(text, m, re);
+		bool matched = myns::regex_match(text, m, re);
 		assert(matched && "Should match");
-		assert(m.empty() && "Match results should be empty with nosubs");
+		// With nosubs, no sub-expressions are captured
+		// onigpp: m.empty() == true, std::regex: m.size() == 1 (only full match)
+		assert((m.empty() || m.size() == 1) && "Match results should not have sub-expression captures with nosubs");
 		std::cout << "  Test 3 passed: nosubs works with regex_match\n";
 	}
 	
 	// Test 4: Without nosubs in regex_match
 	{
 		std::string pattern = R"((\d+))";
-		regex re(pattern.c_str(), pattern.length(), regex_constants::normal);
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::ECMAScript);
 		std::string text = "123";
-		smatch m;
+		myns::smatch m;
 		
-		bool matched = regex_match(text, m, re);
+		bool matched = myns::regex_match(text, m, re);
 		assert(matched && "Should match");
 		assert(!m.empty() && "Match results should not be empty");
 		assert(m.size() == 2 && "Should have 2 matches (full match + 1 group)");
@@ -76,11 +78,11 @@ void test_collate() {
 	// This is a basic test to ensure the flag doesn't cause errors
 	{
 		std::string pattern = "[a-z]+";
-		regex re(pattern.c_str(), pattern.length(), regex_constants::collate);
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::collate);
 		std::string text = "hello";
-		smatch m;
+		myns::smatch m;
 		
-		bool found = regex_search(text, m, re);
+		bool found = myns::regex_search(text, m, re);
 		assert(found && "Should find a match with collate flag");
 		std::cout << "  Test 1 passed: collate flag works without errors\n";
 	}
@@ -88,11 +90,11 @@ void test_collate() {
 	// Test 2: Without collate, pattern should still work
 	{
 		std::string pattern = "[a-z]+";
-		regex re(pattern.c_str(), pattern.length(), regex_constants::normal);
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::ECMAScript);
 		std::string text = "hello";
-		smatch m;
+		myns::smatch m;
 		
-		bool found = regex_search(text, m, re);
+		bool found = myns::regex_search(text, m, re);
 		assert(found && "Should find a match without collate flag");
 		std::cout << "  Test 2 passed: pattern works without collate flag\n";
 	}
@@ -106,11 +108,11 @@ void test_optimize() {
 	// Test 1: optimize flag should not cause errors (it's a no-op)
 	{
 		std::string pattern = R"(\d+)";
-		regex re(pattern.c_str(), pattern.length(), regex_constants::optimize);
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::optimize);
 		std::string text = "123";
-		smatch m;
+		myns::smatch m;
 		
-		bool found = regex_search(text, m, re);
+		bool found = myns::regex_search(text, m, re);
 		assert(found && "Should find a match with optimize flag");
 		std::cout << "  Test 1 passed: optimize flag (no-op) works\n";
 	}
@@ -124,14 +126,16 @@ void test_combined_flags() {
 	// Test: nosubs + collate + optimize
 	{
 		std::string pattern = R"((\w+))";
-		regex re(pattern.c_str(), pattern.length(), 
-		         regex_constants::nosubs | regex_constants::collate | regex_constants::optimize);
+		myns::regex re(pattern.c_str(), pattern.length(), 
+		         myns::regex_constants::nosubs | myns::regex_constants::collate | myns::regex_constants::optimize);
 		std::string text = "hello";
-		smatch m;
+		myns::smatch m;
 		
-		bool found = regex_search(text, m, re);
+		bool found = myns::regex_search(text, m, re);
 		assert(found && "Should find a match");
-		assert(m.empty() && "Match results should be empty with nosubs");
+		// With nosubs, no sub-expressions are captured
+		// onigpp: m.empty() == true, std::regex: m.size() == 1 (only full match)
+		assert((m.empty() || m.size() == 1) && "Match results should not have sub-expression captures with nosubs");
 		std::cout << "  Test passed: combined flags work together\n";
 	}
 	
