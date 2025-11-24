@@ -100,7 +100,7 @@ namespace rex = onigpp;
 rex::auto_init g_auto_init;
 
 // ECMAScript モード（std::regex のデフォルトに類似）
-rex::regex pattern(R"(\d+)", rex::regex_constants::ECMAScript);
+rex::regex pattern(R"(\d+)", rex::regex::ECMAScript);
 ```
 
 ### サポートされている機能
@@ -156,10 +156,36 @@ std::string result = std::regex_replace(text, rex, "$$$1.00");
 #include "onigpp.h"
 onigpp::auto_init init;
 std::string text = "価格: $100";
-onigpp::regex rex(R"(\$(\d+))", onigpp::regex_constants::ECMAScript);
+onigpp::regex rex(R"(\$(\d+))", onigpp::regex::ECMAScript);
 std::string result = onigpp::regex_replace(text, rex, "$$$1.00");
 // 結果: "価格: $100.00"
 ```
+
+### ECMAScript の複数行の例
+
+複数行エミュレーションでは、`^` と `$` は行の境界で一致します:
+
+```cpp
+#include "onigpp.h"
+onigpp::auto_init init;
+
+std::string text = "line1\nline2\nline3";
+onigpp::regex rex("^line\\d", onigpp::regex::ECMAScript | onigpp::regex::multiline);
+
+// 「line」で始まり、その後に数字が続くすべての行を検索します
+auto begin = onigpp::sregex_iterator(text.begin(), text.end(), rex);
+auto end = onigpp::sregex_iterator();
+
+for (auto it = begin; it != end; ++it) {
+    std::cout << "Match: " << it->str() << "\n";
+}
+// 出力:
+// Match: line1
+// Match: line2
+// Match: line3
+```
+
+注意: 複数行モードの場合でも、ドット (`.`) は改行と一致しないため、ECMAScript のセマンティクスは保持されます。
 
 ### 移行のテスト
 

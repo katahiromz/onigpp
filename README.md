@@ -100,7 +100,7 @@ namespace rex = onigpp;
 rex::auto_init g_auto_init;
 
 // ECMAScript mode (similar to std::regex default)
-rex::regex pattern(R"(\d+)", rex::regex_constants::ECMAScript);
+rex::regex pattern(R"(\d+)", rex::regex::ECMAScript);
 ```
 
 ### What's Supported
@@ -158,7 +158,7 @@ std::string result = std::regex_replace(text, rex, "$$$1.00");
 #include "onigpp.h"
 onigpp::auto_init init;
 std::string text = "Price: $100";
-onigpp::regex rex(R"(\$(\d+))", onigpp::regex_constants::ECMAScript);
+onigpp::regex rex(R"(\$(\d+))", onigpp::regex::ECMAScript);
 std::string result = onigpp::regex_replace(text, rex, "$$$1.00");
 // Result: "Price: $100.00"
 ```
@@ -172,8 +172,7 @@ With the multiline emulation, `^` and `$` match at line boundaries:
 onigpp::auto_init init;
 
 std::string text = "line1\nline2\nline3";
-onigpp::regex rex("^line\\d", onigpp::regex_constants::ECMAScript | 
-                             onigpp::regex_constants::multiline);
+onigpp::regex rex("^line\\d", onigpp::regex::ECMAScript | onigpp::regex::multiline);
 
 // Find all lines starting with "line" followed by a digit
 auto begin = onigpp::sregex_iterator(text.begin(), text.end(), rex);
