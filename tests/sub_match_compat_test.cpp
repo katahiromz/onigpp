@@ -4,7 +4,22 @@
 #include "onigpp.h"
 #include <iostream>
 #include <string>
+#include <regex>
 #include <cassert>
+
+// --- Additional headers for Windows ---
+#ifdef _WIN32
+#include <windows.h>
+#include <io.h>
+#include <fcntl.h>
+#endif
+
+// Alias namespace for ease of use
+#ifdef USE_STD_FOR_TESTS
+	namespace myns = std;
+#else
+	namespace myns = onigpp;
+#endif
 
 // =================================================================
 // Helper Functions
@@ -16,7 +31,7 @@
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const onigpp::regex_error& e) { \
+	} catch (const myns::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -40,21 +55,21 @@ void TestConvertingConstructor() {
 	const char* end = str + 5; // "hello"
 	
 	// Create a sub_match with const char* iterators
-	onigpp::csub_match csm(start, end, true);
+	myns::csub_match csm(start, end, true);
 	assert(csm.str() == "hello");
 	assert(csm.matched == true);
 	
 	// Test copy construction (same type)
-	onigpp::csub_match csm_copy(csm);
+	myns::csub_match csm_copy(csm);
 	assert(csm_copy.matched == true);
 	assert(csm_copy.str() == "hello");
 	
 	// Test converting unmatched sub_match
-	onigpp::csub_match csm_unmatched(start, start, false);
+	myns::csub_match csm_unmatched(start, start, false);
 	assert(csm_unmatched.matched == false);
 	assert(csm_unmatched.str() == "");
 	
-	onigpp::csub_match csm_unmatched_copy(csm_unmatched);
+	myns::csub_match csm_unmatched_copy(csm_unmatched);
 	assert(csm_unmatched_copy.matched == false);
 	assert(csm_unmatched_copy.str() == "");
 
@@ -73,17 +88,17 @@ void TestDefaultIsMatched() {
 	const char* end = str + 4;
 	
 	// Without specifying is_matched, it should default to true
-	onigpp::csub_match csm(start, end);
+	myns::csub_match csm(start, end);
 	assert(csm.matched == true);  // Default is true
 	assert(csm.str() == "test");
 	
 	// Explicitly set to false
-	onigpp::csub_match csm_false(start, end, false);
+	myns::csub_match csm_false(start, end, false);
 	assert(csm_false.matched == false);
 	assert(csm_false.str() == "test");
 	
 	// Explicitly set to true
-	onigpp::csub_match csm_true(start, end, true);
+	myns::csub_match csm_true(start, end, true);
 	assert(csm_true.matched == true);
 	assert(csm_true.str() == "test");
 
@@ -101,7 +116,7 @@ void TestImplicitStringConversion() {
 	const char* start = str;
 	const char* end = str + 7;
 	
-	onigpp::csub_match csm(start, end, true);
+	myns::csub_match csm(start, end, true);
 	
 	// Implicit conversion to std::string
 	std::string result = csm;  // Should compile due to operator string_type()
@@ -109,7 +124,7 @@ void TestImplicitStringConversion() {
 	
 	// Test with string iterator
 	std::string s = "testing";
-	onigpp::ssub_match ssm(s.begin(), s.begin() + 4, true);
+	myns::ssub_match ssm(s.begin(), s.begin() + 4, true);
 	std::string result2 = ssm;  // Should also work
 	assert(result2 == "test");
 	
@@ -132,18 +147,18 @@ void TestLengthHelper() {
 	const char* start = str;
 	const char* end = str + 5; // "hello"
 	
-	onigpp::csub_match csm(start, end, true);
+	myns::csub_match csm(start, end, true);
 	assert(csm.length() == 5);
 	assert(csm.str() == "hello");
 	
 	// Test with empty match
-	onigpp::csub_match csm_empty(start, start, true);
+	myns::csub_match csm_empty(start, start, true);
 	assert(csm_empty.length() == 0);
 	assert(csm_empty.str() == "");
 	
 	// Test with string iterator
 	std::string s = "testing";
-	onigpp::ssub_match ssm(s.begin(), s.begin() + 7, true);
+	myns::ssub_match ssm(s.begin(), s.begin() + 7, true);
 	assert(ssm.length() == 7);
 	assert(ssm.str() == "testing");
 	
@@ -162,10 +177,10 @@ void TestIntegrationWithRegex() {
 	TEST_CASE("TestIntegrationWithRegex")
 
 	std::string text = "User ID: u123";
-	onigpp::regex re("ID: ([a-z0-9]+)");
-	onigpp::smatch m;
+	myns::regex re("ID: ([a-z0-9]+)");
+	myns::smatch m;
 	
-	bool found = onigpp::regex_search(text, m, re);
+	bool found = myns::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() == 2);
 	
@@ -180,7 +195,7 @@ void TestIntegrationWithRegex() {
 	assert(captured == "u123");
 	
 	// Test that default constructor still sets matched to false
-	onigpp::ssub_match default_sm;
+	myns::ssub_match default_sm;
 	assert(default_sm.matched == false);
 
 	TEST_CASE_END("TestIntegrationWithRegex")
@@ -191,6 +206,22 @@ void TestIntegrationWithRegex() {
 // -----------------------------------------------------------------
 
 int main() {
+	// --- Measures to avoid garbled characters on Windows consoles ---
+#ifdef _WIN32
+	// Switch to UTF-8 mode
+	//_setmode(_fileno(stdout), _O_U8TEXT); // Use std::cout instead of std::wcout
+	// Ensure console uses UTF-8 code page for interoperability
+	SetConsoleOutputCP(CP_UTF8);
+#else
+	// For Linux/Mac, setting the locale is usually sufficient
+	std::setlocale(LC_ALL, "");
+#endif
+
+#ifndef USE_STD_FOR_TESTS
+	// Oniguruma initialization
+	myns::auto_init init;
+#endif
+
 	std::cout << "=================================\n";
 	std::cout << "sub_match std::sub_match Compatibility Tests\n";
 	std::cout << "=================================\n";
