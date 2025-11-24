@@ -1,13 +1,16 @@
 // Test to verify that new match_flag_type constants are properly defined
 // This test ensures the constants compile and have non-conflicting values
 
-#include "../onigpp.h"
-#include <iostream>
-#include <cassert>
+#include "tests.h"
 
 int main() {
-	using namespace onigpp::regex_constants;
-	
+	using namespace myns::regex_constants;
+
+	TESTS_OUTPUT_INIT();
+
+	// Oniguruma initialization (no-op for std::regex)
+	ONIGPP_TEST_INIT;
+
 	// Verify constants are defined and have expected bit positions
 	std::cout << "Testing match_flag_type constants..." << std::endl;
 	

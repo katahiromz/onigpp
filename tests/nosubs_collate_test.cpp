@@ -1,8 +1,6 @@
 // nosubs_collate_test.cpp --- Test nosubs and collate flags
 // License: BSD-2-Clause
-#include "../onigpp.h"
-#include <iostream>
-#include <cassert>
+#include "tests.h"
 
 using namespace onigpp;
 
@@ -141,8 +139,11 @@ void test_combined_flags() {
 }
 
 int main() {
-	auto_init init_onigpp;
-	
+	TESTS_OUTPUT_INIT();
+
+	// Oniguruma initialization (no-op for std::regex)
+	ONIGPP_TEST_INIT;
+
 	try {
 		test_nosubs();
 		test_collate();

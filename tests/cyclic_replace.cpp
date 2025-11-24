@@ -1,22 +1,7 @@
 ﻿// onigpp_test.cpp --- Tests for Oniguruma++ (onigpp)
 // Author: katahiromz
 // License: BSD-2-Clause
-#include "onigpp.h"
-#include "use_std_for_tests.h"
-#include <iostream>
-#include <string>
-#include <vector>
-#include <regex>
-#include <cassert>
-#include <locale>
-#include <algorithm>
-
-// --- Additional headers for Windows ---
-#ifdef _WIN32
-#include <windows.h>
-#include <io.h>
-#include <fcntl.h>
-#endif
+#include "tests.h"
 
 // ユーザーが指定するパターンの種類を区別するための構造体
 // string -> wstring, regex -> wregex に変更
@@ -153,16 +138,7 @@ void test_cyclic() {
 }
 
 int main() {
-	// --- Measures to avoid garbled characters on Windows consoles ---
-#ifdef _WIN32
-	// Switch to UTF-8 mode
-	_setmode(_fileno(stdout), _O_U8TEXT);
-	// Ensure console uses UTF-8 code page for interoperability
-	SetConsoleOutputCP(CP_UTF8);
-#else
-	// For Linux/Mac, setting the locale is usually sufficient
-	std::setlocale(LC_ALL, "");
-#endif
+	TESTS_OUTPUT_INIT(true);
 
 	// Oniguruma initialization (no-op for std::regex)
 	ONIGPP_TEST_INIT;

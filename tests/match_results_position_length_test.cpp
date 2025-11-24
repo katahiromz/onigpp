@@ -1,26 +1,10 @@
 // match_results_position_length_test.cpp --- Test for position() and length() methods
 // Author: katahiromz
 // License: MIT
-#include "onigpp.h"
-#include "use_std_for_tests.h"
-#include <iostream>
-#include <regex>
-#include <cassert>
-
-// --- Additional headers for Windows ---
-#ifdef _WIN32
-#include <windows.h>
-#include <io.h>
-#include <fcntl.h>
-#endif
+#include "tests.h"
 
 int main() {
-	// --- Measures to avoid garbled characters on Windows consoles ---
-#ifdef _WIN32
-	SetConsoleOutputCP(CP_UTF8);
-#else
-	std::setlocale(LC_ALL, "");
-#endif
+	TESTS_OUTPUT_INIT();
 
 	std::cout << "Testing match_results position() and length() methods...\n";
 

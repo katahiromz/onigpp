@@ -2,13 +2,13 @@
 // Author: katahiromz
 // License: BSD-2-Clause
 
-#include "../onigpp.h"
-#include <cassert>
-#include <iostream>
+#include "tests.h"
 
 // Test that error_type constants are defined and have expected values
 int main() {
-	using namespace onigpp::regex_constants;
+	TESTS_OUTPUT_INIT();
+
+	using namespace myns::regex_constants;
 	
 	// Test that constants are defined with correct values
 	assert(error_collate == 1);

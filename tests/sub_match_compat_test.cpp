@@ -1,19 +1,7 @@
 // sub_match_compat_test.cpp --- Test std::sub_match compatibility features
 // Author: katahiromz
 // License: BSD-2-Clause
-#include "onigpp.h"
-#include "use_std_for_tests.h"
-#include <iostream>
-#include <string>
-#include <regex>
-#include <cassert>
-
-// --- Additional headers for Windows ---
-#ifdef _WIN32
-#include <windows.h>
-#include <io.h>
-#include <fcntl.h>
-#endif
+#include "tests.h"
 
 // =================================================================
 // Helper Functions
@@ -230,16 +218,7 @@ void TestIntegrationWithRegex() {
 // -----------------------------------------------------------------
 
 int main() {
-	// --- Measures to avoid garbled characters on Windows consoles ---
-#ifdef _WIN32
-	// Switch to UTF-8 mode
-	//_setmode(_fileno(stdout), _O_U8TEXT); // Use std::cout instead of std::wcout
-	// Ensure console uses UTF-8 code page for interoperability
-	SetConsoleOutputCP(CP_UTF8);
-#else
-	// For Linux/Mac, setting the locale is usually sufficient
-	std::setlocale(LC_ALL, "");
-#endif
+	TESTS_OUTPUT_INIT();
 
 	// Oniguruma initialization (no-op for std::regex)
 	ONIGPP_TEST_INIT;
