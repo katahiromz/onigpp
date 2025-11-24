@@ -75,8 +75,9 @@ For failed tests, the output shows:
 
 ## Test Cases
 
-The initial test suite includes 12 representative cases:
+The test suite includes 36 comprehensive test cases covering:
 
+### Original 12 Cases (1-12)
 1. **simple_match**: Basic exact match with anchors
 2. **partial_match_fail**: Match that should fail with extra text
 3. **search_basic**: Simple substring search
@@ -89,6 +90,32 @@ The initial test suite includes 12 representative cases:
 10. **sjis_bytes**: SJIS encoding support
 11. **lookahead**: Lookahead assertions
 12. **backreference**: Backreference support
+
+### Additional Coverage Cases (13-36)
+13. **lookbehind_positive**: Positive lookbehind assertions
+14. **negative_lookahead**: Negative lookahead assertions
+15. **negative_lookbehind**: Negative lookbehind assertions
+16. **nested_quantifiers**: Nested quantifier patterns
+17. **named_groups**: Named capture groups
+18. **unicode_property**: Unicode property classes (\p{Han})
+19. **grapheme_cluster**: Combining character matching
+20. **surrogate_pairs**: UTF-16 surrogate pair handling
+21. **posix_character_class**: POSIX character classes ([[:alpha:]])
+22. **iterator_basic**: Iterator operation tests
+23. **token_iterator_basic**: Token iterator operation tests
+24. **replace_ampersand**: Replace with matched text ($&)
+25. **replace_prefix_suffix**: Replace with prefix ($`) and suffix ($')
+26. **non_greedy_quantifier**: Non-greedy quantifier matching
+27. **possessive_quantifier**: Possessive quantifier tests
+28. **alternation_priority**: Alternation left-to-right priority
+29. **empty_pattern**: Empty pattern behavior
+30. **multiline_anchor**: Multiline mode anchor behavior
+31. **utf8_boundary_mixed**: Word boundaries with mixed character sets
+32. **multiple_captures**: Multiple capture groups with multibyte characters
+33. **backreference_icase**: Case-insensitive backreferences
+34. **invalid_pattern**: Exception handling for invalid patterns
+35. **lookaround_boundaries**: Lookaround at string boundaries
+36. **complex_backtrack**: Complex backtracking patterns
 
 ## Adding New Tests
 
@@ -104,6 +131,12 @@ To add new test cases:
 - Compatibility improvements to the onigpp library should be handled in separate PRs
 - The JSON parser is minimal and purpose-built; it can be replaced with a full JSON library if needed
 - Some differences are expected due to implementation-specific features or limitations
+- **Expected differences**: std::regex may not support certain features like:
+  - Positive/negative lookbehind assertions
+  - Named capture groups
+  - Unicode property classes (\p{...})
+  - Iterator and token_iterator operations (not yet implemented in test harness)
+- Test failures indicate behavioral differences and help identify areas where implementations diverge
 
 ## Related Tests
 

@@ -118,5 +118,245 @@
     "operation": "search",
     "replace_template": "",
     "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "lookbehind_positive",
+    "description": "Positive lookbehind",
+    "pattern": "(?<=a)b",
+    "flags": "ECMAScript",
+    "input": "ab",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "negative_lookahead",
+    "description": "Negative lookahead assertion",
+    "pattern": "a(?!b)",
+    "flags": "ECMAScript",
+    "input": "ac",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "negative_lookbehind",
+    "description": "Negative lookbehind assertion",
+    "pattern": "(?<!a)b",
+    "flags": "ECMAScript",
+    "input": "cb",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "nested_quantifiers",
+    "description": "Nested quantifiers pattern",
+    "pattern": "(a{2,3}){2}",
+    "flags": "ECMAScript",
+    "input": "aaaaaa",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "named_groups",
+    "description": "Named capture groups",
+    "pattern": "(?<first>\\w+):(?<second>\\w+)",
+    "flags": "ECMAScript",
+    "input": "key:value",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "unicode_property",
+    "description": "Unicode property class",
+    "pattern": "\\p{Han}+",
+    "flags": "ECMAScript",
+    "input": "漢字",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "grapheme_cluster",
+    "description": "Combining character matching",
+    "pattern": "e\\u0301",
+    "flags": "ECMAScript",
+    "input": "café",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "surrogate_pairs",
+    "description": "UTF-16 surrogate pair handling",
+    "pattern": "𝐀",
+    "flags": "ECMAScript",
+    "input": "𝐀𝐁",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "posix_character_class",
+    "description": "POSIX character class",
+    "pattern": "[[:alpha:]]+",
+    "flags": "ECMAScript",
+    "input": "hello123",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "iterator_basic",
+    "description": "Iterator operation basic test",
+    "pattern": "\\w+",
+    "flags": "ECMAScript",
+    "input": "a b c",
+    "operation": "iterator",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "token_iterator_basic",
+    "description": "Token iterator operation",
+    "pattern": "(\\w+)",
+    "flags": "ECMAScript",
+    "input": "a b",
+    "operation": "token",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "replace_ampersand",
+    "description": "Replace with matched text ($&)",
+    "pattern": "(\\w+)",
+    "flags": "ECMAScript",
+    "input": "hello world",
+    "operation": "replace",
+    "replace_template": "[$&]",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "replace_prefix_suffix",
+    "description": "Replace with prefix and suffix",
+    "pattern": "\\w+",
+    "flags": "ECMAScript",
+    "input": "hello world",
+    "operation": "replace",
+    "replace_template": "$`-$'",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "non_greedy_quantifier",
+    "description": "Non-greedy quantifier matching",
+    "pattern": "a.*?b",
+    "flags": "ECMAScript",
+    "input": "aXXbYYb",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "possessive_quantifier",
+    "description": "Possessive quantifier (may not be supported)",
+    "pattern": "a++b",
+    "flags": "ECMAScript",
+    "input": "aab",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "alternation_priority",
+    "description": "Alternation left-to-right priority",
+    "pattern": "a|ab",
+    "flags": "ECMAScript",
+    "input": "ab",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "empty_pattern",
+    "description": "Empty pattern behavior",
+    "pattern": "",
+    "flags": "ECMAScript",
+    "input": "test",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "multiline_anchor",
+    "description": "Multiline mode anchor behavior",
+    "pattern": "^line",
+    "flags": "multiline",
+    "input": "first\\nline",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "utf8_boundary_mixed",
+    "description": "Word boundary with mixed characters",
+    "pattern": "\\b\\w+\\b",
+    "flags": "ECMAScript",
+    "input": "Hello 世界 test",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "multiple_captures",
+    "description": "Multiple capture groups",
+    "pattern": "(あ)(い)(う)",
+    "flags": "ECMAScript",
+    "input": "あいう",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "backreference_icase",
+    "description": "Case-insensitive backreference",
+    "pattern": "(\\w+)\\s+\\1",
+    "flags": "icase",
+    "input": "Hello HELLO",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "invalid_pattern",
+    "description": "Invalid pattern should throw exception",
+    "pattern": "(",
+    "flags": "ECMAScript",
+    "input": "test",
+    "operation": "match",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "lookaround_boundaries",
+    "description": "Lookaround at string boundaries",
+    "pattern": "(?<=^)hello",
+    "flags": "ECMAScript",
+    "input": "hello",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "complex_backtrack",
+    "description": "Complex backtracking pattern",
+    "pattern": "(a+)+b",
+    "flags": "ECMAScript",
+    "input": "aaaaaaaaaac",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   }
 ]
