@@ -14,11 +14,12 @@ int main() {
     const std::string input = "hello world";
 
     // Check std::regex behavior first
+    // Note: Using regex_match to match the behavior of compat_test's "match" operation
     std::regex re(pattern);
     std::smatch sm;
-    bool std_match = std::regex_search(input, sm, re);
+    bool std_match = std::regex_match(input, sm, re);
 
-    std::cout << "std::regex_search result: " << (std_match ? "matched" : "no match") << "\n";
+    std::cout << "std::regex_match result: " << (std_match ? "matched" : "no match") << "\n";
     std::cout << "std::regex capture count: " << (std_match ? sm.size() : 0) << "\n";
     if (std_match) {
         for (size_t i = 0; i < sm.size(); ++i) {
@@ -27,10 +28,12 @@ int main() {
     }
 
     // Invoke compat_test binary and check for partial_match_fail result.
+    // The test expects to run from the build directory where compat_test is located
     const char* cmd = "./compat_test 2>&1";
     std::FILE* fp = popen(cmd, "r");
     if (!fp) {
         std::cerr << "Failed to run compat_test binary using command: " << cmd << "\n";
+        std::cerr << "Note: This test expects to run from the build directory.\n";
         return 2;
     }
 
@@ -55,6 +58,7 @@ int main() {
                 in_partial_test = false; // Done checking this test, it failed
             } else if (line.find("=== Test:") != std::string::npos) {
                 // We've moved to a different test without seeing a PASS/FAIL
+                // This means partial_match_fail didn't output a result, which is an error
                 in_partial_test = false;
             }
         }
