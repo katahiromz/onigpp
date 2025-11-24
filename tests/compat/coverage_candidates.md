@@ -189,13 +189,37 @@ Each entry includes:
 - **encoding_hint**: UTF-8
 - **rationale**: UTF-8 multibyte character matching. Position/length calculations must be byte-accurate.
 
-### 11. sjis_byte_sequence
+### 14. sjis_byte_sequence
 - **pattern**: `あ` (SJIS encoded)
 - **flags**: ECMAScript
 - **input**: `あい` (SJIS encoded)
 - **operation**: search
 - **encoding_hint**: SJIS
 - **rationale**: SJIS encoding character matching. Tests encoding-specific handling and multibyte character support in SJIS.
+
+### 15. utf8_boundary_detection
+- **pattern**: `\b\w+\b`
+- **flags**: ECMAScript
+- **input**: `Hello 世界 test`
+- **operation**: search
+- **encoding_hint**: UTF-8
+- **rationale**: Word boundaries with mixed ASCII and multibyte UTF-8 characters. Tests boundary detection across character encodings.
+
+### 16. empty_pattern_match
+- **pattern**: ``
+- **flags**: ECMAScript
+- **input**: `test`
+- **operation**: search
+- **encoding_hint**: UTF-8
+- **rationale**: Empty pattern behavior. Some engines match empty string at every position, others may throw error.
+
+### 17. alternation_priority
+- **pattern**: `a|ab`
+- **flags**: ECMAScript
+- **input**: `ab`
+- **operation**: search
+- **encoding_hint**: UTF-8
+- **rationale**: Tests alternation priority and greedy vs left-to-right matching. Different engines may prioritize differently.
 
 ### 22. surrogate_pairs_utf16
 - **pattern**: `𝐀`
@@ -333,19 +357,18 @@ Each entry includes:
 
 ## Summary
 
-Total: **36 candidates** covering:
+Total: **36 candidates** (IDs 1-36) covering:
 - Basic matching and anchors (3)
 - Capture groups and backreferences (2)
 - Zero-width assertions (5)
 - Replacement operations (3)
 - Flags and options (4)
-- Encoding and multibyte (5)
+- Encoding and multibyte (8)
 - Quantifiers (2)
 - Unicode properties (2)
 - POSIX and character classes (1)
 - Iterators (3)
 - Error handling and edge cases (3)
-- Additional edge cases (3)
 
 ## Next Steps
 
