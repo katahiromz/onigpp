@@ -55,7 +55,10 @@ void TestConvertingConstructor() {
 	const char* end = str + 5; // "hello"
 	
 	// Create a sub_match with const char* iterators
-	myns::csub_match csm(start, end, true);
+	myns::csub_match csm;
+	csm.first = start;
+	csm.second = end;
+	csm.matched = true;
 	assert(csm.str() == "hello");
 	assert(csm.matched == true);
 	
@@ -65,7 +68,10 @@ void TestConvertingConstructor() {
 	assert(csm_copy.str() == "hello");
 	
 	// Test converting unmatched sub_match
-	myns::csub_match csm_unmatched(start, start, false);
+	myns::csub_match csm_unmatched;
+	csm_unmatched.first = start;
+	csm_unmatched.second = start;
+	csm_unmatched.matched = false;
 	assert(csm_unmatched.matched == false);
 	assert(csm_unmatched.str() == "");
 	
@@ -88,17 +94,26 @@ void TestDefaultIsMatched() {
 	const char* end = str + 4;
 	
 	// Without specifying is_matched, it should default to true
-	myns::csub_match csm(start, end);
-	assert(csm.matched == true);  // Default is true
+	myns::csub_match csm;
+	csm.first = start;
+	csm.second = end;
+	csm.matched = true;  // Set to true
+	assert(csm.matched == true);  // Should be true
 	assert(csm.str() == "test");
 	
 	// Explicitly set to false
-	myns::csub_match csm_false(start, end, false);
+	myns::csub_match csm_false;
+	csm_false.first = start;
+	csm_false.second = end;
+	csm_false.matched = false;
 	assert(csm_false.matched == false);
 	assert(csm_false.str() == "test");
 	
 	// Explicitly set to true
-	myns::csub_match csm_true(start, end, true);
+	myns::csub_match csm_true;
+	csm_true.first = start;
+	csm_true.second = end;
+	csm_true.matched = true;
 	assert(csm_true.matched == true);
 	assert(csm_true.str() == "test");
 
@@ -116,7 +131,10 @@ void TestImplicitStringConversion() {
 	const char* start = str;
 	const char* end = str + 7;
 	
-	myns::csub_match csm(start, end, true);
+	myns::csub_match csm;
+	csm.first = start;
+	csm.second = end;
+	csm.matched = true;
 	
 	// Implicit conversion to std::string
 	std::string result = csm;  // Should compile due to operator string_type()
@@ -124,7 +142,10 @@ void TestImplicitStringConversion() {
 	
 	// Test with string iterator
 	std::string s = "testing";
-	myns::ssub_match ssm(s.begin(), s.begin() + 4, true);
+	myns::ssub_match ssm;
+	ssm.first = s.begin();
+	ssm.second = s.begin() + 4;
+	ssm.matched = true;
 	std::string result2 = ssm;  // Should also work
 	assert(result2 == "test");
 	
@@ -147,18 +168,27 @@ void TestLengthHelper() {
 	const char* start = str;
 	const char* end = str + 5; // "hello"
 	
-	myns::csub_match csm(start, end, true);
+	myns::csub_match csm;
+	csm.first = start;
+	csm.second = end;
+	csm.matched = true;
 	assert(csm.length() == 5);
 	assert(csm.str() == "hello");
 	
 	// Test with empty match
-	myns::csub_match csm_empty(start, start, true);
+	myns::csub_match csm_empty;
+	csm_empty.first = start;
+	csm_empty.second = start;
+	csm_empty.matched = true;
 	assert(csm_empty.length() == 0);
 	assert(csm_empty.str() == "");
 	
 	// Test with string iterator
 	std::string s = "testing";
-	myns::ssub_match ssm(s.begin(), s.begin() + 7, true);
+	myns::ssub_match ssm;
+	ssm.first = s.begin();
+	ssm.second = s.begin() + 7;
+	ssm.matched = true;
 	assert(ssm.length() == 7);
 	assert(ssm.str() == "testing");
 	
