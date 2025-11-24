@@ -273,6 +273,13 @@ OnigEncoding _get_default_encoding_from_char_type() {
 	return _get_default_encoding_from_char_type_impl<CharT>();
 }
 
+// Helper to check if nosubs flag is set (either in regex or match-time flags)
+inline bool _is_nosubs_active(regex_constants::syntax_option_type regex_flags,
+                              regex_constants::match_flag_type match_flags) {
+	return ((match_flags & regex_constants::nosubs) != regex_constants::match_default) ||
+	       ((regex_flags & regex_constants::nosubs) != regex_constants::match_default);
+}
+
 // Internal implementation for non-contiguous iterators (uses buffer copy)
 template <class BidirIt, class Alloc, class CharT, class Traits>
 typename std::enable_if<
@@ -326,10 +333,7 @@ _regex_search_with_context_impl(
 		m.clear();
 		
 		// Check if nosubs flag is set (either in regex constructor or match-time flags)
-		bool nosubs_flag = ((flags & regex_constants::nosubs) != regex_constants::match_default) ||
-		                   ((e.flags() & regex_constants::nosubs) != regex_constants::match_default);
-		
-		if (nosubs_flag) {
+		if (_is_nosubs_active(e.flags(), flags)) {
 			// nosubs: populate only the full match (m[0]), not submatches
 			// This matches std::regex behavior where match_results has size 1
 			m.resize(1);
@@ -452,10 +456,7 @@ _regex_search_with_context_impl(
 		m.clear();
 		
 		// Check if nosubs flag is set (either in regex constructor or match-time flags)
-		bool nosubs_flag = ((flags & regex_constants::nosubs) != regex_constants::match_default) ||
-		                   ((e.flags() & regex_constants::nosubs) != regex_constants::match_default);
-		
-		if (nosubs_flag) {
+		if (_is_nosubs_active(e.flags(), flags)) {
 			// nosubs: populate only the full match (m[0]), not submatches
 			// This matches std::regex behavior where match_results has size 1
 			m.resize(1);
@@ -1296,10 +1297,7 @@ _regex_match_impl(
 		m.clear();
 		
 		// Check if nosubs flag is set (either in regex constructor or match-time flags)
-		bool nosubs_flag = ((flags & regex_constants::nosubs) != regex_constants::match_default) ||
-		                   ((e.flags() & regex_constants::nosubs) != regex_constants::match_default);
-		
-		if (nosubs_flag) {
+		if (_is_nosubs_active(e.flags(), flags)) {
 			// nosubs: populate only the full match (m[0]), not submatches
 			// This matches std::regex behavior where match_results has size 1
 			m.resize(1);
@@ -1430,10 +1428,7 @@ _regex_match_impl(
 		m.clear();
 		
 		// Check if nosubs flag is set (either in regex constructor or match-time flags)
-		bool nosubs_flag = ((flags & regex_constants::nosubs) != regex_constants::match_default) ||
-		                   ((e.flags() & regex_constants::nosubs) != regex_constants::match_default);
-		
-		if (nosubs_flag) {
+		if (_is_nosubs_active(e.flags(), flags)) {
 			// nosubs: populate only the full match (m[0]), not submatches
 			// This matches std::regex behavior where match_results has size 1
 			m.resize(1);
