@@ -215,7 +215,6 @@ public:
         } catch (const std::regex_error& e) {
             stdExceptionMsg = e.what();
             stdRegexNotSupported = true;
-            std::cout << "⚠️  std::regex exception (unsupported feature): " << e.what() << std::endl;
         } catch (const std::exception& e) {
             stdExceptionMsg = e.what();
             std::cout << "std::regex exception: " << e.what() << std::endl;
@@ -246,7 +245,7 @@ public:
                 // One implementation threw exception
                 if (stdRegexNotSupported && onigppSuccess) {
                     // std::regex doesn't support the feature, but onigpp does - this is expected
-                    std::cout << "⚠️  SKIP: std::regex does not support this pattern" << std::endl;
+                    std::cout << "⚠️  SKIP: std::regex does not support this pattern (" << stdExceptionMsg << ")" << std::endl;
                 } else {
                     // Unexpected exception mismatch
                     std::cout << "❌ FAIL: One implementation threw exception" << std::endl;
