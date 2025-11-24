@@ -8,8 +8,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <map>
-#include <sstream>
 #include <cassert>
 
 // Simple JSON parser for our specific format
@@ -72,6 +70,28 @@ private:
         return s;
     }
 
+    // Find the end of a JSON string value, handling escaped quotes
+    static size_t findStringEnd(const std::string& content, size_t start) {
+        size_t pos = start;
+        while (pos < content.size()) {
+            if (content[pos] == '"') {
+                // Check if it's escaped
+                size_t backslashCount = 0;
+                size_t checkPos = pos;
+                while (checkPos > start && content[checkPos - 1] == '\\') {
+                    backslashCount++;
+                    checkPos--;
+                }
+                // If even number of backslashes (or zero), the quote is not escaped
+                if (backslashCount % 2 == 0) {
+                    return pos;
+                }
+            }
+            pos++;
+        }
+        return std::string::npos;
+    }
+
     static std::vector<TestCase> parseContent(const std::string& content) {
         std::vector<TestCase> cases;
         size_t pos = 0;
@@ -102,7 +122,7 @@ private:
                 
                 if (fieldStart == std::string::npos) break;
                 
-                size_t fieldEnd = content.find('"', fieldStart + 1);
+                size_t fieldEnd = findStringEnd(content, fieldStart + 1);
                 if (fieldEnd == std::string::npos) break;
                 
                 std::string fieldName = content.substr(fieldStart + 1, fieldEnd - fieldStart - 1);
@@ -115,7 +135,7 @@ private:
                 size_t valueStart = content.find('"', colonPos);
                 if (valueStart == std::string::npos) break;
                 
-                size_t valueEnd = content.find('"', valueStart + 1);
+                size_t valueEnd = findStringEnd(content, valueStart + 1);
                 if (valueEnd == std::string::npos) break;
                 
                 std::string value = content.substr(valueStart + 1, valueEnd - valueStart - 1);
