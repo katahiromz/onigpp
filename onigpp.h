@@ -191,13 +191,17 @@ public:
 	sub_match(const sub_match<OtherBidirIt>& other)
 		: std::pair<BidirIt, BidirIt>(other.first, other.second), matched(other.matched) {}
 
-	string_type str() const { return string_type(this->first, this->second); }
+	string_type str() const { 
+		return matched ? string_type(this->first, this->second) : string_type(); 
+	}
 	
 	// Implicit conversion to string_type
 	operator string_type() const { return str(); }
 	
 	// Length helper (note: O(n) for non-random-access iterators)
-	size_type length() const { return std::distance(this->first, this->second); }
+	size_type length() const { 
+		return matched ? std::distance(this->first, this->second) : 0; 
+	}
 };
 
 using csub_match = sub_match<const char*>;

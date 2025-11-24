@@ -89,13 +89,8 @@ void TestDefaultIsMatched() {
 	csm_false.second = end;
 	csm_false.matched = false;
 	assert(csm_false.matched == false);
-#ifndef USE_STD_FOR_TESTS
-	// onigpp: str() returns the string even when matched is false
-	assert(csm_false.str() == "test");
-#else
-	// std::sub_match: str() returns empty string when matched is false
+	// str() should return empty string when matched is false (std::regex compatible)
 	assert(csm_false.str() == "");
-#endif
 	
 	// Explicitly set to true
 	myns::csub_match csm_true;
