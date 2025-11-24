@@ -212,14 +212,18 @@ public:
 
 	// Returns the byte/element offset from search-range begin for the n-th submatch
 	difference_type position(size_type n = 0) const {
-		if (n >= this->size() || !(*this)[n].matched)
+		if (n >= this->size())
+			return npos;
+		if (!(*this)[n].matched)
 			return npos;
 		return std::distance(m_str_begin, (*this)[n].first);
 	}
 
 	// Returns the matched length for the n-th submatch
 	difference_type length(size_type n = 0) const {
-		if (n >= this->size() || !(*this)[n].matched)
+		if (n >= this->size())
+			return 0;
+		if (!(*this)[n].matched)
 			return 0;
 		return std::distance((*this)[n].first, (*this)[n].second);
 	}
