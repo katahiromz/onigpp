@@ -439,8 +439,6 @@ int main(int argc, char* argv[]) {
     // Print summary
     tester.printSummary();
 
-    // Return 0 even if there are failures - the purpose is to detect differences,
-    // not to enforce passing. Failures indicate compatibility differences which is
-    // useful information, not a test error.
-    return 0;
+    // Return non-zero if there are failures
+    return tester.getFailedCount() > 0 ? 1 : 0;
 }

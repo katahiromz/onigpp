@@ -321,12 +321,12 @@ void TestEncodingAndError() {
 	assert(m_utf8.str() == u8"あ");
 
 	// 5.2. Encoding Test (Shift_JIS)
-	std::string text_sjis = "\x82\xa0\x82\xa2\x82\xa4"; // "あいう" in SJIS
+	std::string text_sjis = "\x82\xa0\x82\xa2\x82\xa4"; // "a i u" in SJIS (Japanese hiragana)
 
 	// Compile with SJIS encoding specified
 	sregex re_sjis("\x82\xA0", myns::regex_constants::normal, SJIS);
 
-	// The search string is also "あ" in SJIS	
+	// The search string is also "a" in SJIS (Japanese hiragana)
 	std::string pattern_sjis = "\x82\xa0";
 
 	smatch m_sjis;

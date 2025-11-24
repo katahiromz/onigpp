@@ -3,46 +3,46 @@
 // License: BSD-2-Clause
 #include "tests.h"
 
-// ユーザーが指定するパターンの種類を区別するための構造体
-// string -> wstring, regex -> wregex に変更
+// Structure to distinguish the type of pattern specified by the user
+// Changed from string -> wstring, regex -> wregex
 struct PatternKey {
 	std::wstring pattern;
 	bool is_regex;
 	myns::wregex compiled_regex;
 
-	// 文字列リテラルの場合
+	// For string literals
 	static PatternKey Literal(const std::wstring& s) {
 		return {s, false, myns::wregex()};
 	}
 
-	// 正規表現の場合
+	// For regular expressions
 	static PatternKey Regex(const std::wstring& s) {
 		return {s, true, myns::wregex(s)};
 	}
 };
 
-// Pythonのre.escape相当の関数 (ワイド文字版)
+// Function equivalent to Python's re.escape (wide character version)
 std::wstring regex_escape(const std::wstring& s) {
-	// ワイド文字列リテラル L"..." を使用
+	// Use wide string literal L"..."
 	static const myns::wregex special_chars(LR"([.^$|()\[\]{}*+?\\])");
 	return myns::regex_replace(s, special_chars, LR"(\$&)");
 }
 
 /**
- * 文字列中の複数の文字列やパターンを同時に置換します (Unicode対応版)。
+ * Replaces multiple strings or patterns simultaneously in a string (Unicode-compatible version).
  */
 std::wstring multi_replace(const std::wstring& input, const std::vector<std::pair<PatternKey, std::wstring>>& mapping) {
 	if (mapping.empty()) {
 		return input;
 	}
 
-	// 1. 結合パターンの作成
+	// 1. Create combined pattern
 	std::wstring combined_pattern_str;
 	std::vector<size_t> group_indices;
 	size_t current_group_idx = 1;
 
 	for (size_t i = 0; i < mapping.size(); ++i) {
-		if (i > 0) combined_pattern_str += L"|"; // Lプレフィックスが必要
+		if (i > 0) combined_pattern_str += L"|"; // L prefix is required
 
 		combined_pattern_str += L"(";
 		group_indices.push_back(current_group_idx);
@@ -62,11 +62,11 @@ std::wstring multi_replace(const std::wstring& input, const std::vector<std::pai
 
 	myns::wregex catch_all_re(combined_pattern_str);
 
-	// 2. イテレータを使って検索と置換を実行
+	// 2. Perform search and replace using iterators
 	std::wstring result;
 	std::wstring::const_iterator last_pos = input.begin();
 
-	// myns::regex_iterator<std::wstring::const_iterator, wchar_t> を使用
+	// Use myns::regex_iterator<std::wstring::const_iterator, wchar_t>
 	auto begin = myns::regex_iterator<std::wstring::const_iterator, wchar_t>(input.begin(), input.end(), catch_all_re);
 	auto end = myns::regex_iterator<std::wstring::const_iterator, wchar_t>();
 
@@ -105,8 +105,8 @@ std::wstring multi_replace(const std::wstring& input, const std::vector<std::pai
 }
 
 void test_cyclic() {
-	// 例1: 日本語の単語入れ替え
-	// Lプレフィックスをつけてワイド文字列にする
+	// Example 1: Swapping Japanese words
+	// Use L prefix for wide string
 	std::wstring text1 = L"私はリンゴとバナナが好きです";
 	std::vector<std::pair<PatternKey, std::wstring>> mapping1 = {
 		{PatternKey::Literal(L"リンゴ"), L"バナナ"},
@@ -121,11 +121,11 @@ void test_cyclic() {
 
 	std::wcout << L"-------------------\n";
 
-	// 例2: 正規表現と日本語
-	// 「日付: 2023年11月22日」のような形式を置換
+	// Example 2: Regular expressions with Japanese
+	// Replace Japanese date format (YYYY年MM月DD日) with ISO format
 	std::wstring text2 = L"今日の日付: 2023年11月22日";
 	std::vector<std::pair<PatternKey, std::wstring>> mapping2 = {
-		// (\d{4})年(\d{1,2})月(\d{1,2})日 -> $1/$2/$3
+		// Pattern: (YYYY)年(MM)月(DD)日 -> $1/$2/$3
 		{PatternKey::Regex(LR"((\d{4})年(\d{1,2})月(\d{1,2})日)"), L"$1/$2/$3"},
 		{PatternKey::Literal(L"今日の日付"), L"Date"}
 	};
