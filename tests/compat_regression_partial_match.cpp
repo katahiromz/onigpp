@@ -30,7 +30,11 @@ int main() {
     // Invoke compat_test binary and check for partial_match_fail result.
     // The test expects to run from the build directory where compat_test is located
     const char* cmd = "./compat_test 2>&1";
+#ifdef _WIN32
+    std::FILE* fp = _popen(cmd, "r");
+#else
     std::FILE* fp = popen(cmd, "r");
+#endif
     if (!fp) {
         std::cerr << "Failed to run compat_test binary using command: " << cmd << "\n";
         std::cerr << "Note: This test expects to run from the build directory.\n";
@@ -63,7 +67,11 @@ int main() {
             }
         }
     }
+#ifdef _WIN32
+    int rc = _pclose(fp);
+#else
     int rc = pclose(fp);
+#endif
     if (rc == -1) {
         std::cerr << "Error while waiting for compat_test to finish\n";
         return 3;
