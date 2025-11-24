@@ -1,8 +1,10 @@
+[English](README.md) [License](LICENSE.txt)
+
+---
+
 # Oniguruma++
 
 Oniguruma の正規表現エンジンを C++11 向けに `std::regex` ライクなスタイルでラップしたライブラリです。使いやすさと互換性を重視しています。
-
-[English](README.md) [License](LICENSE.txt)
 
 ![CI](https://github.com/katahiromz/onigpp/actions/workflows/ci.yml/badge.svg)
 
