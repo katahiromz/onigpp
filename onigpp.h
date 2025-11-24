@@ -167,7 +167,7 @@ public:
 	// Implicit conversion to string_type
 	operator string_type() const { return str(); }
 	
-	// Length helper
+	// Length helper (note: O(n) for non-random-access iterators)
 	size_type length() const { return std::distance(this->first, this->second); }
 };
 
