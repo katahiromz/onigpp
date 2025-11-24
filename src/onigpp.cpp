@@ -370,7 +370,7 @@ _regex_search_with_context_impl(
 		onig_region_free(region, 1);
 		OnigErrorInfo einfo;
 		std::memset(&einfo, 0, sizeof(einfo));
-		throw regex_error(static_cast<regex_constants::error_type>(r), einfo);
+		throw regex_error(regex_constants::map_oniguruma_error(r), einfo);
 	}
 }
 
@@ -468,7 +468,7 @@ _regex_search_with_context_impl(
 		onig_region_free(region, 1);
 		OnigErrorInfo einfo;
 		std::memset(&einfo, 0, sizeof(einfo));
-		throw regex_error(static_cast<regex_constants::error_type>(r), einfo);
+		throw regex_error(regex_constants::map_oniguruma_error(r), einfo);
 	}
 }
 
@@ -592,7 +592,7 @@ basic_regex<CharT, Traits>::basic_regex(const CharT* s, size_type count, flag_ty
 	int err = onig_new(&m_regex, reinterpret_cast<const OnigUChar*>(pattern_ptr), 
 	                   reinterpret_cast<const OnigUChar*>(pattern_ptr + pattern_len), 
 	                   options, enc, syntax, &err_info);
-	if (err != ONIG_NORMAL) throw regex_error(static_cast<regex_constants::error_type>(err), err_info);
+	if (err != ONIG_NORMAL) throw regex_error(regex_constants::map_oniguruma_error(err), err_info);
 }
 
 template <class CharT, class Traits>
@@ -620,7 +620,7 @@ basic_regex<CharT, Traits>::basic_regex(const self_type& other)
 
 	int err = onig_new(&m_regex, reinterpret_cast<const OnigUChar*>(s), reinterpret_cast<const OnigUChar*>(s + count), 
 					   options, m_encoding, syntax, &err_info);
-	if (err != ONIG_NORMAL) throw regex_error(static_cast<regex_constants::error_type>(err), err_info);
+	if (err != ONIG_NORMAL) throw regex_error(regex_constants::map_oniguruma_error(err), err_info);
 }
 
 template <class CharT, class Traits>
@@ -1025,7 +1025,7 @@ basic_regex<CharT, Traits>::imbue(locale_type loc) {
 		int err = onig_new(&m_regex, reinterpret_cast<const OnigUChar*>(s), 
 		                   reinterpret_cast<const OnigUChar*>(s + count), 
 		                   options, m_encoding, syntax, &err_info);
-		if (err != ONIG_NORMAL) throw regex_error(static_cast<regex_constants::error_type>(err), err_info);
+		if (err != ONIG_NORMAL) throw regex_error(regex_constants::map_oniguruma_error(err), err_info);
 	}
 	
 	return old_locale;
@@ -1156,7 +1156,7 @@ _regex_match_impl(
 		onig_region_free(region, 1);
 		OnigErrorInfo einfo;
 		std::memset(&einfo, 0, sizeof(einfo));
-		throw regex_error(static_cast<regex_constants::error_type>(r), einfo);
+		throw regex_error(regex_constants::map_oniguruma_error(r), einfo);
 	}
 }
 
@@ -1262,7 +1262,7 @@ _regex_match_impl(
 		onig_region_free(region, 1);
 		OnigErrorInfo einfo;
 		std::memset(&einfo, 0, sizeof(einfo));
-		throw regex_error(static_cast<regex_constants::error_type>(r), einfo);
+		throw regex_error(regex_constants::map_oniguruma_error(r), einfo);
 	}
 }
 

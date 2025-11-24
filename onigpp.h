@@ -59,7 +59,6 @@ using u32string = basic_string<char32_t>;
 namespace regex_constants {
 	// Error types (std::regex compatibility)
 	// These constants correspond to std::regex_constants::error_type values.
-	// Mapping from Oniguruma error codes to these constants will be implemented in a future PR.
 	enum error_type {
 		error_collate    = 1,   // Corresponds to std::regex_constants::error_collate
 		error_ctype      = 2,   // Corresponds to std::regex_constants::error_ctype
@@ -74,6 +73,34 @@ namespace regex_constants {
 		error_complexity = 11,  // Corresponds to std::regex_constants::error_complexity
 		error_stack      = 12   // Corresponds to std::regex_constants::error_stack
 	};
+	
+	// Map Oniguruma error codes to onigpp error_type
+	inline error_type map_oniguruma_error(int onig_error) {
+		// Pattern syntax errors
+		if (onig_error == -100 || onig_error == -101) return error_brack;      // LEFT_BRACE, LEFT_BRACKET
+		if (onig_error == -102 || onig_error == -103) return error_brack;      // EMPTY_CHAR_CLASS, PREMATURE_END
+		if (onig_error == -104 || onig_error == -105 || onig_error == -106) return error_escape;  // END_AT_ESCAPE, META, CONTROL
+		if (onig_error == -108 || onig_error == -109) return error_escape;     // META/CONTROL_CODE_SYNTAX
+		if (onig_error >= -112 && onig_error <= -110) return error_range;      // CHAR_CLASS range errors
+		if (onig_error >= -115 && onig_error <= -113) return error_badrepeat;  // REPEAT_OPERATOR errors
+		if (onig_error >= -120 && onig_error <= -116) return error_paren;      // PARENTHESIS/GROUP errors
+		if (onig_error >= -135 && onig_error <= -121) return error_badbrace;   // BRACE/QUANTIFIER errors
+		if (onig_error >= -138 && onig_error <= -136) return error_backref;    // BACKREF errors
+		if (onig_error >= -223 && onig_error <= -139) return error_escape;     // Various syntax errors
+		
+		// Resource/complexity errors
+		if (onig_error == -5) return error_space;                               // MEMORY
+		if (onig_error >= -20 && onig_error <= -15) return error_complexity;   // STACK/LIMIT errors
+		if (onig_error >= -12 && onig_error <= -11) return error_stack;        // BUG errors
+		
+		// Encoding/type errors
+		if (onig_error >= -403 && onig_error <= -400) return error_ctype;      // ENCODING/CODE_POINT errors
+		if (onig_error >= -405 && onig_error <= -404) return error_collate;    // TOO_MANY/TOO_LONG errors
+		if (onig_error == -406) return error_complexity;                        // VERY_INEFFICIENT_PATTERN
+		
+		// Default to error_escape for unknown errors
+		return error_escape;
+	}
 
 	// Syntax options
 	using syntax_option_type = unsigned long;
