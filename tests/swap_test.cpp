@@ -176,7 +176,12 @@ void TestSwapWithFlags() {
 	std::string pattern1 = "test";
 	std::string pattern2 = "pattern";
 	myns::regex re1(pattern1, myns::regex_constants::icase);
+#ifdef USE_STD_FOR_TESTS
+	// std::regex_constants doesn't have multiline flag, use ECMAScript (default) instead
+	myns::regex re2(pattern2, myns::regex_constants::ECMAScript);
+#else
 	myns::regex re2(pattern2, myns::regex_constants::multiline);
+#endif
 
 	// Verify flags before swap
 #ifndef USE_STD_FOR_TESTS
