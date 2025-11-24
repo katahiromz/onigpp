@@ -2,6 +2,7 @@
 // Author: katahiromz
 // License: MIT
 #include "onigpp.h"
+#include "use_std_for_tests.h"
 #include <iostream>
 #include <regex>
 #include <cassert>
@@ -11,13 +12,6 @@
 #include <windows.h>
 #include <io.h>
 #include <fcntl.h>
-#endif
-
-// Alias namespace for ease of use
-#ifdef USE_STD_FOR_TESTS
-	namespace myns = std;
-#else
-	namespace myns = onigpp;
 #endif
 
 int main() {
@@ -30,10 +24,8 @@ int main() {
 
 	std::cout << "Testing match_results position() and length() methods...\n";
 
-#ifndef USE_STD_FOR_TESTS
-    // Initialize onigpp
-    onigpp::auto_init init;
-#endif
+    // Initialize onigpp (no-op for std::regex)
+    ONIGPP_TEST_INIT;
 
     // Test 1: Basic position() and length() test with cmatch
     {
