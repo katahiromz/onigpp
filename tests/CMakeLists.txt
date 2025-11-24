@@ -87,3 +87,9 @@ add_executable(match_flag_constants_test match_flag_constants_test.cpp)
 target_compile_definitions(match_flag_constants_test PRIVATE "")
 target_include_directories(match_flag_constants_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(match_flag_constants_test PRIVATE onigpp)
+
+# error_type_constants_test.exe
+add_executable(error_type_constants_test error_type_constants_test.cpp)
+target_compile_definitions(error_type_constants_test PRIVATE "")
+target_include_directories(error_type_constants_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(error_type_constants_test PRIVATE onigpp)

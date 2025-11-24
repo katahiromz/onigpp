@@ -59,6 +59,23 @@ using u32string = basic_string<char32_t>;
 namespace regex_constants {
 	// Error types
 	using error_type = int;
+	
+	// Error type constants (std::regex compatibility)
+	// These constants correspond to std::regex_constants::error_type values.
+	// Mapping from Oniguruma error codes to these constants will be implemented in a future PR.
+	static constexpr error_type error_collate    = 1;   // Corresponds to std::regex_constants::error_collate
+	static constexpr error_type error_ctype      = 2;   // Corresponds to std::regex_constants::error_ctype
+	static constexpr error_type error_escape     = 3;   // Corresponds to std::regex_constants::error_escape
+	static constexpr error_type error_backref    = 4;   // Corresponds to std::regex_constants::error_backref
+	static constexpr error_type error_brack      = 5;   // Corresponds to std::regex_constants::error_brack
+	static constexpr error_type error_paren      = 6;   // Corresponds to std::regex_constants::error_paren
+	static constexpr error_type error_range      = 7;   // Corresponds to std::regex_constants::error_range
+	static constexpr error_type error_space      = 8;   // Corresponds to std::regex_constants::error_space
+	static constexpr error_type error_badrepeat  = 9;   // Corresponds to std::regex_constants::error_badrepeat
+	static constexpr error_type error_badbrace   = 10;  // Corresponds to std::regex_constants::error_badbrace
+	static constexpr error_type error_badpattern = 11;  // Corresponds to std::regex_constants::error_badpattern
+	static constexpr error_type error_complexity = 12;  // Corresponds to std::regex_constants::error_complexity
+	static constexpr error_type error_stack      = 13;  // Corresponds to std::regex_constants::error_stack
 
 	// Syntax options
 	using syntax_option_type = unsigned long;

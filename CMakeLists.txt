@@ -134,5 +134,9 @@ add_test(
 	NAME test14
 	COMMAND $<TARGET_FILE:match_flag_constants_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
+	NAME test15
+	COMMAND $<TARGET_FILE:error_type_constants_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 ##############################################################################
