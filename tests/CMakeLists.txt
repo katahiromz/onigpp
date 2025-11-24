@@ -100,5 +100,11 @@ target_compile_definitions(ecmascript_multiline_test PRIVATE "")
 target_include_directories(ecmascript_multiline_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(ecmascript_multiline_test PRIVATE onigpp)
 
+# compat_regression_partial_match.exe
+add_executable(compat_regression_partial_match compat_regression_partial_match.cpp)
+target_compile_definitions(compat_regression_partial_match PRIVATE "")
+target_include_directories(compat_regression_partial_match PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(compat_regression_partial_match PRIVATE onigpp)
+
 # compat tests subdirectory
 add_subdirectory(compat)
