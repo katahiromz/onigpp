@@ -59,10 +59,12 @@ int main() {
 	// Test 1: Typedefs and basic construction
 	TEST_CASE("Typedefs and Constructors")
 		myns::regex_traits<char> traits1;
-		myns::regex_traits<char> traits2{std::locale()};
 		myns::regex_traits<wchar_t> wtraits1;
+#ifndef USE_STD_FOR_TESTS
+		myns::regex_traits<char> traits2{std::locale()};
 		myns::regex_traits<wchar_t> wtraits2{std::locale()};
-		
+#endif
+
 		// Check that locale_type and char_class_type exist
 		myns::regex_traits<char>::locale_type loc;
 		myns::regex_traits<char>::char_class_type cct = 0;
@@ -138,12 +140,16 @@ int main() {
 		// Base 2
 		assert(traits.value('0', 2) == 0);
 		assert(traits.value('1', 2) == 1);
+#ifndef USE_STD_FOR_TESTS // It seems missing
 		assert(traits.value('2', 2) == -1); // Invalid for base 2
-		
+#endif
+
+#ifndef USE_STD_FOR_TESTS // It seems missing
 		// Default parameter (base 10)
 		assert(traits.value('5') == 5);
 		assert(traits.value('a') == -1);
-		
+#endif
+
 		std::cout << "value works correctly for different bases\n";
 	TEST_CASE_END("value")
 
@@ -210,10 +216,11 @@ int main() {
 		assert(u16traits.translate(u'A') == u'A');
 		assert(u32traits.translate(U'A') == U'A');
 		
+#ifndef USE_STD_FOR_TESTS // It seems missing
 		// Test value
 		assert(u16traits.value(u'5', 10) == 5);
 		assert(u32traits.value(U'5', 10) == 5);
-		
+
 		// Test transform (should fall back to simple copy)
 		std::u16string u16s = u"test";
 		std::u16string u16result = u16traits.transform(u16s.data(), u16s.data() + u16s.size());
@@ -222,7 +229,8 @@ int main() {
 		std::u32string u32s = U"test";
 		std::u32string u32result = u32traits.transform(u32s.data(), u32s.data() + u32s.size());
 		assert(u32result == u32s);
-		
+#endif
+
 		std::cout << "char16_t and char32_t traits work correctly\n";
 	TEST_CASE_END("char16_t and char32_t traits")
 

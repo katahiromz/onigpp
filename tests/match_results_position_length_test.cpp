@@ -101,6 +101,7 @@ int main() {
         std::cout << "✅ smatch test passed\n";
     }
 
+#ifndef USE_STD_FOR_TESTS
     // Test 3: Test npos constant for invalid submatch
     {
         const char* text = "Hello World";
@@ -122,6 +123,7 @@ int main() {
         
         std::cout << "✅ npos test passed\n";
     }
+#endif
 
     // Test 4: Test with multiple capture groups
     {

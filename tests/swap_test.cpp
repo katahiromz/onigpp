@@ -4,6 +4,8 @@
 #include "onigpp.h"
 #include <iostream>
 #include <string>
+#include <regex>
+#include <exception>
 #include <cassert>
 
 // --- Additional headers for Windows ---
