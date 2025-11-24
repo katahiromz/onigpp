@@ -14,7 +14,7 @@ This repository provides a wrapper to make Oniguruma easy to use from C++. It of
 
 ## Features
 
-- Access Oniguruma features with a std::regex-like interface
+- Access Oniguruma features with a `std::regex`-like interface
 - Easy build using CMake
 - Compatibility tests against the standard library implementation (CI tests multiple configurations)
 
