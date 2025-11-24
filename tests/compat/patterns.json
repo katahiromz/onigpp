@@ -1,11 +1,13 @@
 [
   {
     "id": "simple_match",
-    "description": "Basic exact match with anchors",
+    "description": "Exact match of whole string",
     "pattern": "^hello$",
     "flags": "ECMAScript",
     "input": "hello",
-    "operation": "match"
+    "operation": "match",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   },
   {
     "id": "partial_match_fail",
@@ -13,48 +15,59 @@
     "pattern": "^hello$",
     "flags": "ECMAScript",
     "input": "hello world",
-    "operation": "match"
+    "operation": "match",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   },
   {
     "id": "search_basic",
-    "description": "Simple search for substring",
+    "description": "Basic substring search",
     "pattern": "world",
     "flags": "ECMAScript",
     "input": "hello world",
-    "operation": "search"
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   },
   {
     "id": "capture_groups",
-    "description": "Extract capture groups",
+    "description": "Capture two groups separated by colon",
     "pattern": "(\\w+):(\\w+)",
     "flags": "ECMAScript",
     "input": "a:1",
-    "operation": "search"
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   },
   {
     "id": "zero_width_boundary",
-    "description": "Word boundary assertion",
+    "description": "Word boundary zero-width match",
     "pattern": "\\bword\\b",
     "flags": "ECMAScript",
     "input": "word",
-    "operation": "search"
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   },
   {
     "id": "replace_dollar_refs",
-    "description": "Replacement with $1, $2 references",
+    "description": "Replacement with numbered group references",
     "pattern": "(a)(b)",
     "flags": "ECMAScript",
     "input": "abx",
     "operation": "replace",
-    "replace_template": "$2$1"
+    "replace_template": "$2$1",
+    "encoding_hint": "UTF-8"
   },
   {
     "id": "nosubs_flag",
-    "description": "Verify nosubs flag prevents submatch storage",
+    "description": "nosubs should avoid storing submatches",
     "pattern": "(x)",
     "flags": "nosubs",
     "input": "x",
-    "operation": "search"
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   },
   {
     "id": "icase_flag",
@@ -62,7 +75,9 @@
     "pattern": "abc",
     "flags": "icase",
     "input": "AbC",
-    "operation": "search"
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   },
   {
     "id": "utf8_multibyte",
@@ -71,31 +86,37 @@
     "flags": "ECMAScript",
     "input": "あいう",
     "operation": "search",
+    "replace_template": "",
     "encoding_hint": "UTF-8"
   },
   {
     "id": "sjis_bytes",
-    "description": "SJIS encoding byte-based match",
+    "description": "SJIS encoding test with ASCII characters",
     "pattern": "test",
     "flags": "ECMAScript",
     "input": "test",
     "operation": "search",
+    "replace_template": "",
     "encoding_hint": "SJIS"
   },
   {
     "id": "lookahead",
-    "description": "Positive lookahead assertion",
+    "description": "Positive lookahead",
     "pattern": "a(?=b)",
     "flags": "ECMAScript",
     "input": "ab",
-    "operation": "search"
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   },
   {
     "id": "backreference",
-    "description": "Backreference to capture group",
+    "description": "Backreference to previous capture",
     "pattern": "(\\w+)\\s+\\1",
     "flags": "ECMAScript",
     "input": "hi hi",
-    "operation": "search"
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   }
 ]
