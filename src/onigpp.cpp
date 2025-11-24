@@ -908,14 +908,23 @@ template <class CharT, class Traits>
 typename basic_regex<CharT, Traits>::string_type 
 basic_regex<CharT, Traits>::_preprocess_pattern_for_ecmascript(const string_type& pattern) const {
 	// ECMAScript pattern preprocessing for compatibility with std::regex ECMAScript mode
-	// Handles: \xHH, \uHHHH, \0, named capture normalization, and multiline emulation
+	// Handles: \xHH, \uHHHH, \0, named capture normalization, and anchor semantics
 	
 	typedef typename string_type::size_type size_type;
 	
-	// First, apply multiline emulation if the multiline flag is set
+	// Handle anchor semantics based on multiline flag
 	string_type working_pattern = pattern;
 	if (m_flags & regex_constants::multiline) {
+		// When multiline is set, emulate ECMAScript multiline mode:
+		// ^ matches at start of string or after line terminators
+		// $ matches at end of string or before line terminators
 		working_pattern = _emulate_ecmascript_multiline(working_pattern);
+	} else {
+		// When multiline is NOT set (default ECMAScript behavior):
+		// Convert ^ to \A (absolute start of string)
+		// Convert $ to \z (absolute end of string)
+		// This ensures behavior matches std::regex ECMAScript mode
+		working_pattern = _convert_anchors_to_absolute(working_pattern);
 	}
 	
 	string_type result;
@@ -1107,6 +1116,86 @@ basic_regex<CharT, Traits>::_emulate_ecmascript_multiline(const string_type& pat
 		if (ch == CharT('$')) {
 			// Replace unescaped $ outside character classes
 			append_dollar_replacement();
+			i++;
+			continue;
+		}
+		
+		// Regular character
+		result += pattern[i++];
+	}
+	
+	return result;
+}
+
+template <class CharT, class Traits>
+typename basic_regex<CharT, Traits>::string_type 
+basic_regex<CharT, Traits>::_convert_anchors_to_absolute(const string_type& pattern) const {
+	// Convert ECMAScript anchors to absolute anchors when multiline is NOT set
+	// This ensures that ^ and $ match only at the start and end of the entire string,
+	// not at line boundaries (which is the default behavior in std::regex ECMAScript mode
+	// when multiline flag is not set).
+	//
+	// Transformation:
+	// - ^ (unescaped, outside character classes) -> \A (absolute start)
+	// - $ (unescaped, outside character classes) -> \z (absolute end)
+	//
+	// Note: Escaped anchors (\^ and \$) and anchors inside character classes are preserved.
+	
+	typedef typename string_type::size_type size_type;
+	string_type result;
+	result.reserve(pattern.size());
+	
+	size_type i = 0;
+	const size_type len = pattern.size();
+	bool in_char_class = false;
+	int bracket_depth = 0; // Track nesting level for character classes
+	
+	while (i < len) {
+		CharT ch = pattern[i];
+		
+		// Handle escape sequences
+		if (ch == CharT('\\') && i + 1 < len) {
+			// Copy escape sequence as-is (two characters)
+			result += pattern[i++];
+			result += pattern[i++];
+			continue;
+		}
+		
+		// Track character class boundaries
+		if (ch == CharT('[') && !in_char_class) {
+			in_char_class = true;
+			bracket_depth = 1;
+			result += pattern[i++];
+			continue;
+		}
+		
+		if (in_char_class) {
+			if (ch == CharT('[')) {
+				// Nested bracket (e.g., for POSIX classes like [[:digit:]])
+				bracket_depth++;
+			} else if (ch == CharT(']')) {
+				bracket_depth--;
+				if (bracket_depth == 0) {
+					in_char_class = false;
+				}
+			}
+			result += pattern[i++];
+			continue;
+		}
+		
+		// Not in character class and not escaped: check for ^ and $
+		if (ch == CharT('^')) {
+			// Replace unescaped ^ with \A (absolute start of string)
+			result += CharT('\\');
+			result += CharT('A');
+			i++;
+			continue;
+		}
+		
+		if (ch == CharT('$')) {
+			// Replace unescaped $ with \z (absolute end of string)
+			result += CharT('\\');
+			result += CharT('z');
 			i++;
 			continue;
 		}
