@@ -89,7 +89,12 @@ void TestMultilineAnchors() {
 	
 	// Even with multiline, dot should NOT match newline in ECMAScript
 	std::string pattern3 = "line1.*line2";
+#ifdef USE_STD_FOR_TESTS
+	// std::regex_constants doesn't have multiline flag, just use ECMAScript
+	sregex re3(pattern3, myns::regex_constants::ECMAScript);
+#else
 	sregex re3(pattern3, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
+#endif
 	smatch m3;
 	assert(!myns::regex_search(text, m3, re3)); // Should not match because dot doesn't match \n
 	
