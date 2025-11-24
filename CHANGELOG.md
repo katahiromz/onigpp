@@ -3,6 +3,7 @@
 ## 2025-XX-YY Ver.6.9.13
 
 - Added tools/re_replace.
+- Added nested flag constants to `basic_regex` class (e.g., `onigpp::regex::ECMAScript`, `onigpp::regex::icase`) for std::regex compatibility.
 
 ## 2025-11-24 Ver.6.9.12
 

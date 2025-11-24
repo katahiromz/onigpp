@@ -515,6 +515,21 @@ public:
 	using self_type = basic_regex<CharT,Traits>;
 	using locale_type = std::locale;
 
+	// Provide std::regex-like nested names for common flags so callers can write:
+	//   onigpp::regex::ECMAScript, onigpp::regex::icase, etc.
+	enum : flag_type {
+		ECMAScript = regex_constants::ECMAScript,
+		basic      = regex_constants::basic,
+		extended   = regex_constants::extended,
+		awk        = regex_constants::awk,
+		grep       = regex_constants::grep,
+		egrep      = regex_constants::egrep,
+		icase      = regex_constants::icase,
+		multiline  = regex_constants::multiline,
+		collate    = regex_constants::collate,
+		normal     = regex_constants::normal
+	};
+
 public:
 	basic_regex() : m_regex(nullptr), m_encoding(nullptr), m_flags(regex_constants::normal), m_locale(std::locale()) { }
 	explicit basic_regex(const CharT* s, flag_type f = regex_constants::normal, OnigEncoding enc = nullptr)
