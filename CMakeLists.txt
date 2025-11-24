@@ -147,6 +147,10 @@ add_test(
 	COMMAND $<TARGET_FILE:compat_regression_partial_match>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 add_test(
+	NAME test18
+	COMMAND $<TARGET_FILE:nosubs_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
 	NAME compat_test
 	COMMAND $<TARGET_FILE:compat_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
