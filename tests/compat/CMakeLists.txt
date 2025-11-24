@@ -2,7 +2,6 @@
 
 # compat_test executable
 add_executable(compat_test compat_test.cpp)
-target_compile_definitions(compat_test PRIVATE "")
 target_include_directories(compat_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
 target_link_libraries(compat_test PRIVATE onigpp)
 

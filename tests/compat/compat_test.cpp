@@ -38,38 +38,6 @@ public:
     }
 
 private:
-    static std::string trim(const std::string& str) {
-        size_t first = str.find_first_not_of(" \t\n\r");
-        if (first == std::string::npos) return "";
-        size_t last = str.find_last_not_of(" \t\n\r");
-        return str.substr(first, last - first + 1);
-    }
-
-    static std::string unquote(const std::string& str) {
-        std::string s = trim(str);
-        if (s.size() >= 2 && s.front() == '"' && s.back() == '"') {
-            // Handle escape sequences
-            std::string result;
-            for (size_t i = 1; i < s.size() - 1; ++i) {
-                if (s[i] == '\\' && i + 1 < s.size() - 1) {
-                    switch (s[i + 1]) {
-                        case 'n': result += '\n'; break;
-                        case 't': result += '\t'; break;
-                        case 'r': result += '\r'; break;
-                        case '\\': result += '\\'; break;
-                        case '"': result += '"'; break;
-                        default: result += s[i + 1]; break;
-                    }
-                    ++i;
-                } else {
-                    result += s[i];
-                }
-            }
-            return result;
-        }
-        return s;
-    }
-
     // Find the end of a JSON string value, handling escaped quotes
     static size_t findStringEnd(const std::string& content, size_t start) {
         size_t pos = start;
