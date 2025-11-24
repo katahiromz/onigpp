@@ -122,5 +122,9 @@ add_test(
 	NAME test11
 	COMMAND $<TARGET_FILE:regex_traits_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
+	NAME test12
+	COMMAND $<TARGET_FILE:sub_match_compat_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 ##############################################################################

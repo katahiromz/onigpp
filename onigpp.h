@@ -146,17 +146,29 @@ public:
 	using value_type = typename std::iterator_traits<BidirIt>::value_type;
 	using difference_type = typename std::iterator_traits<BidirIt>::difference_type;
 	using string_type = basic_string<value_type>;
+	using size_type = onigpp::size_type;
 
 	bool matched;
 
 	// Default constructor
 	sub_match() : std::pair<BidirIt, BidirIt>(), matched(false) {}
 	
-	// Added 3-argument constructor
-	sub_match(BidirIt first, BidirIt second, bool is_matched) 
+	// Added 3-argument constructor with default is_matched = true
+	sub_match(BidirIt first, BidirIt second, bool is_matched = true) 
 		: std::pair<BidirIt, BidirIt>(first, second), matched(is_matched) {}
+	
+	// Templated converting constructor
+	template <class OtherBidirIt>
+	sub_match(const sub_match<OtherBidirIt>& other)
+		: std::pair<BidirIt, BidirIt>(other.first, other.second), matched(other.matched) {}
 
 	string_type str() const { return string_type(this->first, this->second); }
+	
+	// Implicit conversion to string_type
+	operator string_type() const { return str(); }
+	
+	// Length helper
+	size_type length() const { return std::distance(this->first, this->second); }
 };
 
 using csub_match = sub_match<const char*>;
