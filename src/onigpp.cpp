@@ -686,10 +686,18 @@ typename basic_regex<CharT, Traits>::string_type
 basic_regex<CharT, Traits>::_preprocess_pattern_for_locale(const string_type& pattern) const {
 	// Conservative POSIX character class expander for locale support
 	// Expands [:digit:], [:alpha:], [:alnum:], [:space:], [:upper:], [:lower:],
-	// [:punct:], [:xdigit:], [:cntrl:], [:print:] inside bracket expressions
+	// [:punct:], [:xdigit:], [:cntrl:], [:print:], [:graph:] inside bracket expressions
 	//
 	// Note: Oniguruma natively supports POSIX character classes when using POSIX syntaxes.
 	// We only need to preprocess for other syntaxes (like Oniguruma default or ECMAScript).
+	//
+	// Limitations:
+	// - Only implemented for char and wchar_t (not char16_t/char32_t)
+	// - For char: enumerates all 256 values (0-255)
+	// - For wchar_t: enumerates up to U+0800 (~2K characters) to avoid very large expansions
+	//   Covers Basic Latin, Latin-1 Supplement, Latin Extended A/B, and other common blocks
+	// - Performance: Expansion happens once during pattern compilation; fast for typical use cases
+	//
 	// Check if we're using a POSIX syntax that already supports these classes.
 	OnigSyntaxType* syntax = _syntax_from_flags(m_flags);
 	if (syntax == ONIG_SYNTAX_POSIX_BASIC || syntax == ONIG_SYNTAX_POSIX_EXTENDED || 
@@ -703,6 +711,9 @@ basic_regex<CharT, Traits>::_preprocess_pattern_for_locale(const string_type& pa
 }
 
 // Implementation of POSIX class expansion for char and wchar_t
+// This function expands POSIX character classes (e.g., [:lower:], [:digit:]) inside bracket
+// expressions into explicit character lists based on the imbued locale's ctype facet.
+// The expansion is locale-aware and respects the character classification of the given locale.
 template <class CharT>
 typename posix_class_expander<CharT,
 	typename std::enable_if<
@@ -765,10 +776,12 @@ posix_class_expander<CharT,
 						string_type expansion;
 						
 						// Test characters in a reasonable range.
-						// For 8-bit char: all 256 possible values (0-255)
-						// For wider types: limit to ASCII-compatible range for portability and performance
-						// (full Unicode character classification would be more complex and slower)
-						const int max_char = (sizeof(CharT) == 1) ? 256 : 128;
+						// For char: all 256 possible values (0-255)
+						// For wchar_t: enumerate up to U+0800 (2048 characters) to avoid very large expansions
+						// This covers Basic Latin, Latin-1 Supplement, Latin Extended A/B, and other common
+						// character blocks sufficient for most locale-aware character classification.
+						// Performance: ~2K iterations for wchar_t; fast and practical for typical use cases.
+						const int max_char = (sizeof(CharT) == 1) ? 256 : 0x800;
 						
 						// Determine which class we're dealing with
 						std::ctype_base::mask mask = 0;
@@ -803,6 +816,9 @@ posix_class_expander<CharT,
 							recognized = true;
 						} else if (str_equals(class_name, "print")) {
 							mask = std::ctype_base::print;
+							recognized = true;
+						} else if (str_equals(class_name, "graph")) {
+							mask = std::ctype_base::graph;
 							recognized = true;
 						}
 						

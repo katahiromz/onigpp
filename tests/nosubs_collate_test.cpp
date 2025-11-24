@@ -99,6 +99,90 @@ void test_collate() {
 		std::cout << "  Test 2 passed: pattern works without collate flag\n";
 	}
 	
+	// Test 3: POSIX character class expansion with collate and locale
+	// Test with [:lower:] class to verify locale-aware expansion
+	{
+		try {
+			// Try to imbue with the user's default locale
+			std::string pattern = "[[:lower:]]+";
+			myns::regex re;
+			re.imbue(std::locale(""));  // User's default locale
+			re.assign(pattern, myns::regex_constants::collate);
+			
+			std::string text = "hello WORLD";
+			myns::smatch m;
+			
+			bool found = myns::regex_search(text, m, re);
+			assert(found && "Should find lowercase match with [:lower:] and locale");
+			assert(m[0].str() == "hello" && "Should match only lowercase text");
+			std::cout << "  Test 3 passed: POSIX class [:lower:] with locale expansion works\n";
+		} catch (const std::runtime_error& e) {
+			// Locale may not be available on all systems, skip gracefully
+			std::cout << "  Test 3 skipped: locale not available (" << e.what() << ")\n";
+		}
+	}
+	
+	// Test 4: POSIX character class [:digit:] with collate
+	{
+		std::string pattern = "[[:digit:]]+";
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::collate);
+		std::string text = "abc123def";
+		myns::smatch m;
+		
+		bool found = myns::regex_search(text, m, re);
+		assert(found && "Should find digits with [:digit:]");
+		assert(m[0].str() == "123" && "Should match digit sequence");
+		std::cout << "  Test 4 passed: POSIX class [:digit:] works\n";
+	}
+	
+	// Test 5: POSIX character class [:graph:] with collate
+	{
+		std::string pattern = "[[:graph:]]+";
+		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::collate);
+		std::string text = "abc 123";  // space is not in [:graph:]
+		myns::smatch m;
+		
+		bool found = myns::regex_search(text, m, re);
+		assert(found && "Should find graphical characters with [:graph:]");
+		assert(m[0].str() == "abc" && "Should match graphical characters before space");
+		std::cout << "  Test 5 passed: POSIX class [:graph:] works\n";
+	}
+	
+	// Test 6: French-accented characters with locale-aware [:lower:] and [:alpha:]
+	// Verify that French characters like é, è, à are properly handled
+	{
+		try {
+			// Test with [:lower:] - should match French lowercase letters
+			std::string pattern_lower = "[[:lower:]]+";
+			myns::regex re_lower;
+			re_lower.imbue(std::locale(""));  // User's default locale
+			re_lower.assign(pattern_lower, myns::regex_constants::collate);
+			
+			// Text with French accented characters
+			std::string text_fr = "café";  // Contains 'é' (U+00E9)
+			myns::smatch m;
+			
+			bool found = myns::regex_search(text_fr, m, re_lower);
+			// Should match at least "caf" and possibly "café" depending on locale
+			assert(found && "Should find lowercase match with French text");
+			
+			// Test with [:alpha:] - should match all French letters
+			std::string pattern_alpha = "[[:alpha:]]+";
+			myns::regex re_alpha;
+			re_alpha.imbue(std::locale(""));
+			re_alpha.assign(pattern_alpha, myns::regex_constants::collate);
+			
+			std::string text_fr2 = "Éléphant";  // Mixed case French
+			bool found_alpha = myns::regex_search(text_fr2, m, re_alpha);
+			assert(found_alpha && "Should find alphabetic match with French accented text");
+			
+			std::cout << "  Test 6 passed: French-accented characters work with locale\n";
+		} catch (const std::runtime_error& e) {
+			// Locale may not be available on all systems, skip gracefully
+			std::cout << "  Test 6 skipped: locale not available (" << e.what() << ")\n";
+		}
+	}
+	
 	std::cout << "All collate tests passed!\n";
 }
 

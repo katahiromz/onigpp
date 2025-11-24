@@ -317,13 +317,26 @@ public:
 		return -1;
 	}
 	
-	// Lookup collation name (returns empty string for simplicity)
+	// Lookup collation name using the locale's collate facet
+	// Returns a locale-specific collation key for the given character sequence,
+	// which can be used for locale-aware string comparison and collation.
+	// Limitations: If the collate facet is not available for the character type,
+	// falls back to returning the input sequence unchanged.
 	string_type lookup_collatename(const char_type* first, const char_type* last) const {
-		// Standard collation names are locale-specific
-		// Return empty string as a safe, portable default
-		(void)first;
-		(void)last;
-		return string_type();
+		// Attempt to use the locale's collate facet to get a collation key
+		// For char and wchar_t, try the collate facet; fallback to simple copy
+		try {
+			// Check if we have a collate facet for this character type
+			if (std::has_facet<std::collate<char_type>>(m_locale)) {
+				const std::collate<char_type>& col = std::use_facet<std::collate<char_type>>(m_locale);
+				// Return the transformed collation key
+				return col.transform(first, last);
+			}
+		} catch (...) {
+			// Facet not available or error occurred
+		}
+		// Fallback: return the input sequence as-is
+		return string_type(first, last);
 	}
 
 private:
