@@ -107,5 +107,11 @@ target_include_directories(compat_regression_partial_match PRIVATE ${CMAKE_CURRE
 # Note: This test invokes the compat_test binary, so it doesn't need to link to onigpp
 # target_link_libraries(compat_regression_partial_match PRIVATE onigpp)
 
+# nosubs_test.exe
+add_executable(nosubs_test nosubs_test.cpp)
+target_compile_definitions(nosubs_test PRIVATE "")
+target_include_directories(nosubs_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(nosubs_test PRIVATE onigpp)
+
 # compat tests subdirectory
 add_subdirectory(compat)

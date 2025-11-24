@@ -1,0 +1,899 @@
+Start testing: Nov 24 10:06 UTC
+----------------------------------------------------------
+1/19 Testing: test1
+1/19 Test: test1
+Command: "/home/runner/work/onigpp/onigpp/build_std/onigpp_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test1" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+========================================================
+ Starting onigpp.h Comprehensive Test Suite
+========================================================
+
+--- TestCoreFunctions ---
+✅ TestCoreFunctions PASSED.
+
+--- TestResourceManagement ---
+✅ TestResourceManagement PASSED.
+
+--- TestIterators ---
+  3.1. regex_iterator:
+  3.2. regex_iterator (Zero-Width):
+  3.3. regex_token_iterator (Delimiter):
+  3.4. regex_token_iterator (Capture Groups):
+✅ TestIterators PASSED.
+
+--- TestReplacement ---
+result3: -word-
+✅ TestReplacement PASSED.
+
+--- TestSpecialReplacementPatterns ---
+  $&: OK
+  $`: OK
+  $$: OK
+✅ TestSpecialReplacementPatterns PASSED.
+
+--- TestEncodingAndError ---
+✅ TestEncodingAndError PASSED.
+
+--- TestSyntaxSelection ---
+  6.1. POSIX Basic Syntax:
+  POSIX Basic matched 'a+b' as literal
+  6.2. POSIX Extended Syntax:
+  POSIX Extended matched 'abb' with '+' as quantifier
+✅ TestSyntaxSelection PASSED.
+
+--- TestPOSIXClasses ---
+  7.1. POSIX [:digit:] class:
+  [:digit:] matched '12345'
+  7.2. POSIX [:alpha:] class:
+  [:alpha:] matched 'abc'
+  7.3. POSIX [:alnum:] class:
+  [:alnum:] matched 'abc123'
+  7.4. POSIX [:space:] class:
+  [:space:] matched three spaces
+  7.5. POSIX [:upper:] class:
+  [:upper:] matched 'DEF'
+  7.6. POSIX [:lower:] class:
+  [:lower:] matched 'def'
+  7.7. POSIX [:punct:] class:
+  [:punct:] matched punctuation
+  7.8. POSIX [:xdigit:] class:
+  [:xdigit:] matched '1A2F'
+✅ TestPOSIXClasses PASSED.
+
+========================================================
+✨ All tests succeeded.
+========================================================
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test1" end time: Nov 24 10:06 UTC
+"test1" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/19 Testing: test2
+2/19 Test: test2
+Command: "/home/runner/work/onigpp/onigpp/build_std/onigpp_testw"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test2" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+========================================================
+ Starting onigpp.h Wide-character Test Suite
+========================================================
+
+--- TestCoreFunctions ---
+✅ TestCoreFunctions PASSED.
+
+--- TestResourceManagement ---
+✅ TestResourceManagement PASSED.
+
+--- TestIterators ---
+  3.1. wsregex_iterator:
+  3.2. wsregex_iterator (Zero-Width):
+  3.3. wsregex_token_iterator (Delimiter):
+  3.4. wsregex_token_iterator (Capture Groups):
+✅ TestIterators PASSED.
+
+--- TestReplacement ---
+✅ TestReplacement PASSED.
+
+--- TestSpecialReplacementPatterns ---
+  $&: OK
+  $`: OK
+  $$: OK
+✅ TestSpecialReplacementPatterns PASSED.
+
+--- TestEncodingAndError ---
+✅ TestEncodingAndError PASSED.
+
+========================================================
+✨ All wide-character tests succeeded.
+========================================================
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test2" end time: Nov 24 10:06 UTC
+"test2" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/19 Testing: test3
+3/19 Test: test3
+Command: "/home/runner/work/onigpp/onigpp/build_std/cyclic_replace"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test3" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+Original: 私はリンゴとバナナが好きです
+Replaced: 私はバナナとリンゴが好きです
+-------------------
+Original: 今日の日付: 2023年11月22日
+Replaced: Date: 2023/11/22
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test3" end time: Nov 24 10:06 UTC
+"test3" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/19 Testing: test4
+4/19 Test: test4
+Command: "/home/runner/work/onigpp/onigpp/build_std/onigpp_bidir_iterator_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test4" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+========================================
+Onigpp BidirectionalIterator Tests
+========================================
+
+--- TestListRegexSearch ---
+✅ TestListRegexSearch PASSED.
+
+--- TestDequeRegexMatch ---
+✅ TestDequeRegexMatch PASSED.
+
+--- TestListRegexIterator ---
+✅ TestListRegexIterator PASSED.
+
+--- TestEmptyListRegexSearch ---
+✅ TestEmptyListRegexSearch PASSED.
+
+--- TestDequeCaptureGroups ---
+✅ TestDequeCaptureGroups PASSED.
+
+--- TestVectorStillWorks ---
+✅ TestVectorStillWorks PASSED.
+
+========================================
+All tests PASSED!
+========================================
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test4" end time: Nov 24 10:06 UTC
+"test4" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/19 Testing: test5
+5/19 Test: test5
+Command: "/home/runner/work/onigpp/onigpp/build_std/ecmascript_compat_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test5" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+========================================================
+ ECMAScript Compatibility Test Suite
+========================================================
+
+--- TestDotBehaviorDefault ---
+✅ TestDotBehaviorDefault PASSED.
+
+--- TestMultilineAnchors ---
+✅ TestMultilineAnchors PASSED.
+
+--- TestHexEscapes ---
+✅ TestHexEscapes PASSED.
+
+--- TestUnicodeEscapes ---
+⚠️  Skipped: GCC's std::regex does not support \uHHHH Unicode escape sequences
+✅ TestUnicodeEscapes PASSED.
+
+--- TestNullEscape ---
+⚠️  Skipped: GCC's std::regex does not support \0NN octal escape sequences
+✅ TestNullEscape PASSED.
+
+--- TestNoPreprocessingWithoutECMAScript ---
+✅ TestNoPreprocessingWithoutECMAScript PASSED.
+
+--- TestCombinedFeatures ---
+✅ TestCombinedFeatures PASSED.
+
+--- TestReplacementTemplate ---
+✅ TestReplacementTemplate PASSED.
+
+--- TestCharacterClasses ---
+✅ TestCharacterClasses PASSED.
+
+--- TestCaptureGroups ---
+✅ TestCaptureGroups PASSED.
+
+--- TestQuantifiers ---
+✅ TestQuantifiers PASSED.
+
+--- TestLookaheadAssertions ---
+✅ TestLookaheadAssertions PASSED.
+
+========================================================
+✨ All ECMAScript compatibility tests passed!
+========================================================
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test5" end time: Nov 24 10:06 UTC
+"test5" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/19 Testing: test6
+6/19 Test: test6
+Command: "/home/runner/work/onigpp/onigpp/build_std/iterator_range_ctor_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test6" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+========================================
+Iterator Range Constructor/Assign Tests
+========================================
+
+--- TestIteratorRangeCtorWithList ---
+✅ TestIteratorRangeCtorWithList PASSED.
+
+--- TestIteratorRangeCtorWithDeque ---
+✅ TestIteratorRangeCtorWithDeque PASSED.
+
+--- TestIteratorRangeCtorWithVector ---
+✅ TestIteratorRangeCtorWithVector PASSED.
+
+--- TestIteratorRangeCtorWithStringIterators ---
+✅ TestIteratorRangeCtorWithStringIterators PASSED.
+
+--- TestIteratorRangeAssignWithList ---
+✅ TestIteratorRangeAssignWithList PASSED.
+
+--- TestIteratorRangeAssignWithDeque ---
+✅ TestIteratorRangeAssignWithDeque PASSED.
+
+--- TestIteratorRangeAssignWithStringIterators ---
+✅ TestIteratorRangeAssignWithStringIterators PASSED.
+
+--- TestIteratorRangeCtorWithFlags ---
+✅ TestIteratorRangeCtorWithFlags PASSED.
+
+--- TestIteratorRangeAssignWithFlags ---
+✅ TestIteratorRangeAssignWithFlags PASSED.
+
+========================================
+All tests PASSED!
+========================================
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test6" end time: Nov 24 10:06 UTC
+"test6" time elapsed: 00:00:00
+----------------------------------------------------------
+
+7/19 Testing: test7
+7/19 Test: test7
+Command: "/home/runner/work/onigpp/onigpp/build_std/match_results_aliases_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test7" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+Testing match_results type aliases...
+✅ cmatch test passed
+✅ smatch test passed
+✅ wsmatch test passed
+
+✅ All match_results alias tests passed!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test7" end time: Nov 24 10:06 UTC
+"test7" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/19 Testing: test8
+8/19 Test: test8
+Command: "/home/runner/work/onigpp/onigpp/build_std/swap_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test8" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+========================================
+Non-Member Swap Tests
+========================================
+
+--- TestNonMemberSwap ---
+✅ TestNonMemberSwap PASSED.
+
+--- TestSwapWithStdSwap ---
+✅ TestSwapWithStdSwap PASSED.
+
+--- TestSwapWithWideCharacters ---
+✅ TestSwapWithWideCharacters PASSED.
+
+--- TestSwapWithFlags ---
+✅ TestSwapWithFlags PASSED.
+
+========================================
+All tests PASSED!
+========================================
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test8" end time: Nov 24 10:06 UTC
+"test8" time elapsed: 00:00:00
+----------------------------------------------------------
+
+9/19 Testing: test9
+9/19 Test: test9
+Command: "/home/runner/work/onigpp/onigpp/build_std/initializer_list_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test9" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+Testing regex_token_iterator with std::initializer_list overloads
+  Test 1: initializer_list with {-1} for delimiter
+    PASSED
+  Test 2: initializer_list with {0, 1, 2}
+    PASSED
+  Test 3: single int parameter (2nd capture group)
+    PASSED
+  Test 4: single int parameter (-1 for non-matching parts)
+    PASSED
+  Test 5: wide string with initializer_list
+    PASSED
+
+All tests passed!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test9" end time: Nov 24 10:06 UTC
+"test9" time elapsed: 00:00:00
+----------------------------------------------------------
+
+10/19 Testing: test10
+10/19 Test: test10
+Command: "/home/runner/work/onigpp/onigpp/build_std/match_results_position_length_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test10" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+Testing match_results position() and length() methods...
+  position(0) = 6 ✓
+  length(0) = 9 ✓
+  position(1) = 12 ✓
+  length(1) = 3 ✓
+✅ Basic cmatch test passed
+  smatch position(0) = 5 ✓
+  smatch length(0) = 10 ✓
+  smatch position(1) = 12 ✓
+  smatch length(1) = 3 ✓
+✅ smatch test passed
+✅ Multiple capture groups test passed
+  wsmatch position(0) = 8 ✓
+  wsmatch length(0) = 8 ✓
+✅ wsmatch test passed
+
+✅ All position() and length() tests passed!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test10" end time: Nov 24 10:06 UTC
+"test10" time elapsed: 00:00:00
+----------------------------------------------------------
+
+11/19 Testing: test11
+11/19 Test: test11
+Command: "/home/runner/work/onigpp/onigpp/build_std/regex_traits_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test11" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+=== regex_traits Tests ===
+
+--- Typedefs and Constructors ---
+Typedefs and constructors work correctly
+✅ Typedefs and Constructors PASSED.
+
+--- getloc and imbue ---
+getloc and imbue work correctly
+✅ getloc and imbue PASSED.
+
+--- translate ---
+translate works correctly
+✅ translate PASSED.
+
+--- transform ---
+transform works correctly
+✅ transform PASSED.
+
+--- value ---
+value works correctly for different bases
+✅ value PASSED.
+
+--- isctype ---
+isctype: '5' is digit = 1
+isctype: 'a' is digit = 0
+isctype: 'a' is alpha = 1
+isctype: ' ' is space = 1
+isctype works correctly
+✅ isctype PASSED.
+
+--- lookup_collatename ---
+lookup_collatename works correctly
+✅ lookup_collatename PASSED.
+
+--- wchar_t traits ---
+wchar_t traits work correctly
+✅ wchar_t traits PASSED.
+
+--- char16_t and char32_t traits ---
+char16_t and char32_t traits work correctly
+✅ char16_t and char32_t traits PASSED.
+
+--- length ---
+length method works correctly
+✅ length PASSED.
+
+=== All regex_traits Tests Passed ===
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test11" end time: Nov 24 10:06 UTC
+"test11" time elapsed: 00:00:00
+----------------------------------------------------------
+
+12/19 Testing: test12
+12/19 Test: test12
+Command: "/home/runner/work/onigpp/onigpp/build_std/sub_match_compat_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test12" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+=================================
+sub_match std::sub_match Compatibility Tests
+=================================
+
+--- TestConvertingConstructor ---
+✅ TestConvertingConstructor PASSED.
+
+--- TestDefaultIsMatched ---
+✅ TestDefaultIsMatched PASSED.
+
+--- TestImplicitStringConversion ---
+✅ TestImplicitStringConversion PASSED.
+
+--- TestLengthHelper ---
+✅ TestLengthHelper PASSED.
+
+--- TestIntegrationWithRegex ---
+✅ TestIntegrationWithRegex PASSED.
+
+=================================
+All tests passed! ✅
+=================================
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test12" end time: Nov 24 10:06 UTC
+"test12" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/19 Testing: test13
+13/19 Test: test13
+Command: "/home/runner/work/onigpp/onigpp/build_std/nosubs_collate_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test13" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+Testing nosubs flag...
+  Test 1 passed: nosubs prevents capturing
+  Test 2 passed: without nosubs, captures work normally
+  Test 3 passed: nosubs works with regex_match
+  Test 4 passed: without nosubs, regex_match captures work
+All nosubs tests passed!
+
+Testing collate flag...
+  Test 1 passed: collate flag works without errors
+  Test 2 passed: pattern works without collate flag
+  Test 3 passed: POSIX class [:lower:] with locale expansion works
+  Test 4 passed: POSIX class [:digit:] works
+  Test 5 passed: POSIX class [:graph:] works
+  Test 6 passed: French-accented characters work with locale
+All collate tests passed!
+
+Testing optimize flag...
+  Test 1 passed: optimize flag (no-op) works
+All optimize tests passed!
+
+Testing combined flags...
+  Test passed: combined flags work together
+All combined flag tests passed!
+
+=== All tests passed! ===
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test13" end time: Nov 24 10:06 UTC
+"test13" time elapsed: 00:00:00
+----------------------------------------------------------
+
+14/19 Testing: test14
+14/19 Test: test14
+Command: "/home/runner/work/onigpp/onigpp/build_std/match_flag_constants_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test14" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+Testing match_flag_type constants...
+match_not_bow = 4 (bit 2)
+match_not_eow = 8 (bit 3)
+match_continuous = 64 (bit 6)
+All tests passed!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test14" end time: Nov 24 10:06 UTC
+"test14" time elapsed: 00:00:00
+----------------------------------------------------------
+
+15/19 Testing: test15
+15/19 Test: test15
+Command: "/home/runner/work/onigpp/onigpp/build_std/error_type_constants_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test15" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+error_type constants test passed!
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test15" end time: Nov 24 10:06 UTC
+"test15" time elapsed: 00:00:00
+----------------------------------------------------------
+
+16/19 Testing: test16
+16/19 Test: test16
+Command: "/home/runner/work/onigpp/onigpp/build_std/ecmascript_multiline_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test16" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+=== ECMAScript Multiline Emulation Tests ===
+
+--- TestCaretMatchesLineStartLF ---
+✅ TestCaretMatchesLineStartLF PASSED.
+
+--- TestDollarMatchesLineEndLF ---
+✅ TestDollarMatchesLineEndLF PASSED.
+
+--- TestAnchorsWithCRLF ---
+✅ TestAnchorsWithCRLF PASSED.
+
+--- TestAnchorsWithCR ---
+✅ TestAnchorsWithCR PASSED.
+
+--- TestAnchorsWithUnicodeSeparators ---
+✅ TestAnchorsWithUnicodeSeparators PASSED.
+
+--- TestDotDoesNotMatchNewlineWithMultiline ---
+✅ TestDotDoesNotMatchNewlineWithMultiline PASSED.
+
+--- TestAnchorsInCharacterClasses ---
+✅ TestAnchorsInCharacterClasses PASSED.
+
+--- TestEscapedAnchors ---
+✅ TestEscapedAnchors PASSED.
+
+--- TestComplexMultilinePattern ---
+✅ TestComplexMultilinePattern PASSED.
+
+--- TestWithoutMultilineFlag ---
+✅ TestWithoutMultilineFlag PASSED.
+
+=== All ECMAScript Multiline Tests PASSED ===
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test16" end time: Nov 24 10:06 UTC
+"test16" time elapsed: 00:00:00
+----------------------------------------------------------
+
+17/19 Testing: test17
+17/19 Test: test17
+Command: "/home/runner/work/onigpp/onigpp/build_std/compat_regression_partial_match"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test17" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+std::regex_match result: no match
+std::regex capture count: 0
+========================================
+onigpp vs std::regex Compatibility Test
+========================================
+Loaded 12 test cases from tests/compat/patterns.json
+
+=== Test: simple_match ===
+Description: Basic exact match with anchors
+Pattern: ^hello$
+Input: hello
+Operation: match
+✅ PASS
+
+=== Test: partial_match_fail ===
+Description: Match should fail when input has extra text
+Pattern: ^hello$
+Input: hello world
+Operation: match
+✅ PASS
+
+=== Test: search_basic ===
+Description: Simple search for substring
+Pattern: world
+Input: hello world
+Operation: search
+✅ PASS
+
+=== Test: capture_groups ===
+Description: Extract capture groups
+Pattern: (\\w+):(\\w+)
+Input: a:1
+Operation: search
+✅ PASS
+
+=== Test: zero_width_boundary ===
+Description: Word boundary assertion
+Pattern: \\bword\\b
+Input: word
+Operation: search
+✅ PASS
+
+=== Test: replace_dollar_refs ===
+Description: Replacement with $1, $2 references
+Pattern: (a)(b)
+Input: abx
+Operation: replace
+✅ PASS
+
+=== Test: nosubs_flag ===
+Description: Verify nosubs flag prevents submatch storage
+Pattern: (x)
+Input: x
+Operation: search
+✅ PASS
+
+=== Test: icase_flag ===
+Description: Case-insensitive matching
+Pattern: abc
+Input: AbC
+Operation: search
+✅ PASS
+
+=== Test: utf8_multibyte ===
+Description: UTF-8 multibyte character matching
+Pattern: あ
+Input: あいう
+Operation: search
+✅ PASS
+
+=== Test: sjis_bytes ===
+Description: SJIS encoding byte-based match
+Pattern: test
+Input: test
+Operation: search
+✅ PASS
+
+=== Test: lookahead ===
+Description: Positive lookahead assertion
+Pattern: a(?=b)
+Input: ab
+Operation: search
+✅ PASS
+
+=== Test: backreference ===
+Description: Backreference to capture group
+Pattern: (\\w+)\\s+\\1
+Input: hi hi
+Operation: search
+✅ PASS
+
+========================================
+Test Summary
+========================================
+Passed: 12
+Failed: 0
+Total:  12
+========================================
+compat_regression_partial_match: OK
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test17" end time: Nov 24 10:06 UTC
+"test17" time elapsed: 00:00:00
+----------------------------------------------------------
+
+18/19 Testing: test18
+18/19 Test: test18
+Command: "/home/runner/work/onigpp/onigpp/build_std/nosubs_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"test18" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+Testing nosubs flag behavior...
+
+Test 1: Constructor nosubs flag with regex_search
+  std::regex size: 1
+  onigpp size: 1
+  ✅ PASS
+
+Test 2: Without nosubs flag (normal behavior)
+  std::regex size: 2
+  onigpp size: 2
+  ✅ PASS
+
+Test 3: Constructor nosubs flag with regex_match
+  std::regex size: 1
+  onigpp size: 1
+  ✅ PASS
+
+Test 4: Multiple capture groups with nosubs
+  std::regex size: 1
+  onigpp size: 1
+  ✅ PASS
+
+Test 5: Without nosubs, multiple capture groups
+  std::regex size: 3
+  onigpp size: 3
+  ✅ PASS
+
+=== All nosubs tests passed! ===
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"test18" end time: Nov 24 10:06 UTC
+"test18" time elapsed: 00:00:00
+----------------------------------------------------------
+
+19/19 Testing: compat_test
+19/19 Test: compat_test
+Command: "/home/runner/work/onigpp/onigpp/build_std/compat_test"
+Directory: /home/runner/work/onigpp/onigpp/build_std
+"compat_test" start time: Nov 24 10:06 UTC
+Output:
+----------------------------------------------------------
+========================================
+onigpp vs std::regex Compatibility Test
+========================================
+Loaded 12 test cases from tests/compat/patterns.json
+
+=== Test: simple_match ===
+Description: Basic exact match with anchors
+Pattern: ^hello$
+Input: hello
+Operation: match
+✅ PASS
+
+=== Test: partial_match_fail ===
+Description: Match should fail when input has extra text
+Pattern: ^hello$
+Input: hello world
+Operation: match
+✅ PASS
+
+=== Test: search_basic ===
+Description: Simple search for substring
+Pattern: world
+Input: hello world
+Operation: search
+✅ PASS
+
+=== Test: capture_groups ===
+Description: Extract capture groups
+Pattern: (\\w+):(\\w+)
+Input: a:1
+Operation: search
+✅ PASS
+
+=== Test: zero_width_boundary ===
+Description: Word boundary assertion
+Pattern: \\bword\\b
+Input: word
+Operation: search
+✅ PASS
+
+=== Test: replace_dollar_refs ===
+Description: Replacement with $1, $2 references
+Pattern: (a)(b)
+Input: abx
+Operation: replace
+✅ PASS
+
+=== Test: nosubs_flag ===
+Description: Verify nosubs flag prevents submatch storage
+Pattern: (x)
+Input: x
+Operation: search
+✅ PASS
+
+=== Test: icase_flag ===
+Description: Case-insensitive matching
+Pattern: abc
+Input: AbC
+Operation: search
+✅ PASS
+
+=== Test: utf8_multibyte ===
+Description: UTF-8 multibyte character matching
+Pattern: あ
+Input: あいう
+Operation: search
+✅ PASS
+
+=== Test: sjis_bytes ===
+Description: SJIS encoding byte-based match
+Pattern: test
+Input: test
+Operation: search
+✅ PASS
+
+=== Test: lookahead ===
+Description: Positive lookahead assertion
+Pattern: a(?=b)
+Input: ab
+Operation: search
+✅ PASS
+
+=== Test: backreference ===
+Description: Backreference to capture group
+Pattern: (\\w+)\\s+\\1
+Input: hi hi
+Operation: search
+✅ PASS
+
+========================================
+Test Summary
+========================================
+Passed: 12
+Failed: 0
+Total:  12
+========================================
+<end of output>
+Test time =   0.00 sec
+----------------------------------------------------------
+Test Passed.
+"compat_test" end time: Nov 24 10:06 UTC
+"compat_test" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 24 10:06 UTC

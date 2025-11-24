@@ -273,6 +273,13 @@ OnigEncoding _get_default_encoding_from_char_type() {
 	return _get_default_encoding_from_char_type_impl<CharT>();
 }
 
+// Helper to check if nosubs flag is set (either in regex or match-time flags)
+inline bool _is_nosubs_active(regex_constants::syntax_option_type regex_flags,
+                              regex_constants::match_flag_type match_flags) {
+	return ((match_flags & regex_constants::nosubs) != regex_constants::match_default) ||
+	       ((regex_flags & regex_constants::nosubs) != regex_constants::match_default);
+}
+
 // Internal implementation for non-contiguous iterators (uses buffer copy)
 template <class BidirIt, class Alloc, class CharT, class Traits>
 typename std::enable_if<
@@ -325,9 +332,34 @@ _regex_search_with_context_impl(
 		m.m_str_end = last;
 		m.clear();
 		
-		// Check if nosubs flag is set on the regex - if so, don't populate submatches
-		if (e.flags() & regex_constants::nosubs) {
-			// nosubs: only indicate match success, don't store submatches
+		// Check if nosubs flag is set (either in regex constructor or match-time flags)
+		if (_is_nosubs_active(e.flags(), flags)) {
+			// nosubs: populate only the full match (m[0]), not submatches
+			// This matches std::regex behavior where match_results has size 1
+			m.resize(1);
+			
+			int beg = region->beg[0];
+			int end = region->end[0];
+			
+			if (beg != ONIG_REGION_NOTPOS) {
+				int beg_chars = beg / sizeof(CharT);
+				int end_chars = end / sizeof(CharT);
+				
+				BidirIt sub_start = whole_first;
+				std::advance(sub_start, beg_chars);
+				
+				BidirIt sub_end = whole_first;
+				std::advance(sub_end, end_chars);
+				
+				m[0].first = sub_start;
+				m[0].second = sub_end;
+				m[0].matched = true;
+			} else {
+				m[0].first = last;
+				m[0].second = last;
+				m[0].matched = false;
+			}
+			
 			onig_region_free(region, 1);
 			return true;
 		}
@@ -423,9 +455,34 @@ _regex_search_with_context_impl(
 		m.m_str_end = last;
 		m.clear();
 		
-		// Check if nosubs flag is set on the regex - if so, don't populate submatches
-		if (e.flags() & regex_constants::nosubs) {
-			// nosubs: only indicate match success, don't store submatches
+		// Check if nosubs flag is set (either in regex constructor or match-time flags)
+		if (_is_nosubs_active(e.flags(), flags)) {
+			// nosubs: populate only the full match (m[0]), not submatches
+			// This matches std::regex behavior where match_results has size 1
+			m.resize(1);
+			
+			int beg = region->beg[0];
+			int end = region->end[0];
+			
+			if (beg != ONIG_REGION_NOTPOS) {
+				int beg_chars = beg / sizeof(CharT);
+				int end_chars = end / sizeof(CharT);
+				
+				BidirIt sub_start = whole_first;
+				std::advance(sub_start, beg_chars);
+				
+				BidirIt sub_end = whole_first;
+				std::advance(sub_end, end_chars);
+				
+				m[0].first = sub_start;
+				m[0].second = sub_end;
+				m[0].matched = true;
+			} else {
+				m[0].first = last;
+				m[0].second = last;
+				m[0].matched = false;
+			}
+			
 			onig_region_free(region, 1);
 			return true;
 		}
@@ -1239,9 +1296,34 @@ _regex_match_impl(
 		m.m_str_end = last;
 		m.clear();
 		
-		// Check if nosubs flag is set on the regex - if so, don't populate submatches
-		if (e.flags() & regex_constants::nosubs) {
-			// nosubs: only indicate match success, don't store submatches
+		// Check if nosubs flag is set (either in regex constructor or match-time flags)
+		if (_is_nosubs_active(e.flags(), flags)) {
+			// nosubs: populate only the full match (m[0]), not submatches
+			// This matches std::regex behavior where match_results has size 1
+			m.resize(1);
+			
+			int beg = region->beg[0];
+			int end = region->end[0];
+			
+			if (beg != ONIG_REGION_NOTPOS) {
+				int beg_chars = beg / sizeof(CharT);
+				int end_chars = end / sizeof(CharT);
+				
+				BidirIt sub_start = first;
+				std::advance(sub_start, beg_chars);
+				
+				BidirIt sub_end = first;
+				std::advance(sub_end, end_chars);
+				
+				m[0].first = sub_start;
+				m[0].second = sub_end;
+				m[0].matched = true;
+			} else {
+				m[0].first = last;
+				m[0].second = last;
+				m[0].matched = false;
+			}
+			
 			onig_region_free(region, 1);
 			return true;
 		}
@@ -1345,9 +1427,34 @@ _regex_match_impl(
 		m.m_str_end = last;
 		m.clear();
 		
-		// Check if nosubs flag is set on the regex - if so, don't populate submatches
-		if (e.flags() & regex_constants::nosubs) {
-			// nosubs: only indicate match success, don't store submatches
+		// Check if nosubs flag is set (either in regex constructor or match-time flags)
+		if (_is_nosubs_active(e.flags(), flags)) {
+			// nosubs: populate only the full match (m[0]), not submatches
+			// This matches std::regex behavior where match_results has size 1
+			m.resize(1);
+			
+			int beg = region->beg[0];
+			int end = region->end[0];
+			
+			if (beg != ONIG_REGION_NOTPOS) {
+				int beg_chars = beg / sizeof(CharT);
+				int end_chars = end / sizeof(CharT);
+				
+				BidirIt sub_start = first;
+				std::advance(sub_start, beg_chars);
+				
+				BidirIt sub_end = first;
+				std::advance(sub_end, end_chars);
+				
+				m[0].first = sub_start;
+				m[0].second = sub_end;
+				m[0].matched = true;
+			} else {
+				m[0].first = last;
+				m[0].second = last;
+				m[0].matched = false;
+			}
+			
 			onig_region_free(region, 1);
 			return true;
 		}

@@ -1,0 +1,101 @@
+[
+  {
+    "id": "simple_match",
+    "description": "Basic exact match with anchors",
+    "pattern": "^hello$",
+    "flags": "ECMAScript",
+    "input": "hello",
+    "operation": "match"
+  },
+  {
+    "id": "partial_match_fail",
+    "description": "Match should fail when input has extra text",
+    "pattern": "^hello$",
+    "flags": "ECMAScript",
+    "input": "hello world",
+    "operation": "match"
+  },
+  {
+    "id": "search_basic",
+    "description": "Simple search for substring",
+    "pattern": "world",
+    "flags": "ECMAScript",
+    "input": "hello world",
+    "operation": "search"
+  },
+  {
+    "id": "capture_groups",
+    "description": "Extract capture groups",
+    "pattern": "(\\w+):(\\w+)",
+    "flags": "ECMAScript",
+    "input": "a:1",
+    "operation": "search"
+  },
+  {
+    "id": "zero_width_boundary",
+    "description": "Word boundary assertion",
+    "pattern": "\\bword\\b",
+    "flags": "ECMAScript",
+    "input": "word",
+    "operation": "search"
+  },
+  {
+    "id": "replace_dollar_refs",
+    "description": "Replacement with $1, $2 references",
+    "pattern": "(a)(b)",
+    "flags": "ECMAScript",
+    "input": "abx",
+    "operation": "replace",
+    "replace_template": "$2$1"
+  },
+  {
+    "id": "nosubs_flag",
+    "description": "Verify nosubs flag prevents submatch storage",
+    "pattern": "(x)",
+    "flags": "nosubs",
+    "input": "x",
+    "operation": "search"
+  },
+  {
+    "id": "icase_flag",
+    "description": "Case-insensitive matching",
+    "pattern": "abc",
+    "flags": "icase",
+    "input": "AbC",
+    "operation": "search"
+  },
+  {
+    "id": "utf8_multibyte",
+    "description": "UTF-8 multibyte character matching",
+    "pattern": "あ",
+    "flags": "ECMAScript",
+    "input": "あいう",
+    "operation": "search",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "sjis_bytes",
+    "description": "SJIS encoding byte-based match",
+    "pattern": "test",
+    "flags": "ECMAScript",
+    "input": "test",
+    "operation": "search",
+    "encoding_hint": "SJIS"
+  },
+  {
+    "id": "lookahead",
+    "description": "Positive lookahead assertion",
+    "pattern": "a(?=b)",
+    "flags": "ECMAScript",
+    "input": "ab",
+    "operation": "search"
+  },
+  {
+    "id": "backreference",
+    "description": "Backreference to capture group",
+    "pattern": "(\\w+)\\s+\\1",
+    "flags": "ECMAScript",
+    "input": "hi hi",
+    "operation": "search"
+  }
+]
