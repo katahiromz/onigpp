@@ -4,6 +4,9 @@
 
 - Added `dialog`.
 - Added `empty_pattern_test` to verify empty regex pattern compatibility with std::regex.
+- Fixed `regex_iterator` to correctly handle empty pattern matching at all positions including the end of string.
+  - Empty patterns now match at start, between each character, and at end (N+1 matches for string of length N).
+  - This matches std::regex behavior for empty patterns.
 - Deleted `regex_constants::oniguruma`.
 - Added MSYS2 CI support (MINGW64/MINGW32) to GitHub Actions workflow.
 
