@@ -55,6 +55,8 @@ string_type mstr_unescape(const string_type& input) {
 				break;
 			}
 			case char_type('u'): { // \uXXXX Œ`Ž®
+				if (sizeof(char_type) != 2)
+					throw std::runtime_error("Invalid escape sequence");
 				i += 2;
 				string_type hex;
 				size_t index = 0;
