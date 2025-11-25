@@ -49,7 +49,8 @@ FONT 9, "MS Shell Dlg", 0, 0, 1
     AUTOCHECKBOX "oniguruma", chx1, 20, 155, 50, 10
     AUTOCHECKBOX "ECMAScript", chx2, 80, 155, 55, 10
     AUTOCHECKBOX "icase", chx3, 145, 155, 35, 10
-    DEFPUSHBUTTON "Replace", psh1, 205, 130, 55, 20
+    PUSHBUTTON "Find", psh2, 205, 105, 55, 20
+    PUSHBUTTON "Replace", psh1, 205, 130, 55, 20
     PUSHBUTTON "Close", IDCANCEL, 205, 155, 55, 20
 }
 

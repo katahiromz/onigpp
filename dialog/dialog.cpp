@@ -15,7 +15,12 @@ namespace rex = onigpp;
 	using regex_type = rex::regex;
 #endif
 
-bool process_one(const string_type& input, const string_type& replacement, string_type& out_str, regex_type& re) {
+bool do_find(const string_type& input, DWORD& iStart, DWORD& iEnd, regex_type& re) {
+	// TODO:
+	return false;
+};
+
+bool do_replace(const string_type& input, const string_type& replacement, string_type& out_str, regex_type& re) {
 	try {
 		out_str = rex::regex_replace(input, re, replacement);
 		return true;
@@ -24,7 +29,7 @@ bool process_one(const string_type& input, const string_type& replacement, strin
 	}
 };
 
-void OnReplace(HWND hwnd) {
+void OnFindReplace(HWND hwnd, int action) {
 	BOOL oniguruma = IsDlgButtonChecked(hwnd, chx1) == BST_CHECKED;
 	BOOL ecma = IsDlgButtonChecked(hwnd, chx2) == BST_CHECKED;
 	BOOL icase = IsDlgButtonChecked(hwnd, chx3) == BST_CHECKED;
@@ -51,13 +56,35 @@ void OnReplace(HWND hwnd) {
 		return;
 	}
 
-	string_type out_str;
-	if (!process_one(input, replacement, out_str, re)) {
-		MessageBox(hwnd, TEXT("Failure! #2"), NULL, MB_ICONERROR);
-		return;
-	}
+	switch (action) {
+	case 0: // find
+		{
+			DWORD iStart, iEnd;
+			SendDlgItemMessage(hwnd, edt1, EM_GETSEL, (WPARAM)&iStart, (LPARAM)&iEnd);
 
-	SetDlgItemText(hwnd, edt2, out_str.c_str());
+			if (!do_find(input, iStart, iEnd, re)) {
+				MessageBox(hwnd, TEXT("No more match"), TEXT("dialog"), MB_ICONINFORMATION);
+				return;
+			}
+
+			SendDlgItemMessage(hwnd, edt1, EM_SETSEL, iStart, iEnd);
+		}
+		break;
+	case 1: // replace
+		{
+			string_type out_str;
+			if (!do_replace(input, replacement, out_str, re)) {
+				MessageBox(hwnd, TEXT("Failure! #2"), NULL, MB_ICONERROR);
+				return;
+			}
+
+			SetDlgItemText(hwnd, edt2, out_str.c_str());
+		}
+		break;
+	default:
+		assert(0);
+		break;
+	}
 }
 
 // WM_INITDIALOG
@@ -74,7 +101,10 @@ void OnCommand(HWND hwnd, int id, HWND hwndCtl, UINT codeNotify) {
 		EndDialog(hwnd, id);
 		break;
 	case psh1: // Replace
-		OnReplace(hwnd);
+		OnFindReplace(hwnd, 1);
+		break;
+	case psh2: // Find
+		OnFindReplace(hwnd, 0);
 		break;
 	}
 }
