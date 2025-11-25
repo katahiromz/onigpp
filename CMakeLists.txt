@@ -174,5 +174,9 @@ add_test(
 	NAME backref_test
 	COMMAND $<TARGET_FILE:backref_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
+	NAME test_empty_pattern
+	COMMAND $<TARGET_FILE:empty_pattern_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 
 ##############################################################################

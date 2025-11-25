@@ -125,5 +125,11 @@ target_compile_definitions(backref_test PRIVATE "")
 target_include_directories(backref_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(backref_test PRIVATE onigpp)
 
+# empty_pattern_test.exe
+add_executable(empty_pattern_test empty_pattern_test.cpp)
+target_compile_definitions(empty_pattern_test PRIVATE "")
+target_include_directories(empty_pattern_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(empty_pattern_test PRIVATE onigpp)
+
 # compat tests subdirectory
 add_subdirectory(compat)
