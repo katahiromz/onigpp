@@ -1,5 +1,9 @@
 # Changelog
 
+## 2025-XX-YY Ver.6.9.15
+
+- Added `dialog`.
+
 ## 2025-11-25 Ver.6.9.14
 
 - Renamed SHIFT_JIS as SJIS.
