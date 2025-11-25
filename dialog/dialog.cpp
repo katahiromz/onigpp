@@ -5,15 +5,18 @@
 #include <windowsx.h>
 #include <commctrl.h>
 #include <string>
+#include <tchar.h>
 #include "onigpp.h"
 
 namespace rex = onigpp;
 
 #ifdef UNICODE
 	using string_type = std::wstring;
+	using char_type = wchar_t;
 	using regex_type = rex::wregex;
 #else
 	using string_type = std::string;
+	using char_type = char;
 	using regex_type = rex::regex;
 #endif
 
@@ -22,6 +25,74 @@ namespace {
 
 using size_type = typename string_type::size_type;
 using const_iter = typename string_type::const_iterator;
+
+string_type mstr_unescape(const string_type& input) {
+	string_type output;
+	size_t i = 0;
+	while (i < input.size()) {
+		if (input[i] == char_type('\\') && i + 1 < input.size()) {
+			char_type next = input[i + 1];
+			switch (next) {
+			case char_type('n'):  output += char_type('\n'); break;
+			case char_type('t'):  output += char_type('\t'); break;
+			case char_type('r'):  output += char_type('\r'); break;
+			case char_type('b'):  output += char_type('\b'); break;
+			case char_type('f'):  output += char_type('\f'); break;
+			case char_type('a'):  output += char_type('\a'); break;
+			case char_type('v'):  output += char_type('\v'); break;
+			case char_type('\\'): output += char_type('\\'); break;
+			case char_type('\''): output += char_type('\''); break;
+			case char_type('\"'): output += char_type('\"'); break;
+			case char_type('?'):  output += char_type('\?'); break;
+			case char_type('x'): { // \xXX 形式
+				i += 2;
+				string_type hex;
+				while (i < input.size() && _istxdigit(input[i])) {
+					hex += input[i++];
+				}
+				output += hex.empty() ? char_type('x') : char_type(_tcstoul(hex.c_str(), nullptr, 16));
+				i--;
+				break;
+			}
+			case char_type('u'): { // \uXXXX 形式
+				i += 2;
+				string_type hex;
+				size_t index = 0;
+				while (index < 4 && i < input.size() && _istxdigit(input[i])) {
+					hex += input[i++];
+					++index;
+				}
+				if (index == 4) {
+					output += hex.empty() ? char_type('x') : char_type(_tcstoul(hex.c_str(), nullptr, 16));
+					i--;
+				} else {
+					throw std::runtime_error("Invalid escape sequence");
+				}
+				break;
+			}
+			default:
+				// 8進数（\123）対応
+				if (next >= char_type('0') && next <= char_type('7')) {
+					size_t j = i + 1;
+					string_type oct;
+					for (int k = 0; k < 3 && j < input.size() && input[j] >= char_type('0') && input[j] <= char_type('7'); ++k, ++j) {
+						oct += input[j];
+					}
+					output += oct.empty() ? next : char_type(_tcstoul(oct.c_str(), nullptr, 8));
+					i += oct.size();
+				} else {
+					// その他はそのまま
+					output += next;
+				}
+				break;
+			}
+			i += 2;
+		} else {
+			output += input[i++];
+		}
+	}
+	return output;
+}
 
 // start_from (文字位置) から検索して、見つかれば match_pos/match_len を返す。
 // start_from > input.size() は末尾とみなす。見つからなければ先頭からラップして検索する。
@@ -126,7 +197,7 @@ bool do_find(const string_type& input, DWORD& iStart, DWORD& iEnd, regex_type& r
 }
 
 void OnFindReplace(HWND hwnd, int action) {
-	BOOL collate = IsDlgButtonChecked(hwnd, chx1) == BST_CHECKED;
+	BOOL unescape = IsDlgButtonChecked(hwnd, chx1) == BST_CHECKED;
 	BOOL ecma = IsDlgButtonChecked(hwnd, chx2) == BST_CHECKED;
 	BOOL icase = IsDlgButtonChecked(hwnd, chx3) == BST_CHECKED;
 	BOOL multiline = IsDlgButtonChecked(hwnd, chx4) == BST_CHECKED;
@@ -140,7 +211,7 @@ void OnFindReplace(HWND hwnd, int action) {
 	string_type replacement = replacement_text;
 
 	int flags = 0;
-	if (collate) flags |= rex::regex::collate;
+	if (unescape) replacement = mstr_unescape(replacement);
 	if (ecma) flags |= rex::regex::ECMAScript;
 	if (icase) flags |= rex::regex::icase;
 	if (multiline) flags |= rex::regex::multiline;
@@ -289,9 +360,9 @@ DialogProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 INT WINAPI
 WinMain(HINSTANCE   hInstance,
-        HINSTANCE   hPrevInstance,
-        LPSTR       lpCmdLine,
-        INT         nCmdShow)
+		HINSTANCE   hPrevInstance,
+		LPSTR	   lpCmdLine,
+		INT		 nCmdShow)
 {
 	onigpp::auto_init init;
 

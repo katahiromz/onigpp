@@ -43,7 +43,7 @@ FONT 9, "MS Shell Dlg", 0, 0, 1
     LTEXT "Replacement:", -1, 5, 125, 45, 10
     EDITTEXT edt4, 55, 125, 115, 15
     GROUPBOX "Options", -1, 5, 140, 195, 35
-    AUTOCHECKBOX "collate", chx1, 10, 155, 45, 10
+    AUTOCHECKBOX "unescape", chx1, 10, 155, 45, 10
     AUTOCHECKBOX "ecma", chx2, 65, 155, 30, 10
     AUTOCHECKBOX "icase", chx3, 105, 155, 30, 10
     AUTOCHECKBOX "multiline", chx4, 145, 155, 35, 10
