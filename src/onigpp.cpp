@@ -283,6 +283,116 @@ inline bool _is_nosubs_active(regex_constants::syntax_option_type regex_flags,
 	       ((regex_flags & regex_constants::nosubs) != regex_constants::match_default);
 }
 
+// Helper function to process OnigRegion result and populate match_results.
+// This consolidates the duplicated OnigRegion post-processing logic from
+// contiguous and non-contiguous iterator implementations.
+// Parameters:
+//   r: Oniguruma result code (>= 0 for match, ONIG_MISMATCH for no match, < 0 for error)
+//   region: OnigRegion containing match positions (will be freed by this function)
+//   whole_first: iterator pointing to the beginning of the entire subject string
+//   last: iterator pointing past the end of the subject string
+//   m: match_results to populate
+//   regex_flags: flags from the regex object
+//   flags: match-time flags
+// Returns: true if matched, false if no match, throws regex_error on error
+template <class BidirIt, class Alloc, class CharT, class Traits>
+bool _process_onig_region_result(
+	int r,
+	OnigRegion* region,
+	BidirIt whole_first,
+	BidirIt last,
+	match_results<BidirIt, Alloc>& m,
+	regex_constants::syntax_option_type regex_flags,
+	regex_constants::match_flag_type flags)
+{
+	if (r >= 0) {
+		if (flags & regex_constants::match_not_null) {
+			// If match length is zero, treat it as a match failure
+			if (region->beg[0] == region->end[0]) {
+				onig_region_free(region, 1);
+				return false; // Equivalent to ONIG_MISMATCH
+			}
+		}
+
+		// If matched, store results in match_results
+		m.m_str_begin = whole_first;
+		m.m_str_end = last;
+		m.clear();
+
+		// Check if nosubs flag is set (either in regex constructor or match-time flags)
+		if (_is_nosubs_active(regex_flags, flags)) {
+			// nosubs: populate only the full match (m[0]), not submatches
+			// This matches std::regex behavior where match_results has size 1
+			m.resize(1);
+
+			int beg = region->beg[0];
+			int end = region->end[0];
+
+			if (beg != ONIG_REGION_NOTPOS) {
+				int beg_chars = beg / sizeof(CharT);
+				int end_chars = end / sizeof(CharT);
+
+				BidirIt sub_start = whole_first;
+				std::advance(sub_start, beg_chars);
+
+				BidirIt sub_end = whole_first;
+				std::advance(sub_end, end_chars);
+
+				m[0].first = sub_start;
+				m[0].second = sub_end;
+				m[0].matched = true;
+			} else {
+				m[0].first = last;
+				m[0].second = last;
+				m[0].matched = false;
+			}
+
+			onig_region_free(region, 1);
+			return true;
+		}
+
+		m.resize(region->num_regs);
+
+		for (int i = 0; i < region->num_regs; ++i) {
+			int beg = region->beg[i];
+			int end = region->end[i];
+
+			if (beg != ONIG_REGION_NOTPOS) {
+				int beg_chars = beg / sizeof(CharT);
+				int end_chars = end / sizeof(CharT);
+
+				BidirIt sub_start = whole_first;
+				std::advance(sub_start, beg_chars);
+
+				BidirIt sub_end = whole_first;
+				std::advance(sub_end, end_chars);
+
+				m[i].first = sub_start;
+				m[i].second = sub_end;
+				m[i].matched = true;
+			} else {
+				m[i].first = last;
+				m[i].second = last;
+				m[i].matched = false;
+			}
+		}
+
+		onig_region_free(region, 1);
+		return true;
+	}
+	else if (r == ONIG_MISMATCH) {
+		onig_region_free(region, 1);
+		return false;
+	}
+	else {
+		// On error
+		onig_region_free(region, 1);
+		OnigErrorInfo einfo;
+		std::memset(&einfo, 0, sizeof(einfo));
+		throw regex_error(regex_constants::map_oniguruma_error(r), einfo);
+	}
+}
+
 // Internal implementation for non-contiguous iterators (uses buffer copy)
 template <class BidirIt, class Alloc, class CharT, class Traits>
 typename std::enable_if<
@@ -366,92 +476,9 @@ _regex_search_with_context_impl(
 		}
 	}
 
-	if (r >= 0) {
-		if (flags & regex_constants::match_not_null) {
-			// If match length is zero, treat it as a match failure
-			if (region->beg[0] == region->end[0]) {
-				onig_region_free(region, 1);
-				return false; // Equivalent to ONIG_MISMATCH
-			}
-		}
-
-		// If matched, store results in match_results
-		m.m_str_begin = whole_first;
-		m.m_str_end = last;
-		m.clear();
-
-		// Check if nosubs flag is set (either in regex constructor or match-time flags)
-		if (_is_nosubs_active(e.flags(), flags)) {
-			// nosubs: populate only the full match (m[0]), not submatches
-			// This matches std::regex behavior where match_results has size 1
-			m.resize(1);
-
-			int beg = region->beg[0];
-			int end = region->end[0];
-
-			if (beg != ONIG_REGION_NOTPOS) {
-				int beg_chars = beg / sizeof(CharT);
-				int end_chars = end / sizeof(CharT);
-
-				BidirIt sub_start = whole_first;
-				std::advance(sub_start, beg_chars);
-
-				BidirIt sub_end = whole_first;
-				std::advance(sub_end, end_chars);
-
-				m[0].first = sub_start;
-				m[0].second = sub_end;
-				m[0].matched = true;
-			} else {
-				m[0].first = last;
-				m[0].second = last;
-				m[0].matched = false;
-			}
-
-			onig_region_free(region, 1);
-			return true;
-		}
-
-		m.resize(region->num_regs);
-
-		for (int i = 0; i < region->num_regs; ++i) {
-			int beg = region->beg[i];
-			int end = region->end[i];
-
-			if (beg != ONIG_REGION_NOTPOS) {
-				int beg_chars = beg / sizeof(CharT);
-				int end_chars = end / sizeof(CharT);
-
-				BidirIt sub_start = whole_first;
-				std::advance(sub_start, beg_chars);
-
-				BidirIt sub_end = whole_first;
-				std::advance(sub_end, end_chars);
-
-				m[i].first = sub_start;
-				m[i].second = sub_end;
-				m[i].matched = true;
-			} else {
-				m[i].first = last;
-				m[i].second = last;
-				m[i].matched = false;
-			}
-		}
-
-		onig_region_free(region, 1);
-		return true;
-	}
-	else if (r == ONIG_MISMATCH) {
-		onig_region_free(region, 1);
-		return false;
-	}
-	else {
-		// On error
-		onig_region_free(region, 1);
-		OnigErrorInfo einfo;
-		std::memset(&einfo, 0, sizeof(einfo));
-		throw regex_error(regex_constants::map_oniguruma_error(r), einfo);
-	}
+	// Use common helper to process region and populate match_results
+	return _process_onig_region_result<BidirIt, Alloc, CharT, Traits>(
+		r, region, whole_first, last, m, e.flags(), flags);
 }
 
 // Internal implementation for contiguous iterators (optimized, no buffer copy)
@@ -527,85 +554,9 @@ _regex_search_with_context_impl(
 			}
 		}
 
-		if (r >= 0) {
-			if (flags & regex_constants::match_not_null) {
-				if (region->beg[0] == region->end[0]) {
-					onig_region_free(region, 1);
-					return false;
-				}
-			}
-
-			m.m_str_begin = whole_first;
-			m.m_str_end = last;
-			m.clear();
-
-			if (_is_nosubs_active(e.flags(), flags)) {
-				m.resize(1);
-				int beg = region->beg[0];
-				int end = region->end[0];
-
-				if (beg != ONIG_REGION_NOTPOS) {
-					int beg_chars = beg / sizeof(CharT);
-					int end_chars = end / sizeof(CharT);
-
-					BidirIt sub_start = whole_first;
-					std::advance(sub_start, beg_chars);
-
-					BidirIt sub_end = whole_first;
-					std::advance(sub_end, end_chars);
-
-					m[0].first = sub_start;
-					m[0].second = sub_end;
-					m[0].matched = true;
-				} else {
-					m[0].first = last;
-					m[0].second = last;
-					m[0].matched = false;
-				}
-
-				onig_region_free(region, 1);
-				return true;
-			}
-
-			m.resize(region->num_regs);
-
-			for (int i = 0; i < region->num_regs; ++i) {
-				int beg = region->beg[i];
-				int end = region->end[i];
-
-				if (beg != ONIG_REGION_NOTPOS) {
-					int beg_chars = beg / sizeof(CharT);
-					int end_chars = end / sizeof(CharT);
-
-					BidirIt sub_start = whole_first;
-					std::advance(sub_start, beg_chars);
-
-					BidirIt sub_end = whole_first;
-					std::advance(sub_end, end_chars);
-
-					m[i].first = sub_start;
-					m[i].second = sub_end;
-					m[i].matched = true;
-				} else {
-					m[i].first = last;
-					m[i].second = last;
-					m[i].matched = false;
-				}
-			}
-
-			onig_region_free(region, 1);
-			return true;
-		}
-		else if (r == ONIG_MISMATCH) {
-			onig_region_free(region, 1);
-			return false;
-		}
-		else {
-			onig_region_free(region, 1);
-			OnigErrorInfo einfo;
-			std::memset(&einfo, 0, sizeof(einfo));
-			throw regex_error(regex_constants::map_oniguruma_error(r), einfo);
-		}
+		// Use common helper to process region and populate match_results
+		return _process_onig_region_result<BidirIt, Alloc, CharT, Traits>(
+			r, region, whole_first, last, m, e.flags(), flags);
 	}
 
 	// Fast path: use direct pointer access for contiguous iterators (no BOW/EOW modification needed)
@@ -634,92 +585,9 @@ _regex_search_with_context_impl(
 		r = onig_search(reg, u_start, u_end, u_search_start, u_range, region, onig_options);
 	}
 
-	if (r >= 0) {
-		if (flags & regex_constants::match_not_null) {
-			// If match length is zero, treat it as a match failure
-			if (region->beg[0] == region->end[0]) {
-				onig_region_free(region, 1);
-				return false; // Equivalent to ONIG_MISMATCH
-			}
-		}
-
-		// If matched, store results in match_results
-		m.m_str_begin = whole_first;
-		m.m_str_end = last;
-		m.clear();
-
-		// Check if nosubs flag is set (either in regex constructor or match-time flags)
-		if (_is_nosubs_active(e.flags(), flags)) {
-			// nosubs: populate only the full match (m[0]), not submatches
-			// This matches std::regex behavior where match_results has size 1
-			m.resize(1);
-
-			int beg = region->beg[0];
-			int end = region->end[0];
-
-			if (beg != ONIG_REGION_NOTPOS) {
-				int beg_chars = beg / sizeof(CharT);
-				int end_chars = end / sizeof(CharT);
-
-				BidirIt sub_start = whole_first;
-				std::advance(sub_start, beg_chars);
-
-				BidirIt sub_end = whole_first;
-				std::advance(sub_end, end_chars);
-
-				m[0].first = sub_start;
-				m[0].second = sub_end;
-				m[0].matched = true;
-			} else {
-				m[0].first = last;
-				m[0].second = last;
-				m[0].matched = false;
-			}
-
-			onig_region_free(region, 1);
-			return true;
-		}
-
-		m.resize(region->num_regs);
-
-		for (int i = 0; i < region->num_regs; ++i) {
-			int beg = region->beg[i];
-			int end = region->end[i];
-
-			if (beg != ONIG_REGION_NOTPOS) {
-				int beg_chars = beg / sizeof(CharT);
-				int end_chars = end / sizeof(CharT);
-
-				BidirIt sub_start = whole_first;
-				std::advance(sub_start, beg_chars);
-
-				BidirIt sub_end = whole_first;
-				std::advance(sub_end, end_chars);
-
-				m[i].first = sub_start;
-				m[i].second = sub_end;
-				m[i].matched = true;
-			} else {
-				m[i].first = last;
-				m[i].second = last;
-				m[i].matched = false;
-			}
-		}
-
-		onig_region_free(region, 1);
-		return true;
-	}
-	else if (r == ONIG_MISMATCH) {
-		onig_region_free(region, 1);
-		return false;
-	}
-	else {
-		// On error
-		onig_region_free(region, 1);
-		OnigErrorInfo einfo;
-		std::memset(&einfo, 0, sizeof(einfo));
-		throw regex_error(regex_constants::map_oniguruma_error(r), einfo);
-	}
+	// Use common helper to process region and populate match_results
+	return _process_onig_region_result<BidirIt, Alloc, CharT, Traits>(
+		r, region, whole_first, last, m, e.flags(), flags);
 }
 
 // Public wrapper that dispatches to the appropriate implementation
