@@ -8,10 +8,17 @@
   - Numeric backreferences: `\1`, `\2`, ..., `\9` (and multi-digit like `\10` when 10+ groups defined)
   - Named backreferences: `\k<name>`, `\k'name'`
   - Warning: Backreferences can introduce exponential-time backtracking for certain patterns.
+- Added replacement-side Oniguruma-style backreference support when `oniguruma` flag is set:
+  - Numeric replacement backreferences: `\1`, `\2`, ... (in addition to existing `$1`, `$2`, ...)
+  - Literal backslash: `\\` produces a single backslash
+  - Multi-digit backreferences: `\10`, `\11`, ... when 10+ capture groups defined
+  - Note: Only enabled when regex is constructed with `oniguruma` flag
+- Added `regex_access::get_flags` helper to read flags from `basic_regex`.
 - Added comprehensive backreference tests (`backref_test.cpp`) covering:
   - Basic numeric and named backreferences
   - Case-insensitive backreferences
   - Replacement-side capture expansion (`$1`, `$2`, etc.)
+  - Replacement-side Oniguruma-style backreferences (`\1`, `\2`, etc.)
   - Ambiguous digit resolution (octal vs backreference)
 
 ## 2025-11-24 Ver.6.9.12
