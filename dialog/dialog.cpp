@@ -45,7 +45,7 @@ void OnReplace(HWND hwnd) {
 
 	regex_type re;
 	try {
-		re = rex::wregex(pattern, flags);
+		re = regex_type(pattern, flags);
 	} catch (const rex::regex_error& e) {
 		MessageBox(hwnd, TEXT("Failure!"), NULL, MB_ICONERROR);
 		return;
@@ -57,7 +57,7 @@ void OnReplace(HWND hwnd) {
 		return;
 	}
 
-	SetDlgItemTextW(hwnd, edt2, out_str.c_str());
+	SetDlgItemText(hwnd, edt2, out_str.c_str());
 }
 
 // WM_INITDIALOG
