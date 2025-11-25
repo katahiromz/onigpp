@@ -22,10 +22,31 @@
 	namespace rex = onigpp;
 #endif
 
+#ifdef _WIN32
+	#include <windows.h>
+	#include <io.h>
+	#include <fcntl.h>
+
+	inline void TESTS_OUTPUT_INIT(bool use_wcout = false) {
+		if (use_wcout)
+			_setmode(_fileno(stdout), _O_U8TEXT); // Use std::cout instead of std::wcout
+		// Ensure console uses UTF-8 code page for interoperability
+		SetConsoleOutputCP(CP_UTF8);
+	}
+#else
+	// For Linux/Mac, setting the locale is usually sufficient
+	inline void TESTS_OUTPUT_INIT(bool use_wcout = false) {
+		std::setlocale(LC_ALL, "");
+	}
+#endif
+
 static void print_usage(const char* prog) {
 	std::cerr << "Usage: " << prog << " [-i] [-w] PATTERN REPLACEMENT [FILE...]\n"
-			  << "  -i	Case-insensitive matching\n"
-			  << "  -w	Write changes in-place to each FILE (if FILE specified)\n"
+			  << "  -i  Case-insensitive matching\n"
+			  << "  -w  Write changes in-place to each FILE (if FILE specified)\n"
+#ifndef USE_STD_FOR_TOOLS
+			  << "  --oniguruma Use Oniguruma style\n"
+#endif
 			  << "If no FILE is given, read from stdin and write to stdout.\n";
 }
 
@@ -38,6 +59,8 @@ static bool read_all(std::istream& in, std::string& out) {
 }
 
 int main(int argc, char* argv[]) {
+	TESTS_OUTPUT_INIT();
+
 #ifndef USE_STD_FOR_TOOLS
 	rex::auto_init auto_init;
 #endif
@@ -49,6 +72,7 @@ int main(int argc, char* argv[]) {
 
 	bool opt_icase = false;
 	bool opt_inplace = false;
+	bool opt_oniguruma = false;
 	int idx = 1;
 	for (; idx < argc; ++idx) {
 		std::string a = argv[idx];
@@ -59,6 +83,11 @@ int main(int argc, char* argv[]) {
 			} else if (a == "-w") {
 				opt_inplace = true;
 				continue;
+#ifndef USE_STD_FOR_TOOLS
+			} else if (a == "--oniguruma") {
+				opt_oniguruma = true;
+				continue;
+#endif
 			} else if (a == "--") {
 				++idx;
 				break;
@@ -86,6 +115,9 @@ int main(int argc, char* argv[]) {
 
 	rex::regex::flag_type flags = rex::regex::ECMAScript;
 	if (opt_icase) flags = static_cast<rex::regex::flag_type>(flags | rex::regex::icase);
+#ifndef USE_STD_FOR_TOOLS
+	if (opt_oniguruma) flags = static_cast<rex::regex::flag_type>(flags | rex::regex::oniguruma);
+#endif
 
 	rex::regex re;
 	try {
