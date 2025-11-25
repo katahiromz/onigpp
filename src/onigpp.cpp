@@ -1843,8 +1843,8 @@ OutputIt regex_replace(
 
 template <class BidirIt, class CharT, class Traits>
 void regex_iterator<BidirIt, CharT, Traits>::do_search(BidirIt first, BidirIt last) {
-	// If no match found, or end iterator reached
-	if (first == last || !_regex_search_with_context(m_begin, first, last, m_results, *m_regex, m_flags)) {
+	// Try to search - we allow first == last for zero-width patterns which can match at end position
+	if (!_regex_search_with_context(m_begin, first, last, m_results, *m_regex, m_flags)) {
 		// Invalidate as end iterator
 		m_regex = nullptr;
 		m_results.clear();
@@ -1887,9 +1887,10 @@ regex_iterator<BidirIt, CharT, Traits>& regex_iterator<BidirIt, CharT, Traits>::
 	// Zero-width match handling
 	if (m_results[0].first == current_match_end) {
 		if (current_match_end != m_end) {
-			std::advance(current_match_end, 1); // Advance by 1 character
+			// Advance by 1 character for zero-width match, then search from there
+			std::advance(current_match_end, 1);
 		} else {
-			// Reached the end of the string
+			// Zero-width match at end of string - no more matches possible
 			m_regex = nullptr;
 			m_results.clear();
 			return *this;
