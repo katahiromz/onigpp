@@ -299,27 +299,72 @@ _regex_search_with_context_impl(
 	size_type total_len,
 	size_type search_offset)
 {
+	// Handle match_not_bow and match_not_eow by prepending/appending word characters
+	// to affect word boundary detection. A word character (like 'a') before the string
+	// prevents \b from matching as beginning-of-word at position 0.
+	// Similarly, a word character after the string prevents \b from matching as end-of-word.
+	bool needs_bow_prefix = (flags & regex_constants::match_not_bow) && (search_offset == 0);
+	bool needs_eow_suffix = (flags & regex_constants::match_not_eow);
+	bool use_match_instead = (flags & regex_constants::match_continuous);
+	
 	// Copy the subject range into a temporary contiguous buffer to support
 	// non-contiguous BidirectionalIterators (e.g., std::list, std::deque)
-	std::basic_string<CharT> subject_buf(whole_first, last);
+	std::basic_string<CharT> subject_buf;
+	size_type prefix_len = 0;
+	
+	if (needs_bow_prefix) {
+		// Prepend a word character to prevent BOW matching at position 0
+		subject_buf += CharT('a');
+		prefix_len = 1;
+	}
+	subject_buf.append(whole_first, last);
+	if (needs_eow_suffix) {
+		// Append a word character to prevent EOW matching at end
+		subject_buf += CharT('a');
+	}
+
+	// Adjust total length and offsets for the modified buffer
+	size_type buf_total_len = subject_buf.size();
+	size_type buf_search_offset = search_offset + prefix_len;
 
 	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
 	static thread_local CharT empty_char = CharT();
-	const CharT* whole_begin_ptr = (total_len > 0) ? subject_buf.c_str() : &empty_char;
-	const CharT* end_ptr = whole_begin_ptr + total_len;
-	const CharT* start_ptr = whole_begin_ptr + search_offset;
+	const CharT* whole_begin_ptr = (buf_total_len > 0) ? subject_buf.c_str() : &empty_char;
+	const CharT* end_ptr = whole_begin_ptr + (total_len + prefix_len); // Original end + prefix (exclude suffix for matching)
+	const CharT* start_ptr = whole_begin_ptr + buf_search_offset;
+	
+	// For match_not_eow, we still need to pass the extended end for context,
+	// but the actual match should not extend beyond the original string end
+	const CharT* context_end_ptr = whole_begin_ptr + buf_total_len;
 
 	const OnigUChar* u_start = reinterpret_cast<const OnigUChar*>(whole_begin_ptr);
-	const OnigUChar* u_end   = reinterpret_cast<const OnigUChar*>(end_ptr);
+	const OnigUChar* u_end   = reinterpret_cast<const OnigUChar*>(needs_eow_suffix ? context_end_ptr : end_ptr);
 	const OnigUChar* u_search_start = reinterpret_cast<const OnigUChar*>(start_ptr);
-	const OnigUChar* u_range = u_end; // Forward search range
+	const OnigUChar* u_range = u_end;
 
 	// Allocate OnigRegion
 	OnigRegion* region = onig_region_new();
 	if (!region) throw std::bad_alloc();
 
-	// Execute search: pass whole begin as str, and search_start as start.
-	int r = onig_search(reg, u_start, u_end, u_search_start, u_range, region, onig_options);
+	// Execute search or match depending on match_continuous flag
+	int r;
+	if (use_match_instead) {
+		// match_continuous: use onig_match to only match at the search start position
+		r = onig_match(reg, u_start, u_end, u_search_start, region, onig_options);
+	} else {
+		// Normal search: can match at any position from start to range
+		r = onig_search(reg, u_start, u_end, u_search_start, u_range, region, onig_options);
+	}
+	
+	// Adjust region offsets to account for prefix
+	if (r >= 0 && prefix_len > 0) {
+		for (int i = 0; i < region->num_regs; ++i) {
+			if (region->beg[i] != ONIG_REGION_NOTPOS) {
+				region->beg[i] -= static_cast<int>(prefix_len * sizeof(CharT));
+				region->end[i] -= static_cast<int>(prefix_len * sizeof(CharT));
+			}
+		}
+	}
 
 	if (r >= 0) {
 		if (flags & regex_constants::match_not_null) {
@@ -425,7 +470,145 @@ _regex_search_with_context_impl(
 	size_type total_len,
 	size_type search_offset)
 {
-	// Fast path: use direct pointer access for contiguous iterators
+	// Handle match_not_bow and match_not_eow by prepending/appending word characters
+	// to affect word boundary detection. For contiguous iterators, we need to copy
+	// to a buffer when these flags are set since we can't modify the original memory.
+	bool needs_bow_prefix = (flags & regex_constants::match_not_bow) && (search_offset == 0);
+	bool needs_eow_suffix = (flags & regex_constants::match_not_eow);
+	bool use_match_instead = (flags & regex_constants::match_continuous);
+	
+	// If we need BOW/EOW modifications, use buffer-based approach
+	if (needs_bow_prefix || needs_eow_suffix) {
+		std::basic_string<CharT> subject_buf;
+		size_type prefix_len = 0;
+		
+		if (needs_bow_prefix) {
+			// Prepend a word character to prevent BOW matching at position 0
+			subject_buf += CharT('a');
+			prefix_len = 1;
+		}
+		subject_buf.append(whole_first, last);
+		if (needs_eow_suffix) {
+			// Append a word character to prevent EOW matching at end
+			subject_buf += CharT('a');
+		}
+
+		// Adjust lengths and offsets for the modified buffer
+		size_type buf_total_len = subject_buf.size();
+		size_type buf_search_offset = search_offset + prefix_len;
+
+		const CharT* whole_begin_ptr = subject_buf.c_str();
+		const CharT* end_ptr = whole_begin_ptr + (total_len + prefix_len); // Original end + prefix
+		const CharT* start_ptr = whole_begin_ptr + buf_search_offset;
+		const CharT* context_end_ptr = whole_begin_ptr + buf_total_len;
+
+		const OnigUChar* u_start = reinterpret_cast<const OnigUChar*>(whole_begin_ptr);
+		const OnigUChar* u_end   = reinterpret_cast<const OnigUChar*>(needs_eow_suffix ? context_end_ptr : end_ptr);
+		const OnigUChar* u_search_start = reinterpret_cast<const OnigUChar*>(start_ptr);
+		const OnigUChar* u_range = u_end;
+
+		OnigRegion* region = onig_region_new();
+		if (!region) throw std::bad_alloc();
+
+		int r;
+		if (use_match_instead) {
+			r = onig_match(reg, u_start, u_end, u_search_start, region, onig_options);
+		} else {
+			r = onig_search(reg, u_start, u_end, u_search_start, u_range, region, onig_options);
+		}
+		
+		// Adjust region offsets to account for prefix
+		if (r >= 0 && prefix_len > 0) {
+			for (int i = 0; i < region->num_regs; ++i) {
+				if (region->beg[i] != ONIG_REGION_NOTPOS) {
+					region->beg[i] -= static_cast<int>(prefix_len * sizeof(CharT));
+					region->end[i] -= static_cast<int>(prefix_len * sizeof(CharT));
+				}
+			}
+		}
+
+		if (r >= 0) {
+			if (flags & regex_constants::match_not_null) {
+				if (region->beg[0] == region->end[0]) {
+					onig_region_free(region, 1);
+					return false;
+				}
+			}
+
+			m.m_str_begin = whole_first;
+			m.m_str_end = last;
+			m.clear();
+			
+			if (_is_nosubs_active(e.flags(), flags)) {
+				m.resize(1);
+				int beg = region->beg[0];
+				int end = region->end[0];
+				
+				if (beg != ONIG_REGION_NOTPOS) {
+					int beg_chars = beg / sizeof(CharT);
+					int end_chars = end / sizeof(CharT);
+					
+					BidirIt sub_start = whole_first;
+					std::advance(sub_start, beg_chars);
+					
+					BidirIt sub_end = whole_first;
+					std::advance(sub_end, end_chars);
+					
+					m[0].first = sub_start;
+					m[0].second = sub_end;
+					m[0].matched = true;
+				} else {
+					m[0].first = last;
+					m[0].second = last;
+					m[0].matched = false;
+				}
+				
+				onig_region_free(region, 1);
+				return true;
+			}
+			
+			m.resize(region->num_regs);
+
+			for (int i = 0; i < region->num_regs; ++i) {
+				int beg = region->beg[i];
+				int end = region->end[i];
+
+				if (beg != ONIG_REGION_NOTPOS) {
+					int beg_chars = beg / sizeof(CharT);
+					int end_chars = end / sizeof(CharT);
+
+					BidirIt sub_start = whole_first;
+					std::advance(sub_start, beg_chars);
+
+					BidirIt sub_end = whole_first;
+					std::advance(sub_end, end_chars);
+
+					m[i].first = sub_start;
+					m[i].second = sub_end;
+					m[i].matched = true;
+				} else {
+					m[i].first = last;
+					m[i].second = last;
+					m[i].matched = false;
+				}
+			}
+
+			onig_region_free(region, 1);
+			return true;
+		}
+		else if (r == ONIG_MISMATCH) {
+			onig_region_free(region, 1);
+			return false;
+		}
+		else {
+			onig_region_free(region, 1);
+			OnigErrorInfo einfo;
+			std::memset(&einfo, 0, sizeof(einfo));
+			throw regex_error(regex_constants::map_oniguruma_error(r), einfo);
+		}
+	}
+	
+	// Fast path: use direct pointer access for contiguous iterators (no BOW/EOW modification needed)
 	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
 	static thread_local CharT empty_char = CharT();
 	const CharT* whole_begin_ptr = (total_len > 0) ? get_contiguous_pointer(whole_first) : &empty_char;
@@ -435,14 +618,21 @@ _regex_search_with_context_impl(
 	const OnigUChar* u_start = reinterpret_cast<const OnigUChar*>(whole_begin_ptr);
 	const OnigUChar* u_end   = reinterpret_cast<const OnigUChar*>(end_ptr);
 	const OnigUChar* u_search_start = reinterpret_cast<const OnigUChar*>(start_ptr);
-	const OnigUChar* u_range = u_end; // Forward search range
+	const OnigUChar* u_range = u_end;
 
 	// Allocate OnigRegion
 	OnigRegion* region = onig_region_new();
 	if (!region) throw std::bad_alloc();
 
-	// Execute search: pass whole begin as str, and search_start as start.
-	int r = onig_search(reg, u_start, u_end, u_search_start, u_range, region, onig_options);
+	// Execute search or match depending on match_continuous flag
+	int r;
+	if (use_match_instead) {
+		// match_continuous: use onig_match to only match at the search start position
+		r = onig_match(reg, u_start, u_end, u_search_start, region, onig_options);
+	} else {
+		// Normal search: can match at any position from start to range
+		r = onig_search(reg, u_start, u_end, u_search_start, u_range, region, onig_options);
+	}
 
 	if (r >= 0) {
 		if (flags & regex_constants::match_not_null) {
@@ -1255,18 +1445,36 @@ _regex_match_impl(
 	OnigOptionType onig_options,
 	size_type len)
 {
+	// Handle match_not_bow and match_not_eow by prepending/appending word characters
+	bool needs_bow_prefix = (flags & regex_constants::match_not_bow);
+	bool needs_eow_suffix = (flags & regex_constants::match_not_eow);
+	
 	// Copy the subject range into a temporary contiguous buffer to support
 	// non-contiguous BidirectionalIterators (e.g., std::list, std::deque)
-	std::basic_string<CharT> subject_buf(first, last);
+	std::basic_string<CharT> subject_buf;
+	size_type prefix_len = 0;
+	
+	if (needs_bow_prefix) {
+		subject_buf += CharT('a');
+		prefix_len = 1;
+	}
+	subject_buf.append(first, last);
+	if (needs_eow_suffix) {
+		subject_buf += CharT('a');
+	}
+	
+	size_type buf_len = subject_buf.size();
 
 	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
 	static thread_local CharT empty_char = CharT();
-	const CharT* start_ptr = (len > 0) ? subject_buf.c_str() : &empty_char;
-	const CharT* end_ptr = start_ptr + len;
+	const CharT* start_ptr = (buf_len > 0) ? subject_buf.c_str() : &empty_char;
+	const CharT* end_ptr = start_ptr + (len + prefix_len); // End of original content
+	const CharT* context_end_ptr = start_ptr + buf_len; // End including suffix
 
 	// Cast to Oniguruma pointers
 	const OnigUChar* u_start = reinterpret_cast<const OnigUChar*>(start_ptr);
-	const OnigUChar* u_end   = reinterpret_cast<const OnigUChar*>(end_ptr);
+	const OnigUChar* u_end   = reinterpret_cast<const OnigUChar*>(needs_eow_suffix ? context_end_ptr : end_ptr);
+	const OnigUChar* u_match_at = reinterpret_cast<const OnigUChar*>(start_ptr + prefix_len);
 
 	// Allocate OnigRegion
 	OnigRegion* region = onig_region_new();
@@ -1274,8 +1482,18 @@ _regex_match_impl(
 		throw std::bad_alloc();
 	}
 
-	// Execute match
-	int r = onig_match(reg, u_start, u_end, u_start, region, onig_options);
+	// Execute match at the adjusted position
+	int r = onig_match(reg, u_start, u_end, u_match_at, region, onig_options);
+	
+	// Adjust region offsets to account for prefix
+	if (r >= 0 && prefix_len > 0) {
+		for (int i = 0; i < region->num_regs; ++i) {
+			if (region->beg[i] != ONIG_REGION_NOTPOS) {
+				region->beg[i] -= static_cast<int>(prefix_len * sizeof(CharT));
+				region->end[i] -= static_cast<int>(prefix_len * sizeof(CharT));
+			}
+		}
+	}
 
 	if (r >= 0) {
 		// regex_match requires full match with the entire string
@@ -1389,6 +1607,135 @@ _regex_match_impl(
 	OnigOptionType onig_options,
 	size_type len)
 {
+	// Handle match_not_bow and match_not_eow by prepending/appending word characters
+	bool needs_bow_prefix = (flags & regex_constants::match_not_bow);
+	bool needs_eow_suffix = (flags & regex_constants::match_not_eow);
+	
+	// If we need BOW/EOW modifications, use buffer-based approach
+	if (needs_bow_prefix || needs_eow_suffix) {
+		std::basic_string<CharT> subject_buf;
+		size_type prefix_len = 0;
+		
+		if (needs_bow_prefix) {
+			subject_buf += CharT('a');
+			prefix_len = 1;
+		}
+		subject_buf.append(first, last);
+		if (needs_eow_suffix) {
+			subject_buf += CharT('a');
+		}
+		
+		size_type buf_len = subject_buf.size();
+		const CharT* start_ptr = subject_buf.c_str();
+		const CharT* end_ptr = start_ptr + (len + prefix_len);
+		const CharT* context_end_ptr = start_ptr + buf_len;
+
+		const OnigUChar* u_start = reinterpret_cast<const OnigUChar*>(start_ptr);
+		const OnigUChar* u_end   = reinterpret_cast<const OnigUChar*>(needs_eow_suffix ? context_end_ptr : end_ptr);
+		const OnigUChar* u_match_at = reinterpret_cast<const OnigUChar*>(start_ptr + prefix_len);
+
+		OnigRegion* region = onig_region_new();
+		if (!region) throw std::bad_alloc();
+
+		int r = onig_match(reg, u_start, u_end, u_match_at, region, onig_options);
+		
+		// Adjust region offsets to account for prefix
+		if (r >= 0 && prefix_len > 0) {
+			for (int i = 0; i < region->num_regs; ++i) {
+				if (region->beg[i] != ONIG_REGION_NOTPOS) {
+					region->beg[i] -= static_cast<int>(prefix_len * sizeof(CharT));
+					region->end[i] -= static_cast<int>(prefix_len * sizeof(CharT));
+				}
+			}
+		}
+
+		if (r >= 0) {
+			// Check for full match
+			if (region->end[0] != (int)(len * sizeof(CharT))) {
+				onig_region_free(region, 1);
+				return false;
+			}
+
+			if (flags & regex_constants::match_not_null) {
+				if (region->beg[0] == region->end[0]) {
+					onig_region_free(region, 1);
+					return false;
+				}
+			}
+
+			m.m_str_begin = first;
+			m.m_str_end = last;
+			m.clear();
+			
+			if (_is_nosubs_active(e.flags(), flags)) {
+				m.resize(1);
+				int beg = region->beg[0];
+				int end = region->end[0];
+				
+				if (beg != ONIG_REGION_NOTPOS) {
+					int beg_chars = beg / sizeof(CharT);
+					int end_chars = end / sizeof(CharT);
+					
+					BidirIt sub_start = first;
+					std::advance(sub_start, beg_chars);
+					
+					BidirIt sub_end = first;
+					std::advance(sub_end, end_chars);
+					
+					m[0].first = sub_start;
+					m[0].second = sub_end;
+					m[0].matched = true;
+				} else {
+					m[0].first = last;
+					m[0].second = last;
+					m[0].matched = false;
+				}
+				
+				onig_region_free(region, 1);
+				return true;
+			}
+			
+			m.resize(region->num_regs);
+
+			for (int i = 0; i < region->num_regs; ++i) {
+				int beg = region->beg[i];
+				int end = region->end[i];
+
+				if (beg != ONIG_REGION_NOTPOS) {
+					int beg_chars = beg / sizeof(CharT);
+					int end_chars = end / sizeof(CharT);
+
+					BidirIt sub_start = first;
+					std::advance(sub_start, beg_chars);
+
+					BidirIt sub_end = first;
+					std::advance(sub_end, end_chars);
+
+					m[i].first = sub_start;
+					m[i].second = sub_end;
+					m[i].matched = true;
+				} else {
+					m[i].first = last;
+					m[i].second = last;
+					m[i].matched = false;
+				}
+			}
+
+			onig_region_free(region, 1);
+			return true;
+		}
+		else if (r == ONIG_MISMATCH) {
+			onig_region_free(region, 1);
+			return false;
+		}
+		else {
+			onig_region_free(region, 1);
+			OnigErrorInfo einfo;
+			std::memset(&einfo, 0, sizeof(einfo));
+			throw regex_error(regex_constants::map_oniguruma_error(r), einfo);
+		}
+	}
+	
 	// Fast path: use direct pointer access for contiguous iterators
 	// Use stable static buffer for empty ranges to avoid passing nullptr to C API
 	static thread_local CharT empty_char = CharT();

@@ -398,5 +398,93 @@
     "operation": "search",
     "replace_template": "",
     "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "match_not_bow_basic",
+    "description": "match_not_bow: word boundary at start should not match BOW",
+    "pattern": "\\bword",
+    "flags": "ECMAScript",
+    "match_flags": "match_not_bow",
+    "input": "word",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "match_not_bow_no_effect",
+    "description": "match_not_bow: no effect when not at string start",
+    "pattern": "\\bworld",
+    "flags": "ECMAScript",
+    "match_flags": "match_not_bow",
+    "input": "hello world",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "match_not_eow_basic",
+    "description": "match_not_eow: word boundary at end should not match EOW",
+    "pattern": "word\\b",
+    "flags": "ECMAScript",
+    "match_flags": "match_not_eow",
+    "input": "word",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "match_not_eow_no_effect",
+    "description": "match_not_eow: no effect when not at string end",
+    "pattern": "hello\\b",
+    "flags": "ECMAScript",
+    "match_flags": "match_not_eow",
+    "input": "hello world",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "match_continuous_basic",
+    "description": "match_continuous: match must start at search position",
+    "pattern": "world",
+    "flags": "ECMAScript",
+    "match_flags": "match_continuous",
+    "input": "hello world",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "match_continuous_at_start",
+    "description": "match_continuous: should match when pattern is at start",
+    "pattern": "hello",
+    "flags": "ECMAScript",
+    "match_flags": "match_continuous",
+    "input": "hello world",
+    "operation": "search",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "match_not_bow_match_operation",
+    "description": "match_not_bow with regex_match operation",
+    "pattern": "\\bword\\b",
+    "flags": "ECMAScript",
+    "match_flags": "match_not_bow",
+    "input": "word",
+    "operation": "match",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "match_not_eow_match_operation",
+    "description": "match_not_eow with regex_match operation",
+    "pattern": "\\bword\\b",
+    "flags": "ECMAScript",
+    "match_flags": "match_not_eow",
+    "input": "word",
+    "operation": "match",
+    "replace_template": "",
+    "encoding_hint": "UTF-8"
   }
 ]

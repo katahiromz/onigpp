@@ -146,8 +146,10 @@ namespace regex_constants {
 	static constexpr match_flag_type format_no_copy = (1 << 9);
 	static constexpr match_flag_type format_literal = (1 << 10);
 
-	// Additional std::regex compatibility flags
-	// Note: Behavior implementation for these flags will be added in future PRs
+	// Additional std::regex compatibility flags for word boundaries and continuous matching
+	// match_not_bow: First position is not treated as beginning-of-word (affects \b word boundary)
+	// match_not_eow: Last position is not treated as end-of-word (affects \b word boundary)
+	// match_continuous: Match must start exactly at the search start position (like \G anchor)
 	static constexpr match_flag_type match_not_bow = (1 << 11); // std::regex_constants::match_not_bow
 	static constexpr match_flag_type match_not_eow = (1 << 12); // std::regex_constants::match_not_eow
 	static constexpr match_flag_type match_continuous = (1 << 13); // std::regex_constants::match_continuous

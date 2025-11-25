@@ -2,6 +2,12 @@
 
 ## 2025-XX-YY Ver.6.9.13
 
+- Added support for `match_not_bow`, `match_not_eow`, and `match_continuous` match flags in C++ wrapper.
+  - `match_not_bow`: First position is not treated as beginning-of-word for word boundary assertions.
+  - `match_not_eow`: Last position is not treated as end-of-word for word boundary assertions.
+  - `match_continuous`: Match must start exactly at the search position (uses `onig_match` instead of `onig_search`).
+- Added compatibility tests for the new match flags in `tests/compat/patterns.json`.
+- Updated `compat_test.cpp` to support `match_flags` field in test cases.
 - Added tools/re_replace.
 - Documented ECMAScript as the default grammar when no flags are specified (matching `std::regex` behavior).
 - Added nested flag constants to `basic_regex` class (e.g., `onigpp::regex::ECMAScript`, `onigpp::regex::icase`) for std::regex compatibility.

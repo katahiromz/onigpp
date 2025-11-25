@@ -37,6 +37,7 @@ public:
         std::string description;
         std::string pattern;
         std::string flags;
+        std::string match_flags;  // New field for match-time flags
         std::string input;
         std::string operation;
         std::string replace_template;
@@ -131,6 +132,7 @@ private:
                 else if (fieldName == "description") tc.description = value;
                 else if (fieldName == "pattern") tc.pattern = value;
                 else if (fieldName == "flags") tc.flags = value;
+                else if (fieldName == "match_flags") tc.match_flags = value;
                 else if (fieldName == "input") tc.input = value;
                 else if (fieldName == "operation") tc.operation = value;
                 else if (fieldName == "replace_template") tc.replace_template = value;
@@ -162,6 +164,59 @@ public:
         if (flags == "icase") return onigpp::regex_constants::ECMAScript | onigpp::regex_constants::icase;
         return onigpp::regex_constants::ECMAScript;
     }
+    
+    // Parse match flags from a comma-separated string (e.g., "match_not_bow,match_continuous")
+    static std::regex_constants::match_flag_type getStdMatchFlags(const std::string& match_flags) {
+        std::regex_constants::match_flag_type result = std::regex_constants::match_default;
+        if (match_flags.empty()) return result;
+        
+        // Simple comma-separated parsing
+        size_t start = 0;
+        while (start < match_flags.size()) {
+            size_t end = match_flags.find(',', start);
+            if (end == std::string::npos) end = match_flags.size();
+            
+            std::string flag = match_flags.substr(start, end - start);
+            // Trim whitespace
+            while (!flag.empty() && flag.front() == ' ') flag.erase(0, 1);
+            while (!flag.empty() && flag.back() == ' ') flag.pop_back();
+            
+            if (flag == "match_not_bol") result |= std::regex_constants::match_not_bol;
+            else if (flag == "match_not_eol") result |= std::regex_constants::match_not_eol;
+            else if (flag == "match_not_bow") result |= std::regex_constants::match_not_bow;
+            else if (flag == "match_not_eow") result |= std::regex_constants::match_not_eow;
+            else if (flag == "match_continuous") result |= std::regex_constants::match_continuous;
+            
+            start = end + 1;
+        }
+        return result;
+    }
+    
+    static onigpp::regex_constants::match_flag_type getOnigppMatchFlags(const std::string& match_flags) {
+        onigpp::regex_constants::match_flag_type result = onigpp::regex_constants::match_default;
+        if (match_flags.empty()) return result;
+        
+        // Simple comma-separated parsing
+        size_t start = 0;
+        while (start < match_flags.size()) {
+            size_t end = match_flags.find(',', start);
+            if (end == std::string::npos) end = match_flags.size();
+            
+            std::string flag = match_flags.substr(start, end - start);
+            // Trim whitespace
+            while (!flag.empty() && flag.front() == ' ') flag.erase(0, 1);
+            while (!flag.empty() && flag.back() == ' ') flag.pop_back();
+            
+            if (flag == "match_not_bol") result |= onigpp::regex_constants::match_not_bol;
+            else if (flag == "match_not_eol") result |= onigpp::regex_constants::match_not_eol;
+            else if (flag == "match_not_bow") result |= onigpp::regex_constants::match_not_bow;
+            else if (flag == "match_not_eow") result |= onigpp::regex_constants::match_not_eow;
+            else if (flag == "match_continuous") result |= onigpp::regex_constants::match_continuous;
+            
+            start = end + 1;
+        }
+        return result;
+    }
 
     static OnigEncoding getEncoding(const std::string& hint) {
         if (hint == "UTF-8" || hint.empty()) return ONIG_ENCODING_UTF8;
@@ -192,24 +247,31 @@ public:
         std::cout << "Pattern: " << tc.pattern << std::endl;
         std::cout << "Input: " << tc.input << std::endl;
         std::cout << "Operation: " << tc.operation << std::endl;
+        if (!tc.match_flags.empty()) {
+            std::cout << "Match flags: " << tc.match_flags << std::endl;
+        }
 
         MatchResult stdResult, onigppResult;
         bool stdSuccess = false, onigppSuccess = false;
         bool stdRegexNotSupported = false;
         std::string stdExceptionMsg;
+        
+        // Get match flags
+        auto stdMatchFlags = FlagsMapper::getStdMatchFlags(tc.match_flags);
+        auto onigppMatchFlags = FlagsMapper::getOnigppMatchFlags(tc.match_flags);
 
         // Run std::regex test
         try {
             std::regex stdRe(tc.pattern, FlagsMapper::getStdFlags(tc.flags));
             
             if (tc.operation == "match") {
-                stdResult = runStdMatch(stdRe, tc.input);
+                stdResult = runStdMatch(stdRe, tc.input, stdMatchFlags);
                 stdSuccess = true;
             } else if (tc.operation == "search") {
-                stdResult = runStdSearch(stdRe, tc.input);
+                stdResult = runStdSearch(stdRe, tc.input, stdMatchFlags);
                 stdSuccess = true;
             } else if (tc.operation == "replace") {
-                stdResult = runStdReplace(stdRe, tc.input, tc.replace_template);
+                stdResult = runStdReplace(stdRe, tc.input, tc.replace_template, stdMatchFlags);
                 stdSuccess = true;
             }
         } catch (const std::regex_error& e) {
@@ -226,13 +288,13 @@ public:
             onigpp::basic_regex<char> onigppRe(tc.pattern, FlagsMapper::getOnigppFlags(tc.flags), enc);
             
             if (tc.operation == "match") {
-                onigppResult = runOnigppMatch(onigppRe, tc.input);
+                onigppResult = runOnigppMatch(onigppRe, tc.input, onigppMatchFlags);
                 onigppSuccess = true;
             } else if (tc.operation == "search") {
-                onigppResult = runOnigppSearch(onigppRe, tc.input);
+                onigppResult = runOnigppSearch(onigppRe, tc.input, onigppMatchFlags);
                 onigppSuccess = true;
             } else if (tc.operation == "replace") {
-                onigppResult = runOnigppReplace(onigppRe, tc.input, tc.replace_template);
+                onigppResult = runOnigppReplace(onigppRe, tc.input, tc.replace_template, onigppMatchFlags);
                 onigppSuccess = true;
             }
         } catch (const std::exception& e) {
@@ -284,10 +346,11 @@ public:
     int getFailedCount() const { return failed; }
 
 private:
-    MatchResult runStdMatch(const std::regex& re, const std::string& input) {
+    MatchResult runStdMatch(const std::regex& re, const std::string& input,
+                            std::regex_constants::match_flag_type match_flags = std::regex_constants::match_default) {
         MatchResult result;
         std::smatch match;
-        result.matched = std::regex_match(input, match, re);
+        result.matched = std::regex_match(input, match, re, match_flags);
         
         if (result.matched) {
             for (size_t i = 0; i < match.size(); ++i) {
@@ -299,10 +362,11 @@ private:
         return result;
     }
 
-    MatchResult runStdSearch(const std::regex& re, const std::string& input) {
+    MatchResult runStdSearch(const std::regex& re, const std::string& input,
+                             std::regex_constants::match_flag_type match_flags = std::regex_constants::match_default) {
         MatchResult result;
         std::smatch match;
-        result.matched = std::regex_search(input, match, re);
+        result.matched = std::regex_search(input, match, re, match_flags);
         
         if (result.matched) {
             for (size_t i = 0; i < match.size(); ++i) {
@@ -315,17 +379,19 @@ private:
     }
 
     MatchResult runStdReplace(const std::regex& re, const std::string& input, 
-                              const std::string& replace_template) {
+                              const std::string& replace_template,
+                              std::regex_constants::match_flag_type match_flags = std::regex_constants::match_default) {
         MatchResult result;
         result.matched = true;
-        result.replace_result = std::regex_replace(input, re, replace_template);
+        result.replace_result = std::regex_replace(input, re, replace_template, match_flags);
         return result;
     }
 
-    MatchResult runOnigppMatch(const onigpp::basic_regex<char>& re, const std::string& input) {
+    MatchResult runOnigppMatch(const onigpp::basic_regex<char>& re, const std::string& input,
+                               onigpp::regex_constants::match_flag_type match_flags = onigpp::regex_constants::match_default) {
         MatchResult result;
         onigpp::match_results<std::string::const_iterator> match;
-        result.matched = onigpp::regex_match(input, match, re);
+        result.matched = onigpp::regex_match(input, match, re, match_flags);
         
         if (result.matched) {
             for (size_t i = 0; i < match.size(); ++i) {
@@ -337,10 +403,11 @@ private:
         return result;
     }
 
-    MatchResult runOnigppSearch(const onigpp::basic_regex<char>& re, const std::string& input) {
+    MatchResult runOnigppSearch(const onigpp::basic_regex<char>& re, const std::string& input,
+                                onigpp::regex_constants::match_flag_type match_flags = onigpp::regex_constants::match_default) {
         MatchResult result;
         onigpp::match_results<std::string::const_iterator> match;
-        result.matched = onigpp::regex_search(input, match, re);
+        result.matched = onigpp::regex_search(input, match, re, match_flags);
         
         if (result.matched) {
             for (size_t i = 0; i < match.size(); ++i) {
@@ -353,10 +420,11 @@ private:
     }
 
     MatchResult runOnigppReplace(const onigpp::basic_regex<char>& re, const std::string& input,
-                                  const std::string& replace_template) {
+                                  const std::string& replace_template,
+                                  onigpp::regex_constants::match_flag_type match_flags = onigpp::regex_constants::match_default) {
         MatchResult result;
         result.matched = true;
-        result.replace_result = onigpp::regex_replace(input, re, replace_template);
+        result.replace_result = onigpp::regex_replace(input, re, replace_template, match_flags);
         return result;
     }
 
