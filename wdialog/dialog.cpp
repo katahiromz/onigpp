@@ -20,7 +20,7 @@ namespace rex = onigpp;
 	using regex_type = rex::regex;
 #endif
 
-// ‹¤’Êƒwƒ‹ƒp[ŠÖ”ŒQ‚ğ“½–¼–¼‘O‹óŠÔ‚É‚Ü‚Æ‚ß‚é
+// å…±é€šãƒ˜ãƒ«ãƒ‘ãƒ¼é–¢æ•°ç¾¤ã‚’åŒ¿ååå‰ç©ºé–“ã«ã¾ã¨ã‚ã‚‹
 namespace {
 
 using size_type = typename string_type::size_type;
@@ -58,7 +58,7 @@ string_type mstr_unescape(const string_type& input) {
 				} else {
 					output += char_type('x');
 				}
-				i--; // ƒ‹[ƒv‚ªnext•ª+1‚µ‚Ä‚¢‚é‚Ì‚Å’²®
+				i--; // ãƒ«ãƒ¼ãƒ—ãŒnextåˆ†+1ã—ã¦ã„ã‚‹ã®ã§èª¿æ•´
 				break;
 			}
 			case char_type('u'): { // \uXXXX
@@ -77,19 +77,19 @@ string_type mstr_unescape(const string_type& input) {
 						MessageBoxW(NULL, sz, NULL, 0);
 						output += char_type(value);
 					} else {
-						// –³Œø‚È’l‚Í‚»‚Ì‚Ü‚Üo—Í
+						// ç„¡åŠ¹ãªå€¤ã¯ãã®ã¾ã¾å‡ºåŠ›
 						output += char_type('u');
 						output += hex;
 					}
 					i--;
 				} else {
-					// charŒ^‚Ìê‡‚Í‚»‚Ì‚Ü‚Üo—Í
+					// charå‹ã®å ´åˆã¯ãã®ã¾ã¾å‡ºåŠ›
 					output += char_type('u');
 				}
 				break;
 			}
 			default:
-				// 8i” (\123Œ`®)
+				// 8é€²æ•° (\123å½¢å¼)
 				if (next >= char_type('0') && next <= char_type('7')) {
 					size_t j = i + 1;
 					string_type oct;
@@ -104,7 +104,7 @@ string_type mstr_unescape(const string_type& input) {
 						output += next;
 					}
 				} else {
-					// –¢’m‚Ìê‡‚Í‚»‚Ì‚Ü‚Ü
+					// æœªçŸ¥ã®å ´åˆã¯ãã®ã¾ã¾
 					output += next;
 				}
 				break;
@@ -117,9 +117,9 @@ string_type mstr_unescape(const string_type& input) {
 	return output;
 }
 
-// start_from (•¶šˆÊ’u) ‚©‚çŒŸõ‚µ‚ÄAŒ©‚Â‚©‚ê‚Î match_pos/match_len ‚ğ•Ô‚·B
-// start_from > input.size() ‚Í––”ö‚Æ‚İ‚È‚·BŒ©‚Â‚©‚ç‚È‚¯‚ê‚Îæ“ª‚©‚çƒ‰ƒbƒv‚µ‚ÄŒŸõ‚·‚éB
-// return: true = Œ©‚Â‚©‚Á‚½, false = Œ©‚Â‚©‚ç‚È‚©‚Á‚½
+// start_from (æ–‡å­—ä½ç½®) ã‹ã‚‰æ¤œç´¢ã—ã¦ã€è¦‹ã¤ã‹ã‚Œã° match_pos/match_len ã‚’è¿”ã™ã€‚
+// start_from > input.size() ã¯æœ«å°¾ã¨ã¿ãªã™ã€‚è¦‹ã¤ã‹ã‚‰ãªã‘ã‚Œã°å…ˆé ­ã‹ã‚‰ãƒ©ãƒƒãƒ—ã—ã¦æ¤œç´¢ã™ã‚‹ã€‚
+// return: true = è¦‹ã¤ã‹ã£ãŸ, false = è¦‹ã¤ã‹ã‚‰ãªã‹ã£ãŸ
 bool find_next_match(const string_type& input, size_type start_from, size_type& match_pos, size_type& match_len, regex_type& re) {
 	try {
 		const size_type input_len = input.size();
@@ -151,7 +151,7 @@ bool find_next_match(const string_type& input, size_type start_from, size_type& 
 	}
 }
 
-// Œ»İ‚Ì‘I‘ğ”ÍˆÍ [sel_start, sel_end) ‚ª³Šm‚Éˆê‚Â‚Ìƒ}ƒbƒ`‚Æ“™‚µ‚¢‚©”»’è‚·‚é
+// ç¾åœ¨ã®é¸æŠç¯„å›² [sel_start, sel_end) ãŒæ­£ç¢ºã«ä¸€ã¤ã®ãƒãƒƒãƒã¨ç­‰ã—ã„ã‹åˆ¤å®šã™ã‚‹
 bool selection_is_exact_match(const string_type& input, size_type sel_start, size_type sel_end, regex_type& re) {
 	if (sel_start >= sel_end) return false;
 	const_iter first = input.begin() + static_cast<ptrdiff_t>(sel_start);
@@ -159,29 +159,29 @@ bool selection_is_exact_match(const string_type& input, size_type sel_start, siz
 	rex::match_results<const_iter> m;
 	try {
 		if (rex::regex_search(first, last, m, re)) {
-			// ƒ}ƒbƒ`‚ª‘I‘ğ”ÍˆÍ‚Ìæ“ª‚É‚ ‚èA’·‚³‚ª‘I‘ğ”ÍˆÍ‚Æ“¯‚¶‚È‚çˆê’v‚Æ‚·‚é
+			// ãƒãƒƒãƒãŒé¸æŠç¯„å›²ã®å…ˆé ­ã«ã‚ã‚Šã€é•·ã•ãŒé¸æŠç¯„å›²ã¨åŒã˜ãªã‚‰ä¸€è‡´ã¨ã™ã‚‹
 			return (m.position(0) == 0) && (static_cast<size_type>(m.length(0)) == (sel_end - sel_start));
 		}
 	} catch (const rex::regex_error&) {
-		// regex ƒGƒ‰[‚Í false
+		// regex ã‚¨ãƒ©ãƒ¼ã¯ false
 	}
 	return false;
 }
 
-// match_pos/match_len ‚Å¦‚³‚ê‚é’Pˆê‚Ìƒ}ƒbƒ`‚ğ replacement ‚Å’uŠ·‚µAŒ‹‰Ê•¶š—ñ‚ğ out ‚ÉŠi”[‚·‚éB
-// ’uŠ·‚³‚ê‚½•”•ª‚Ì’·‚³iƒoƒCƒg/•¶š’·j‚ğ•Ô‚·B
+// match_pos/match_len ã§ç¤ºã•ã‚Œã‚‹å˜ä¸€ã®ãƒãƒƒãƒã‚’ replacement ã§ç½®æ›ã—ã€çµæœæ–‡å­—åˆ—ã‚’ out ã«æ ¼ç´ã™ã‚‹ã€‚
+// ç½®æ›ã•ã‚ŒãŸéƒ¨åˆ†ã®é•·ã•ï¼ˆãƒã‚¤ãƒˆ/æ–‡å­—é•·ï¼‰ã‚’è¿”ã™ã€‚
 size_type perform_single_replacement(const string_type& input, size_type match_pos, size_type match_len, const string_type& replacement, regex_type& re, string_type& out) {
 	const string_type prefix = input.substr(0, match_pos);
 	const string_type matched = input.substr(match_pos, match_len);
 	const string_type suffix = (match_pos + match_len <= input.size()) ? input.substr(match_pos + match_len) : string_type();
 
-	// ƒ}ƒbƒ`•”•ª‚Ì‚İ‚ğ’uŠ·iformat_first_only ‚ğg‚¢AƒLƒƒƒvƒ`ƒƒQÆ‚È‚Ç‚ğ³‚µ‚­ˆµ‚¤j
+	// ãƒãƒƒãƒéƒ¨åˆ†ã®ã¿ã‚’ç½®æ›ï¼ˆformat_first_only ã‚’ä½¿ã„ã€ã‚­ãƒ£ãƒ—ãƒãƒ£å‚ç…§ãªã©ã‚’æ­£ã—ãæ‰±ã†ï¼‰
 	const string_type replaced_matched = rex::regex_replace(matched, re, replacement, rex::regex_constants::format_first_only);
 	out = prefix + replaced_matched + suffix;
 	return replaced_matched.size();
 }
 
-// ’uŠ·‘ÎÛ‚ÌŒ”‚ğ”‚¦‚éiƒ[ƒ’·ƒ}ƒbƒ`‘ÎôFƒ[ƒ’·‚È‚ç 1 •¶ši‚ß‚éj
+// ç½®æ›å¯¾è±¡ã®ä»¶æ•°ã‚’æ•°ãˆã‚‹ï¼ˆã‚¼ãƒ­é•·ãƒãƒƒãƒå¯¾ç­–ï¼šã‚¼ãƒ­é•·ãªã‚‰ 1 æ–‡å­—é€²ã‚ã‚‹ï¼‰
 size_type count_matches(const string_type& input, regex_type& re) {
 	size_type count = 0;
 	const_iter it = input.begin();
@@ -204,7 +204,7 @@ size_type count_matches(const string_type& input, regex_type& re) {
 
 } // namespace
 
-// do_find ‚Í find_next_match ‚ğ—˜—p‚µ‚ÄÀ‘•
+// do_find ã¯ find_next_match ã‚’åˆ©ç”¨ã—ã¦å®Ÿè£…
 bool do_find(const string_type& input, DWORD& iStart, DWORD& iEnd, regex_type& re) {
 	try {
 		size_type match_pos = 0, match_len = 0;
@@ -263,20 +263,20 @@ void OnFindReplace(HWND hwnd, int action) {
 			}
 		}
 		break;
-	case 1: // replace (Windows •W€ UX ‚É]‚¤)
+	case 1: // replace (Windows æ¨™æº– UX ã«å¾“ã†)
 		{
 			try {
 				size_type match_pos = 0, match_len = 0;
 				bool found = false;
 
-				// 1) Œ»İ‚Ì‘I‘ğ‚ª‚¿‚å‚¤‚Çƒ}ƒbƒ`‚È‚ç‚»‚ê‚ğ’uŠ·
+				// 1) ç¾åœ¨ã®é¸æŠãŒã¡ã‚‡ã†ã©ãƒãƒƒãƒãªã‚‰ãã‚Œã‚’ç½®æ›
 				if (selection_is_exact_match(input, static_cast<size_type>(iStart), static_cast<size_type>(iEnd), re)) {
 					found = true;
 					match_pos = static_cast<size_type>(iStart);
 					match_len = static_cast<size_type>(iEnd - iStart);
 				}
 
-				// 2) ‚»‚¤‚Å‚È‚¯‚ê‚Î‘I‘ğ‚ÌI’[‚©‚çŸ‚ğŒŸõiƒ‰ƒbƒv‚ ‚èj
+				// 2) ãã†ã§ãªã‘ã‚Œã°é¸æŠã®çµ‚ç«¯ã‹ã‚‰æ¬¡ã‚’æ¤œç´¢ï¼ˆãƒ©ãƒƒãƒ—ã‚ã‚Šï¼‰
 				if (!found) {
 					const size_type start_from = static_cast<size_type>(iEnd);
 					if (find_next_match(input, start_from, match_pos, match_len, re)) {
@@ -289,19 +289,19 @@ void OnFindReplace(HWND hwnd, int action) {
 					return;
 				}
 
-				// ÀÛ‚Ì’uŠ·i’Pˆêƒ}ƒbƒ`j
+				// å®Ÿéš›ã®ç½®æ›ï¼ˆå˜ä¸€ãƒãƒƒãƒï¼‰
 				string_type out;
 				const size_type replaced_len = perform_single_replacement(input, match_pos, match_len, replacement, re, out);
 
-				// XV
+				// æ›´æ–°
 				SetDlgItemText(hwnd, edt1, out.c_str());
 
-				// ‘I‘ğ‚ğ’uŠ·Œã‚Ì—Ìˆæ‚ÉƒZƒbƒg
+				// é¸æŠã‚’ç½®æ›å¾Œã®é ˜åŸŸã«ã‚»ãƒƒãƒˆ
 				iStart = static_cast<DWORD>(match_pos);
 				iEnd = static_cast<DWORD>(match_pos + replaced_len);
 
-				// •ÒWƒRƒ“ƒgƒ[ƒ‹“à‚ÌƒeƒLƒXƒg•Ï‰»‚ğ”½‰f‚·‚é‚½‚ßAinput ‚ğXV‚µ‚Ä‚à—Ç‚¢‚ª
-				// Œ»İ‚Í SetDlgItemText ‚Å’uŠ·Ï‚İBEM_SETSEL ‚ÍŒã‚ÅŒÄ‚Î‚ê‚éB
+				// ç·¨é›†ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«å†…ã®ãƒ†ã‚­ã‚¹ãƒˆå¤‰åŒ–ã‚’åæ˜ ã™ã‚‹ãŸã‚ã€input ã‚’æ›´æ–°ã—ã¦ã‚‚è‰¯ã„ãŒ
+				// ç¾åœ¨ã¯ SetDlgItemText ã§ç½®æ›æ¸ˆã¿ã€‚EM_SETSEL ã¯å¾Œã§å‘¼ã°ã‚Œã‚‹ã€‚
 			} catch (const rex::regex_error&) {
 				MessageBox(hwnd, TEXT("Failure!"), NULL, MB_ICONERROR);
 				return;
@@ -311,18 +311,18 @@ void OnFindReplace(HWND hwnd, int action) {
 	case 2: // replace all
 		{
 			try {
-				// ’uŠ·‘ÎÛŒ”‚ğ”‚¦‚é
+				// ç½®æ›å¯¾è±¡ä»¶æ•°ã‚’æ•°ãˆã‚‹
 				const size_type cnt = count_matches(input, re);
 				if (cnt == 0) {
 					MessageBox(hwnd, TEXT("No more match"), TEXT("dialog"), MB_ICONINFORMATION);
 					return;
 				}
 
-				// ‘S’uŠ·
+				// å…¨ç½®æ›
 				const string_type out = rex::regex_replace(input, re, replacement);
 				SetDlgItemText(hwnd, edt1, out.c_str());
 
-				// Œ”‚ğƒ†[ƒU[‚É’Ê’m
+				// ä»¶æ•°ã‚’ãƒ¦ãƒ¼ã‚¶ãƒ¼ã«é€šçŸ¥
 #ifdef UNICODE
 				std::wstring msg = std::to_wstring(cnt) + L" occurrences replaced.";
 				MessageBox(hwnd, msg.c_str(), TEXT("dialog"), MB_OK | MB_ICONINFORMATION);
@@ -330,7 +330,7 @@ void OnFindReplace(HWND hwnd, int action) {
 				std::string msg = std::to_string(cnt) + " occurrences replaced.";
 				MessageBox(hwnd, msg.c_str(), TEXT("dialog"), MB_OK | MB_ICONINFORMATION);
 #endif
-				// ‘I‘ğ‰ğœ
+				// é¸æŠè§£é™¤
 				iStart = iEnd = 0;
 			} catch (const rex::regex_error&) {
 				MessageBox(hwnd, TEXT("Failure!"), NULL, MB_ICONERROR);
@@ -343,7 +343,7 @@ void OnFindReplace(HWND hwnd, int action) {
 		return;
 	}
 
-	// ÅŒã‚É‘I‘ğ‚ğƒZƒbƒgiFind/Replace/ReplaceAll ‹¤’Êj
+	// æœ€å¾Œã«é¸æŠã‚’ã‚»ãƒƒãƒˆï¼ˆFind/Replace/ReplaceAll å…±é€šï¼‰
 	SendDlgItemMessage(hwnd, edt1, EM_SETSEL, iStart, iEnd);
 }
 
