@@ -2233,9 +2233,9 @@ regex_token_iterator<BidirIt, CharT, Traits> regex_token_iterator<BidirIt, CharT
 
 int init(const OnigEncoding *encodings, size_type encodings_count) {
 	static OnigEncoding use_encodings[] = {
-#define SUPPORTED_ENCODING(enc) enc,
-#include "encodings.h"
-#undef SUPPORTED_ENCODING
+#define DEFINE_ENCODING(name) ONIG_ENCODING_##name,
+#include "../supported_encodings.h"
+#undef DEFINE_ENCODING
 	};
 	if (!encodings) {
 		encodings = use_encodings;
