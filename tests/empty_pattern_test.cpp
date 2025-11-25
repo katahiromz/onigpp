@@ -83,7 +83,6 @@ int main() {
 		}
 
 		// Compare basic properties
-		std::cout << std_matches.size() << " | " << onig_matches.size() << std::endl;
 		assert(std_matches.size() == onig_matches.size() && "match count with empty pattern should match between implementations");
 		for (size_t i = 0; i < std_matches.size(); ++i) {
 			assert(std_matches[i] == onig_matches[i] && "match contents should be identical");
