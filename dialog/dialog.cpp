@@ -17,58 +17,130 @@ namespace rex = onigpp;
 	using regex_type = rex::regex;
 #endif
 
-bool do_find(const string_type& input, DWORD& iStart, DWORD& iEnd, regex_type& re) {
+// 共通ヘルパー関数群を匿名名前空間にまとめる
+namespace {
+
+using size_type = typename string_type::size_type;
+using const_iter = typename string_type::const_iterator;
+
+// start_from (文字位置) から検索して、見つかれば match_pos/match_len を返す。
+// start_from > input.size() は末尾とみなす。見つからなければ先頭からラップして検索する。
+// return: true = 見つかった, false = 見つからなかった
+bool find_next_match(const string_type& input, size_type start_from, size_type& match_pos, size_type& match_len, regex_type& re) {
 	try {
-		// Ensure positions are within the string bounds
-		const auto input_len = static_cast<typename string_type::size_type>(input.size());
-		if (iStart > input_len) iStart = static_cast<DWORD>(input_len);
-		if (iEnd > input_len) iEnd = static_cast<DWORD>(input_len);
+		const size_type input_len = input.size();
+		if (start_from > input_len) start_from = input_len;
 
-		using const_iter = typename string_type::const_iterator;
 		rex::match_results<const_iter> m;
+		const_iter begin = input.begin();
+		const_iter end = input.end();
 
-		// Search forward from the end of current selection first
-		const_iter start_it = input.begin() + static_cast<ptrdiff_t>(iEnd);
-		if (rex::regex_search(start_it, input.end(), m, re)) {
-			// m.position(0) is relative to start_it
-			const auto pos = static_cast<size_t>(iEnd) + static_cast<size_t>(m.position(0));
-			const auto len = static_cast<size_t>(m.length(0));
-			iStart = static_cast<DWORD>(pos);
-			iEnd = static_cast<DWORD>(pos + len);
+		// search from start_from .. end
+		const_iter start_it = begin + static_cast<ptrdiff_t>(start_from);
+		if (rex::regex_search(start_it, end, m, re)) {
+			match_pos = start_from + static_cast<size_type>(m.position(0));
+			match_len = static_cast<size_type>(m.length(0));
 			return true;
 		}
 
-		// If not found, wrap around and search from the beginning
+		// wrap-around: search from beginning
 		if (input_len > 0) {
-			if (rex::regex_search(input.begin(), input.end(), m, re)) {
-				const auto pos = static_cast<size_t>(m.position(0));
-				const auto len = static_cast<size_t>(m.length(0));
-				iStart = static_cast<DWORD>(pos);
-				iEnd = static_cast<DWORD>(pos + len);
+			if (rex::regex_search(begin, end, m, re)) {
+				match_pos = static_cast<size_type>(m.position(0));
+				match_len = static_cast<size_type>(m.length(0));
 				return true;
 			}
 		}
-
 		return false;
 	} catch (const rex::regex_error&) {
-		// Any regex-related error: treat as no match / failure
 		return false;
 	}
-};
+}
+
+// 現在の選択範囲 [sel_start, sel_end) が正確に一つのマッチと等しいか判定する
+bool selection_is_exact_match(const string_type& input, size_type sel_start, size_type sel_end, regex_type& re) {
+	if (sel_start >= sel_end) return false;
+	const_iter first = input.begin() + static_cast<ptrdiff_t>(sel_start);
+	const_iter last = input.begin() + static_cast<ptrdiff_t>(sel_end);
+	rex::match_results<const_iter> m;
+	try {
+		if (rex::regex_search(first, last, m, re)) {
+			// マッチが選択範囲の先頭にあり、長さが選択範囲と同じなら一致とする
+			return (m.position(0) == 0) && (static_cast<size_type>(m.length(0)) == (sel_end - sel_start));
+		}
+	} catch (const rex::regex_error&) {
+		// regex エラーは false
+	}
+	return false;
+}
+
+// match_pos/match_len で示される単一のマッチを replacement で置換し、結果文字列を out に格納する。
+// 置換された部分の長さ（バイト/文字長）を返す。
+size_type perform_single_replacement(const string_type& input, size_type match_pos, size_type match_len, const string_type& replacement, regex_type& re, string_type& out) {
+	const string_type prefix = input.substr(0, match_pos);
+	const string_type matched = input.substr(match_pos, match_len);
+	const string_type suffix = (match_pos + match_len <= input.size()) ? input.substr(match_pos + match_len) : string_type();
+
+	// マッチ部分のみを置換（format_first_only を使い、キャプチャ参照などを正しく扱う）
+	const string_type replaced_matched = rex::regex_replace(matched, re, replacement, rex::regex_constants::format_first_only);
+	out = prefix + replaced_matched + suffix;
+	return replaced_matched.size();
+}
+
+// 置換対象の件数を数える（ゼロ長マッチ対策：ゼロ長なら 1 文字進める）
+size_type count_matches(const string_type& input, regex_type& re) {
+	size_type count = 0;
+	const_iter it = input.begin();
+	const_iter end = input.end();
+	rex::match_results<const_iter> m;
+
+	while (it != end) {
+		try {
+			if (!rex::regex_search(it, end, m, re)) break;
+		} catch (const rex::regex_error&) {
+			return 0;
+		}
+		const size_type found_pos = static_cast<size_type>(m.position(0)) + static_cast<size_type>(it - input.begin());
+		count++;
+		const size_type advance = (m.length(0) > 0) ? static_cast<size_type>(m.length(0)) : 1;
+		it = input.begin() + static_cast<ptrdiff_t>(found_pos + advance);
+	}
+	return count;
+}
+
+} // namespace
+
+// do_find は find_next_match を利用して実装
+bool do_find(const string_type& input, DWORD& iStart, DWORD& iEnd, regex_type& re) {
+	try {
+		const size_type input_len = input.size();
+		if (iStart > input_len) iStart = static_cast<DWORD>(input_len);
+		if (iEnd > input_len) iEnd = static_cast<DWORD>(input_len);
+
+		size_type match_pos = 0, match_len = 0;
+		const size_type search_from = static_cast<size_type>(iEnd);
+		if (!find_next_match(input, search_from, match_pos, match_len, re)) return false;
+
+		iStart = static_cast<DWORD>(match_pos);
+		iEnd = static_cast<DWORD>(match_pos + match_len);
+		return true;
+	} catch (const rex::regex_error&) {
+		return false;
+	}
+}
 
 void OnFindReplace(HWND hwnd, int action) {
 	BOOL oniguruma = IsDlgButtonChecked(hwnd, chx1) == BST_CHECKED;
 	BOOL ecma = IsDlgButtonChecked(hwnd, chx2) == BST_CHECKED;
 	BOOL icase = IsDlgButtonChecked(hwnd, chx3) == BST_CHECKED;
 
-	TCHAR text[4][256];
-	GetDlgItemText(hwnd, edt1, text[0], _countof(text[0]));
-	GetDlgItemText(hwnd, edt2, text[1], _countof(text[1]));
-	GetDlgItemText(hwnd, edt3, text[2], _countof(text[2]));
-	GetDlgItemText(hwnd, edt4, text[3], _countof(text[3]));
-	string_type input = text[0];
-	string_type pattern = text[2];
-	string_type replacement = text[3];
+	TCHAR input_text[256], pattern_text[256], replacement_text[256];
+	GetDlgItemText(hwnd, edt1, input_text, _countof(input_text));
+	GetDlgItemText(hwnd, edt3, pattern_text, _countof(pattern_text));
+	GetDlgItemText(hwnd, edt4, replacement_text, _countof(replacement_text));
+	string_type input = input_text;
+	string_type pattern = pattern_text;
+	string_type replacement = replacement_text;
 
 	int flags = 0;
 	if (oniguruma) flags |= rex::regex::oniguruma;
@@ -78,7 +150,7 @@ void OnFindReplace(HWND hwnd, int action) {
 	regex_type re;
 	try {
 		re = regex_type(pattern, flags);
-	} catch (const rex::regex_error& e) {
+	} catch (const rex::regex_error&) {
 		MessageBox(hwnd, TEXT("Failure!"), NULL, MB_ICONERROR);
 		return;
 	}
@@ -95,14 +167,83 @@ void OnFindReplace(HWND hwnd, int action) {
 			}
 		}
 		break;
-	case 1: // replace
+	case 1: // replace (Windows 標準 UX に従う)
 		{
-			// TODO:
+			try {
+				const size_type input_len = input.size();
+				if (iStart > input_len) iStart = static_cast<DWORD>(input_len);
+				if (iEnd > input_len) iEnd = static_cast<DWORD>(input_len);
+
+				size_type match_pos = 0, match_len = 0;
+				bool found = false;
+
+				// 1) 現在の選択がちょうどマッチならそれを置換
+				if (selection_is_exact_match(input, static_cast<size_type>(iStart), static_cast<size_type>(iEnd), re)) {
+					found = true;
+					match_pos = static_cast<size_type>(iStart);
+					match_len = static_cast<size_type>(iEnd - iStart);
+				}
+
+				// 2) そうでなければ選択の終端から次を検索（ラップあり）
+				if (!found) {
+					const size_type start_from = static_cast<size_type>(iEnd);
+					if (find_next_match(input, start_from, match_pos, match_len, re)) {
+						found = true;
+					}
+				}
+
+				if (!found) {
+					MessageBox(hwnd, TEXT("No more match"), TEXT("dialog"), MB_ICONINFORMATION);
+					return;
+				}
+
+				// 実際の置換（単一マッチ）
+				string_type out;
+				const size_type replaced_len = perform_single_replacement(input, match_pos, match_len, replacement, re, out);
+
+				// 更新
+				SetDlgItemText(hwnd, edt1, out.c_str());
+
+				// 選択を置換後の領域にセット
+				iStart = static_cast<DWORD>(match_pos);
+				iEnd = static_cast<DWORD>(match_pos + replaced_len);
+
+				// 編集コントロール内のテキスト変化を反映するため、input を更新しても良いが
+				// 現在は SetDlgItemText で置換済み。EM_SETSEL は後で呼ばれる。
+			} catch (const rex::regex_error&) {
+				MessageBox(hwnd, TEXT("Failure!"), NULL, MB_ICONERROR);
+				return;
+			}
 		}
 		break;
 	case 2: // replace all
 		{
-			// TODO:
+			try {
+				// 置換対象件数を数える
+				const size_type cnt = count_matches(input, re);
+				if (cnt == 0) {
+					MessageBox(hwnd, TEXT("No more match"), TEXT("dialog"), MB_ICONINFORMATION);
+					return;
+				}
+
+				// 全置換
+				const string_type out = rex::regex_replace(input, re, replacement);
+				SetDlgItemText(hwnd, edt1, out.c_str());
+
+				// 件数をユーザーに通知
+#ifdef UNICODE
+				std::wstring msg = std::to_wstring(cnt) + L" occurrences replaced.";
+				MessageBox(hwnd, msg.c_str(), TEXT("dialog"), MB_OK | MB_ICONINFORMATION);
+#else
+				std::string msg = std::to_string(cnt) + " occurrences replaced.";
+				MessageBox(hwnd, msg.c_str(), TEXT("dialog"), MB_OK | MB_ICONINFORMATION);
+#endif
+				// 選択解除
+				iStart = iEnd = 0;
+			} catch (const rex::regex_error&) {
+				MessageBox(hwnd, TEXT("Failure!"), NULL, MB_ICONERROR);
+				return;
+			}
 		}
 		break;
 	default:
@@ -110,6 +251,7 @@ void OnFindReplace(HWND hwnd, int action) {
 		return;
 	}
 
+	// 最後に選択をセット（Find/Replace/ReplaceAll 共通）
 	SendDlgItemMessage(hwnd, edt1, EM_SETSEL, iStart, iEnd);
 }
 
