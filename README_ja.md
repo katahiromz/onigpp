@@ -21,13 +21,17 @@ Oniguruma の正規表現エンジンを C++11 向けに `std::regex` ライク�
 ## Requirements
 
 - C++11 互換コンパイラ（Visual Studio 2015+, GCC, Clang 等）
-- CMake 3.x
+- CMake >= 3.10（ビルドスクリプトに必要）
 - git（サブモジュール対応のため）
+
+## 対応プラットフォーム / コンパイラ
+
+このプロジェクトはモダンな C++11 互換コンパイラ（MSVC 2015+、GCC 5+、Clang 3.8+）で動作するよう設計されています。CI は Windows、Linux、最近の macOS ツールチェーンでテストを実行しています。異なるツールチェーンを使用する場合は、issue を開くかローカルでテストしてください。
 
 ## Quick start (usage)
 
 ```cpp
-#define USE_ONIGPP // onigpp と std を切り替え可能
+#define USE_ONIGPP // onigpp と std を切り替え可能（デモ/例示用のみ）
 
 #ifdef USE_ONIGPP
     #include "onigpp.h"
@@ -52,6 +56,8 @@ int main() {
 }
 ```
 
+> **注意:** 上記例の `#define USE_ONIGPP` は onigpp と `std::regex` の切り替えを示すためのものです。実際のプロジェクトでは、単に `onigpp.h` をインクルードし、onigpp ライブラリにリンクしてください。
+
 ## Build
 
 推奨手順（ソースからビルド）:
@@ -60,16 +66,28 @@ int main() {
 git clone https://github.com/katahiromz/onigpp
 cd onigpp
 git submodule update --init --recursive
+```
 
+**アウトオブソース ビルド（ポータブル方式）:**
+
+```bash
 mkdir build
-cmake -B build
+cd build
+cmake ..
+cmake --build .
+```
+
+**CMake ショートハンド（CMake 3.13+）:**
+
+```bash
+cmake -S . -B build
 cmake --build build
 ```
 
 よく使う CMake オプション例:
-- `-DCMAKE_BUILD_TYPE=Release / Debug`
-- `-DUSE_STD_FOR_TESTS=ON/OFF` （CI と同じ検証をローカルでも行う場合）
-- `-DBUILD_SHARED_LIBS=ON/OFF`
+- `-DCMAKE_BUILD_TYPE=Release` または `-DCMAKE_BUILD_TYPE=Debug`
+- `-DUSE_STD_FOR_TESTS=ON` または `-DUSE_STD_FOR_TESTS=OFF`（CI と同じ検証をローカルでも行う場合）
+- `-DBUILD_SHARED_LIBS=ON` または `-DBUILD_SHARED_LIBS=OFF`
 
 Windows (MSVC) の場合は Visual Studio の generator を指定して cmake を実行してください。
 
@@ -78,13 +96,30 @@ Windows (MSVC) の場合は Visual Studio の generator を指定して cmake �
 プロジェクト内のテストを実行:
 
 ```bash
-cmake --build build -t test
-# または CTest を直接:
+cmake --build build --target test
+```
+
+または CTest を直接 build ディレクトリから実行:
+
+```bash
 cd build
 ctest --output-on-failure
 ```
 
 CI では `USE_STD_FOR_TESTS=ON` と `OFF` の両方でテストが回っています（互換性確認のため）。
+
+### `USE_STD_FOR_TESTS` の使用
+
+`USE_STD_FOR_TESTS` CMake オプションを使用すると、onigpp の代わりに `std::regex` を使用して互換性テストを実行できます。これはテストパターン自体が有効であることを確認し、onigpp が標準ライブラリと一貫した動作をすることを検証するのに便利です。
+
+```bash
+# USE_STD_FOR_TESTS を有効にしてビルド
+cmake -S . -B build -DUSE_STD_FOR_TESTS=ON
+cmake --build build
+
+# ecmascript 互換性テストを実行
+./build/ecmascript_compat_test
+```
 
 ## std::regex からの移行
 
@@ -128,9 +163,11 @@ onigpp の ECMAScript モードでは以下をサポートしています：
 いくつかの機能は `std::regex` と異なる動作をする場合があります：
 
 1. **マルチラインモード**: 
-   - `multiline` フラグは利用可能ですが、`^` と `$` アンカーについて ECMAScript のセマンティクスと完全には一致しない場合があります
-   - ECMAScript では、multiline は `^` と `$` が行境界にマッチするかどうかに影響します
-   - Oniguruma の MULTILINE オプションはドットとアンカーの両方に影響します
+   - `ECMAScript` モードと組み合わせた場合、`multiline` フラグは ECMAScript のセマンティクスをエミュレートします
+   - `ECMAScript` と `multiline` フラグの両方が設定されている場合、onigpp はコンパイル時にパターンを書き換え、`^` と `$` が行境界でマッチするようにします。認識される行区切り文字は: `\n`、`\r`、`\r\n`、U+2028（行区切り）、U+2029（段落区切り）です
+   - このエミュレーションは ECMAScript のセマンティクスを保持します: ドット（`.`）は改行にマッチしません（将来の dotall フラグで個別に制御）
+   - **パフォーマンス注記**: パターンの書き換えは正規表現構築時に小さな CPU コストを追加しますが、実行時のマッチングには影響しません
+   - **制限**: 書き換えは一般的なケース（文字クラス外のエスケープされていない `^` と `$`）を処理します。複雑または特殊なパターンにはエッジケースがある可能性があります。問題を発見した場合は報告してください
 
 2. **名前付きキャプチャ**:
    - Oniguruma は `(?<name>...)` 構文を使用します
@@ -204,6 +241,29 @@ cmake --build build --target ecmascript_compat_test
 ## Header
 
 - [onigpp.h](onigpp.h) — 主要ヘッダ
+
+## Contributing
+
+コントリビューションを歓迎します！以下の手順で開始してください：
+
+1. **提出前にテストを実行**: すべてのテストがローカルでパスすることを確認してください。
+   ```bash
+   cmake -S . -B build
+   cmake --build build
+   cd build && ctest --output-on-failure
+   ```
+
+2. **互換性テストを実行**: プロジェクトには `std::regex` との動作を検証する互換性ハーネスが含まれています。
+   ```bash
+   cmake -S . -B build -DUSE_STD_FOR_TESTS=ON
+   cmake --build build
+   cd build && ctest --output-on-failure
+   ```
+
+3. **一般的なガイドライン**:
+   - 変更は焦点を絞り、最小限に保つ
+   - 重要な機能や修正を追加する場合は `CHANGELOG.md` を更新する
+   - 新機能にはテストを追加または更新する
 
 ## License
 
