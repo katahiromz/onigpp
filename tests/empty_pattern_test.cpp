@@ -91,6 +91,26 @@ int main() {
         std::cout << "Test 3 passed (found " << std_matches.size() << " matches)\n";
     }
 
+    // ---------- Test 4: regex_replace with empty pattern ----------
+    {
+        std::string pattern = "";
+        std::string input = "abc";
+        std::string replacement = "-";
+
+        // std::regex_replace
+        std::regex std_re(pattern);
+        std::string std_result = std::regex_replace(input, std_re, replacement);
+
+        // onigpp regex_replace
+        myns::regex onig_re(pattern);
+        std::string onig_result = myns::regex_replace(input, onig_re, replacement);
+
+        // Compare results
+        assert(std_result == onig_result && "regex_replace with empty pattern should match between implementations");
+
+        std::cout << "Test 4 passed (regex_replace result: \"" << onig_result << "\")\n";
+    }
+
     std::cout << "All empty-pattern tests passed\n";
     return 0;
 }
