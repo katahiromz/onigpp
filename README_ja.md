@@ -125,17 +125,31 @@ cmake --build build
 
 onigpp は ECMAScript 互換モードを提供しており、`std::regex` からの移行を容易にします。以下に知っておくべき情報を示します。
 
-### ECMAScript モードの使用
+### デフォルトの文法
 
-ECMAScript 互換の構文を使用するには、正規表現を作成する際に `ECMAScript` フラグを指定します：
+**ECMAScript がデフォルトの文法**です（フラグを指定しない場合）。これは `std::regex` と同じ動作です：
 
 ```cpp
 #include "onigpp.h"
 namespace rex = onigpp;
 rex::auto_init g_auto_init;
 
-// ECMAScript モード（std::regex のデフォルトに類似）
-rex::regex pattern(R"(\d+)", rex::regex::ECMAScript);
+// 以下の2つは同等です - ECMAScript がデフォルト
+rex::regex r1(R"(\d+)");                           // デフォルト: ECMAScript
+rex::regex r2(R"(\d+)", rex::regex::ECMAScript);   // 明示的: ECMAScript
+```
+
+### ECMAScript モードの使用
+
+ECMAScript がデフォルトのため、通常は明示的に指定する必要はありません：
+
+```cpp
+#include "onigpp.h"
+namespace rex = onigpp;
+rex::auto_init g_auto_init;
+
+// ECMAScript モード（デフォルト、std::regex と同じ）
+rex::regex pattern(R"(\d+)");
 ```
 
 ### サポートされている機能

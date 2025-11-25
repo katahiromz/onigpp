@@ -125,17 +125,31 @@ cmake --build build
 
 Onigpp provides an ECMAScript compatibility mode to make migrating from `std::regex` easier. Here's what you need to know:
 
-### Using ECMAScript Mode
+### Default Grammar
 
-To use ECMAScript-compatible syntax, specify the `ECMAScript` flag when creating a regex:
+**ECMAScript is the default grammar** when no flags are specified, matching the behavior of `std::regex`. This means:
 
 ```cpp
 #include "onigpp.h"
 namespace rex = onigpp;
 rex::auto_init g_auto_init;
 
-// ECMAScript mode (similar to std::regex default)
-rex::regex pattern(R"(\d+)", rex::regex::ECMAScript);
+// Both of these are equivalent - ECMAScript is the default
+rex::regex r1(R"(\d+)");                           // default: ECMAScript
+rex::regex r2(R"(\d+)", rex::regex::ECMAScript);   // explicit: ECMAScript
+```
+
+### Using ECMAScript Mode
+
+Since ECMAScript is the default, you typically don't need to specify it explicitly:
+
+```cpp
+#include "onigpp.h"
+namespace rex = onigpp;
+rex::auto_init g_auto_init;
+
+// ECMAScript mode (default, same as std::regex)
+rex::regex pattern(R"(\d+)");
 ```
 
 ### What's Supported

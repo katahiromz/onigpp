@@ -3,6 +3,7 @@
 ## 2025-XX-YY Ver.6.9.13
 
 - Added tools/re_replace.
+- Documented ECMAScript as the default grammar when no flags are specified (matching `std::regex` behavior).
 - Added nested flag constants to `basic_regex` class (e.g., `onigpp::regex::ECMAScript`, `onigpp::regex::icase`) for std::regex compatibility.
 - Added `oniguruma` flag to explicitly enable/document Oniguruma-style backreference support.
   - Numeric backreferences: `\1`, `\2`, ..., `\9` (and multi-digit like `\10` when 10+ groups defined)
