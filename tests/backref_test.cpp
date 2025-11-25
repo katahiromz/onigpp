@@ -311,6 +311,69 @@ void TestBackrefFlagExplicit() {
 	TEST_CASE_END("TestBackrefFlagExplicit")
 }
 
+// Test replacement-side Oniguruma-style backreferences (\1, \2, ...)
+// These are only enabled when the regex has the oniguruma flag
+void TestOnigurumaReplacementBackrefs() {
+	TEST_CASE("TestOnigurumaReplacementBackrefs")
+	
+#ifndef USE_STD_FOR_TESTS
+	// Test basic \1, \2 replacement with oniguruma flag
+	std::string pattern = "(\\w+):(\\w+)";
+	sregex re(pattern, myns::regex_constants::ECMAScript | myns::regex_constants::oniguruma);
+	std::string input = "key:value";
+	std::string result = myns::regex_replace(input, re, std::string("\\2=\\1"));
+	assert(result == "value=key");
+	std::cout << "  \\1, \\2 replacement: PASSED" << std::endl;
+	
+	// Test \0 for whole match (like $& in $-style)
+	std::string result0 = myns::regex_replace(input, re, std::string("[\\0]"));
+	assert(result0 == "[key:value]");
+	std::cout << "  \\0 (whole match): PASSED" << std::endl;
+	
+	// Test that \\ produces a literal backslash
+	std::string result2 = myns::regex_replace(input, re, std::string("\\\\1"));
+	assert(result2 == "\\1");
+	std::cout << "  \\\\ (literal backslash): PASSED" << std::endl;
+	
+	// Test mixing $-style and \-style backreferences
+	std::string result3 = myns::regex_replace(input, re, std::string("$1-\\2"));
+	assert(result3 == "key-value");
+	std::cout << "  Mixed $1 and \\2: PASSED" << std::endl;
+	
+	// Test multi-digit backreference
+	std::string pattern10 = "(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)";
+	sregex re10(pattern10, myns::regex_constants::ECMAScript | myns::regex_constants::oniguruma);
+	std::string input10 = "abcdefghij";
+	std::string result10 = myns::regex_replace(input10, re10, std::string("[\\10]"));
+	assert(result10 == "[j]");  // \10 refers to group 10
+	std::cout << "  \\10 multi-digit: PASSED" << std::endl;
+#else
+	std::cout << "  Skipping (USE_STD_FOR_TESTS mode)" << std::endl;
+#endif
+	
+	TEST_CASE_END("TestOnigurumaReplacementBackrefs")
+}
+
+// Test that without oniguruma flag, \1 is NOT expanded (literal backslash)
+void TestNoOnigurumaFlagBackslashLiteral() {
+	TEST_CASE("TestNoOnigurumaFlagBackslashLiteral")
+	
+#ifndef USE_STD_FOR_TESTS
+	// Without oniguruma flag, \1 should be literal backslash followed by '1'
+	std::string pattern = "(\\w+):(\\w+)";
+	sregex re(pattern, myns::regex_constants::ECMAScript);  // No oniguruma flag
+	std::string input = "key:value";
+	std::string result = myns::regex_replace(input, re, std::string("\\1-\\2"));
+	// \1 and \2 are NOT expanded, they remain as literal \1 and \2
+	assert(result == "\\1-\\2");
+	std::cout << "  Without oniguruma flag, \\1 is literal: PASSED" << std::endl;
+#else
+	std::cout << "  Skipping (USE_STD_FOR_TESTS mode)" << std::endl;
+#endif
+	
+	TEST_CASE_END("TestNoOnigurumaFlagBackslashLiteral")
+}
+
 int main() {
 	TESTS_OUTPUT_INIT();
 	ONIGPP_TEST_INIT;
@@ -334,6 +397,8 @@ int main() {
 	TestCaseInsensitiveBackref();
 	TestForwardReference();
 	TestBackrefFlagExplicit();
+	TestOnigurumaReplacementBackrefs();
+	TestNoOnigurumaFlagBackslashLiteral();
 	
 	std::cout << "\n========================================" << std::endl;
 	std::cout << "All backreference tests PASSED!" << std::endl;

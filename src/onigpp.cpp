@@ -46,6 +46,9 @@ struct regex_access : public basic_regex<CharT, Traits> {
 	static OnigEncoding get_encoding(const basic_regex<CharT, Traits>& re) {
 		return static_cast<const regex_access<CharT, Traits>&>(re).m_encoding;
 	}
+	static regex_constants::syntax_option_type get_flags(const basic_regex<CharT, Traits>& re) {
+		return static_cast<const regex_access<CharT, Traits>&>(re).m_flags;
+	}
 };
 
 // Helper trait to detect contiguous iterators (for optimization)
@@ -1544,6 +1547,9 @@ OutputIt regex_replace(
 	bool first_only = (flags & regex_constants::format_first_only) != 0;
 	bool no_copy = (flags & regex_constants::format_no_copy) != 0;
 	bool literal = (flags & regex_constants::format_literal) != 0;
+	
+	// Check if oniguruma flag is set to enable \1, \2, ... backreferences in replacement
+	bool oniguruma_mode = (regex_access<CharT, Traits>::get_flags(e) & regex_constants::oniguruma) != 0;
 
 	// Use regex_iterator to enumerate matches (it already handles zero-width advancement)
 	for (iterator_t it(first, last, e, flags), end; it != end; ++it) {
@@ -1582,6 +1588,30 @@ OutputIt regex_replace(
 						i = j - 1;
 					} else {
 						*out++ = CharT('$');
+					}
+				} else if (oniguruma_mode && c == CharT('\\') && i + 1 < fmt.size()) {
+					// Oniguruma-style backreferences: \0 (whole match), \1, \2, ..., \9, \10, etc.
+					CharT nx = fmt[i + 1];
+					if (nx >= CharT('0') && nx <= CharT('9')) {
+						// Parse numeric backreference: \0 is whole match, \1-\9 are groups,
+						// multi-digit like \10 refers to group 10 when available
+						int num = 0;
+						size_type j = i + 1;
+						while (j < fmt.size() && fmt[j] >= CharT('0') && fmt[j] <= CharT('9')) {
+							num = num * 10 + (fmt[j] - CharT('0'));
+							++j;
+						}
+						if (static_cast<size_type>(num) < m.size()) {
+							std::copy(m[num].first, m[num].second, out);
+						}
+						i = j - 1;
+					} else if (nx == CharT('\\')) {
+						// \\ -> literal backslash
+						*out++ = CharT('\\');
+						++i;
+					} else {
+						// Unknown escape - output literal backslash followed by the character
+						*out++ = c;
 					}
 				} else {
 					*out++ = c;
