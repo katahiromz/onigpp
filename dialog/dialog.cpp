@@ -25,6 +25,10 @@ bool process_one(const string_type& input, const string_type& replacement, strin
 };
 
 void OnReplace(HWND hwnd) {
+	BOOL oniguruma = IsDlgButtonChecked(hwnd, chx1) == BST_CHECKED;
+	BOOL ecma = IsDlgButtonChecked(hwnd, chx2) == BST_CHECKED;
+	BOOL icase = IsDlgButtonChecked(hwnd, chx3) == BST_CHECKED;
+
 	TCHAR text[4][256];
 	GetDlgItemText(hwnd, edt1, text[0], _countof(text[0]));
 	GetDlgItemText(hwnd, edt2, text[1], _countof(text[1]));
@@ -34,8 +38,12 @@ void OnReplace(HWND hwnd) {
 	string_type pattern = text[2];
 	string_type replacement = text[3];
 
+	int flags = 0;
+	if (oniguruma) flags |= rex::regex::oniguruma;
+	if (ecma) flags |= rex::regex::ECMAScript;
+	if (icase) flags |= rex::regex::icase;
+
 	regex_type re;
-	regex_type::flag_type flags = rex::regex::oniguruma;
 	try {
 		re = rex::wregex(pattern, flags);
 	} catch (const rex::regex_error& e) {
@@ -54,6 +62,7 @@ void OnReplace(HWND hwnd) {
 
 // WM_INITDIALOG
 BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam) {
+	CheckDlgButton(hwnd, chx1, BST_CHECKED); // oniguruma
 	return TRUE;
 }
 

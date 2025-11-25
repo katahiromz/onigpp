@@ -42,6 +42,9 @@ FONT 9, "MS Shell Dlg"
     EDITTEXT edt3, 7, 103, 61, 14
     EDITTEXT edt4, 78, 103, 52, 14
     PUSHBUTTON "Replace", psh1, 139, 129, 60, 14
+    AUTOCHECKBOX "oniguruma", chx1, 7, 127, 60, 14
+    AUTOCHECKBOX "ECMAScript", chx2, 75, 125, 60, 14
+    AUTOCHECKBOX "icase", chx3, 144, 103, 45, 14
 }
 
 //////////////////////////////////////////////////////////////////////////////
