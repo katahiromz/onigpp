@@ -218,7 +218,7 @@ bool do_find(const string_type& input, DWORD& iStart, DWORD& iEnd, regex_type& r
 
 void OnFindReplace(HWND hwnd, int action) {
 	BOOL unescape = IsDlgButtonChecked(hwnd, chx1) == BST_CHECKED;
-	BOOL ecma = IsDlgButtonChecked(hwnd, chx2) == BST_CHECKED;
+	BOOL oniguruma = IsDlgButtonChecked(hwnd, chx2) == BST_CHECKED;
 	BOOL icase = IsDlgButtonChecked(hwnd, chx3) == BST_CHECKED;
 	BOOL multiline = IsDlgButtonChecked(hwnd, chx4) == BST_CHECKED;
 
@@ -232,7 +232,7 @@ void OnFindReplace(HWND hwnd, int action) {
 
 	int flags = 0;
 	if (unescape) replacement = mstr_unescape(replacement);
-	if (ecma) flags |= rex::regex::ECMAScript;
+	if (oniguruma) flags |= rex::regex::oniguruma;
 	if (icase) flags |= rex::regex::icase;
 	if (multiline) flags |= rex::regex::multiline;
 
