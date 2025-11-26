@@ -1102,4 +1102,16 @@ Oniguruma API  Version 6.9.10  2024/06/26
 
   Return version string.  (ex. "5.0.3")
 
+
+# onigpp C++ Wrapper Flags (syntax_option_type)
+
+  - ECMAScript (default): Use ECMAScript grammar.
+  - basic, extended, awk, grep, egrep: POSIX and other standard grammars.
+  - icase: Case-insensitive matching.
+  - multiline: ECMAScript multiline behavior emulation.
+  - nosubs: Do not store submatch results.
+  - optimize: Compilation optimization hints.
+  - collate: Locale-dependent collation.
+  - oniguruma: Enable Oniguruma's native syntax and behavior.
+
 // END

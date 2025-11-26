@@ -115,6 +115,9 @@ namespace regex_constants {
 	static constexpr syntax_option_type optimize = (1 << 4); // std::optimize - currently no-op (reserved for future optimization)
 	static constexpr syntax_option_type collate = (1 << 5);  // std::collate - enable locale-dependent collation
 
+	// oniguruma: Enable Oniguruma's native syntax and behavior
+	static constexpr syntax_option_type oniguruma = (1 << 6);
+
 	static constexpr syntax_option_type basic = (1 << 11);
 	static constexpr syntax_option_type awk = (1 << 12);
 	static constexpr syntax_option_type grep = (1 << 13);
@@ -522,6 +525,7 @@ public:
 		icase      = regex_constants::icase,
 		multiline  = regex_constants::multiline,
 		collate    = regex_constants::collate,
+		oniguruma  = regex_constants::oniguruma,
 		normal     = regex_constants::normal
 	};
 

@@ -203,6 +203,7 @@ onigpp exposes a set of syntax and compilation flags that let you control matchi
 - `icase`: Case-insensitive matching (similar to `std::regex_constants::icase`).
 - `nosubs`: Do not store submatch results (can be used when only a boolean match is needed).
 - `multiline`: Emulate ECMAScript multiline behavior so that `^` and `$` match at line boundaries (see "Multiline Mode").
+- `oniguruma`: Enable Oniguruma's native syntax and behavior. When this flag is set, Oniguruma's default regex syntax is used instead of ECMAScript.
 - `optimize` / compilation hints: Some wrappers provide hints to request optimized compilation; behavior may be implementation-specific.
 
 Usage example:

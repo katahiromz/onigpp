@@ -8,6 +8,7 @@
   - Zero-width patterns (e.g., empty patterns, lookaheads) now correctly match at the end position.
   - This matches std::regex behavior where empty patterns produce N+1 matches for a string of length N.
 - Deleted `regex_constants::oniguruma`.
+- Restored `regex_constants::oniguruma` flag to enable Oniguruma's native syntax and behavior.
 - Added MSYS2 CI support (MINGW64/MINGW32) to GitHub Actions workflow.
 
 ## 2025-11-25 Ver.6.9.14

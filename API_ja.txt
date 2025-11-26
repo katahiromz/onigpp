@@ -1105,4 +1105,16 @@
 
   バージョン文字列を返す。(例 "5.0.3")
 
+
+# onigpp C++ ラッパーフラグ (syntax_option_type)
+
+  - ECMAScript（デフォルト）: ECMAScript 文法を使用。
+  - basic, extended, awk, grep, egrep: POSIX および他の標準文法。
+  - icase: 大文字小文字を区別しないマッチ。
+  - multiline: ECMAScript マルチライン動作のエミュレート。
+  - nosubs: サブマッチ結果を保存しない。
+  - optimize: コンパイル最適化ヒント。
+  - collate: ロケール依存の照合。
+  - oniguruma: Oniguruma 本来の文法・挙動を有効にする。
+
 // END

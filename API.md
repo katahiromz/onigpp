@@ -267,6 +267,19 @@ int onig_set_retry_limit_in_search(unsigned long limit); /* 0 -> unlimited */
 - Consult the corresponding API.txt (English) and API_ja.txt (Japanese) files for the complete, line-by-line reference and subtle behaviors not fully reproduced here (capture-history details, exact error codes, and all enums).
 - Capture history / capture-tree APIs are available when the syntax enables capture-history (ONIG_SYN_OP2_ATMARK_CAPTURE_HISTORY). Refer to API.txt for traversal callback prototypes and semantics.
 
+## onigpp C++ Wrapper Flags
+
+The onigpp C++ wrapper provides the following `syntax_option_type` flags:
+
+- `ECMAScript` (default): Use ECMAScript grammar.
+- `basic`, `extended`, `awk`, `grep`, `egrep`: POSIX and other standard grammars.
+- `icase`: Case-insensitive matching.
+- `multiline`: ECMAScript multiline behavior emulation.
+- `nosubs`: Do not store submatch results.
+- `optimize`: Compilation optimization hints (implementation-specific).
+- `collate`: Locale-dependent collation.
+- `oniguruma`: Enable Oniguruma's native syntax and behavior.
+
 ## See also
 
 - API.txt (this repository)
