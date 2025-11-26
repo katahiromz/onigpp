@@ -322,6 +322,45 @@ void TestWideStringFormat() {
 	TEST_CASE_END("TestWideStringFormat")
 }
 
+// -----------------------------------------------------------------
+// 11. ${n} safe numbered reference test
+// -----------------------------------------------------------------
+
+void TestSafeNumberedReference() {
+	TEST_CASE("TestSafeNumberedReference")
+
+	// Test ${n} syntax which allows explicit group boundaries
+	// e.g., ${1}0 means "group 1 followed by literal 0" vs $10 which is "group 10"
+	std::string text = "abcdefghij";
+	myns::regex re("(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)");
+	myns::smatch m;
+
+	assert(myns::regex_search(text, m, re));
+	assert(m.size() == 11);  // Full match + 10 groups
+
+	// Test ${1}0 - group 1 followed by literal '0'
+	std::string result1 = m.format("${1}0");
+	std::cout << "  ${1}0: " << result1 << std::endl;
+	assert(result1 == "a0");
+
+	// Test ${10} - group 10 (same as $10)
+	std::string result2 = m.format("${10}");
+	std::cout << "  ${10}: " << result2 << std::endl;
+	assert(result2 == "j");
+
+	// Compare $10 (greedy) vs ${1}0 (explicit boundary)
+	std::string result3 = m.format("$10 vs ${1}0");
+	std::cout << "  $10 vs ${1}0: " << result3 << std::endl;
+	assert(result3 == "j vs a0");
+
+	// Test ${0} - full match
+	std::string result4 = m.format("[${0}]");
+	std::cout << "  ${0}: " << result4 << std::endl;
+	assert(result4 == "[abcdefghij]");
+
+	TEST_CASE_END("TestSafeNumberedReference")
+}
+
 #endif // !USE_STD_FOR_TESTS
 
 // =================================================================
@@ -349,6 +388,7 @@ int main() {
 	TestOutputIteratorFormat();
 	TestCStringFormat();
 	TestWideStringFormat();
+	TestSafeNumberedReference();
 
 	std::cout << "\n========================================================\n";
 	std::cout << "✨ All match_results::format tests succeeded.\n";

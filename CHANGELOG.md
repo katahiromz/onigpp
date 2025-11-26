@@ -2,6 +2,12 @@
 
 ## 2025-XX-YY Ver.6.9.15
 
+- Refactored `regex_replace` to use `match_results::format` for replacement string processing:
+  - Separated responsibilities: `regex_replace` handles matching iteration, `match_results::format` handles format expansion.
+  - Added extended `match_results::format` overload with name resolver callback for named group support.
+  - Added `${n}` safe numbered reference support to `match_results::format` (e.g., `${1}0` for "group 1 followed by literal 0").
+  - Named groups (`${name}`, `\k<name>`, `\k'name'`) still work via the extended format API used by `regex_replace`.
+  - Improved code maintainability and testability by consolidating format logic in `match_results::format`.
 - Added `current_match_results()` method to `regex_token_iterator` as an extension API:
   - Returns a const reference to the underlying `match_results` for the current match.
   - Enables access to `prefix()`, `suffix()`, and all capture groups during token iteration.

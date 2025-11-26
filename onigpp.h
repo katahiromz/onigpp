@@ -734,7 +734,8 @@ public:
 
 	// Format function - produces a string using the format string fmt
 	// Supports the following placeholders:
-	//   $n   - n-th submatch (0 = full match, 1-9 = capture groups)
+	//   $n   - n-th submatch (0 = full match, 1-9+ = capture groups, multi-digit supported)
+	//   ${n} - n-th submatch with explicit delimiters (safe for ${12}abc vs $12abc)
 	//   $&   - full match (equivalent to $0)
 	//   $`   - prefix (text before match)
 	//   $'   - suffix (text after match)
@@ -748,6 +749,16 @@ public:
 	template <class OutputIt>
 	OutputIt format(OutputIt out, const char_type* fmt_first, const char_type* fmt_last,
 	                regex_constants::match_flag_type flags = regex_constants::format_default) const;
+
+	// Extended format function with named group resolver callback
+	// This overload supports ${name} and \k<name>/\k'name' syntax for named groups.
+	// The name_resolver callback takes (name_begin, name_end) pointers and returns
+	// the group number (>= 0) or -1 if the name is not found.
+	// When oniguruma_mode is true, backslash escapes are treated as backreferences (\1, \k<name>)
+	// instead of escape sequences (\n, \t, etc.)
+	template <class OutputIt, class NameResolver>
+	OutputIt format(OutputIt out, const char_type* fmt_first, const char_type* fmt_last,
+	                regex_constants::match_flag_type flags, NameResolver name_resolver, bool oniguruma_mode) const;
 
 	template <class OutputIt>
 	OutputIt format(OutputIt out, const string_type& fmt,
@@ -1148,9 +1159,60 @@ inline const sub_match<BidirIt> match_results<BidirIt, Alloc>::suffix() const {
 	return sub_match<BidirIt>((*this)[0].second, m_str_end, true);
 }
 
+// Helper struct for parsing numeric sequences in format strings
+// Used by match_results::format to reduce code duplication
+// Methods return the parsed number (or -1 if invalid) and update an output parameter
+// (end_ptr) to point past the last digit parsed.
+template <class CharT>
+struct _format_parse_numeric {
+	// Maximum digits to parse (prevents int overflow, 9 digits = max 999999999 which fits in int)
+	static const int max_digits = 9;
+
+	// Parse a numeric string from [first, last) returning the number or -1 if non-numeric
+	// Updates end_ptr to point past the last digit parsed
+	static int parse_bounded(const CharT* first, const CharT* last, const CharT*& end_ptr) {
+		// Check if content is purely numeric and within max_digits
+		size_t len = last - first;
+		if (len == 0 || len > static_cast<size_t>(max_digits)) {
+			end_ptr = first;
+			return -1;
+		}
+		int num = 0;
+		for (const CharT* q = first; q != last; ++q) {
+			if (*q < CharT('0') || *q > CharT('9')) {
+				end_ptr = first;
+				return -1; // Non-numeric character found
+			}
+			num = num * 10 + static_cast<int>(*q - CharT('0'));
+		}
+		end_ptr = last;
+		return num;
+	}
+
+	// Parse digits greedily from p, up to max_digits, returning the number
+	// Updates end_ptr to point past the last digit consumed
+	static int parse_greedy(const CharT* p, const CharT* fmt_last, const CharT*& end_ptr) {
+		int num = 0;
+		const CharT* q = p;
+		int digit_count = 0;
+		while (q != fmt_last && *q >= CharT('0') && *q <= CharT('9') && digit_count < max_digits) {
+			num = num * 10 + static_cast<int>(*q - CharT('0'));
+			++q;
+			++digit_count;
+		}
+		// Skip any remaining digits beyond max_digits (overflow protection)
+		while (q != fmt_last && *q >= CharT('0') && *q <= CharT('9')) {
+			++q;
+		}
+		end_ptr = q;
+		return num;
+	}
+};
+
 // match_results::format implementation
 // Produces a string using the format string, supporting placeholders:
 //   $n   - n-th submatch (0-9, multi-digit supported)
+//   ${n} - n-th submatch with explicit delimiters
 //   $&   - full match (equivalent to $0)
 //   $`   - prefix (text before match)
 //   $'   - suffix (text after match)
@@ -1213,23 +1275,42 @@ OutputIt match_results<BidirIt, Alloc>::format(
 				continue;
 			}
 
+			// ${n} - safe numbered group reference with explicit delimiters
+			if (next == char_type('{')) {
+				const char_type* name_start = p + 2;
+				const char_type* name_end = name_start;
+				while (name_end != fmt_last && *name_end != char_type('}')) {
+					++name_end;
+				}
+				if (name_end != fmt_last && name_end > name_start) {
+					// Found a valid ${...} reference with non-empty content
+					// Use helper to parse numeric content
+					const char_type* parse_end = name_start;
+					int num = _format_parse_numeric<char_type>::parse_bounded(name_start, name_end, parse_end);
+					if (num >= 0) {
+						// Valid numeric reference: ${1}, ${2}, etc.
+						if (static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
+							out = std::copy((*this)[num].first, (*this)[num].second, out);
+						}
+						p = name_end + 1; // Skip past the closing '}'
+						continue;
+					}
+					// Non-numeric ${...} (named groups) - not supported in basic format,
+					// skip the entire ${...} and output nothing (consistent with out-of-range group behavior)
+					p = name_end + 1; // Skip past the closing '}'
+					continue;
+				} else {
+					// Invalid ${...} reference (empty or unclosed), output literal '$'
+					*out++ = *p++;
+					continue;
+				}
+			}
+
 			// $n, $nn - numeric capture group reference
 			if (next >= char_type('0') && next <= char_type('9')) {
-				// Parse multi-digit group number with overflow protection
-				// Limit parsing to reasonable number of digits (max 9 for safety with int)
-				int num = 0;
-				const char_type* q = p + 1;
-				int digit_count = 0;
-				const int max_digits = 9;  // Prevents overflow for int
-				while (q != fmt_last && *q >= char_type('0') && *q <= char_type('9') && digit_count < max_digits) {
-					num = num * 10 + static_cast<int>(*q - char_type('0'));
-					++q;
-					++digit_count;
-				}
-				// Skip any remaining digits beyond max_digits
-				while (q != fmt_last && *q >= char_type('0') && *q <= char_type('9')) {
-					++q;
-				}
+				// Use helper to parse digits greedily
+				const char_type* q;
+				int num = _format_parse_numeric<char_type>::parse_greedy(p + 1, fmt_last, q);
 				// Output the submatch if valid and matched
 				if (static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
 					out = std::copy((*this)[num].first, (*this)[num].second, out);
@@ -1278,6 +1359,221 @@ OutputIt match_results<BidirIt, Alloc>::format(
 			// Unknown escape - output as-is
 			*out++ = *p++;
 			continue;
+		}
+
+		// Regular character
+		*out++ = *p++;
+	}
+
+	return out;
+}
+
+// Extended match_results::format implementation with named group resolver
+// Supports all basic placeholders plus:
+//   ${name} - named group reference (resolved via name_resolver callback)
+// When oniguruma_mode is true, backslash escapes are treated as backreferences:
+//   \n      - n-th submatch (numeric backreference)
+//   \k<name> or \k'name' - named group reference
+//   \\      - literal backslash
+// When oniguruma_mode is false, backslash escapes are escape sequences (\n, \t, \r, \\)
+template <class BidirIt, class Alloc>
+template <class OutputIt, class NameResolver>
+OutputIt match_results<BidirIt, Alloc>::format(
+	OutputIt out,
+	const char_type* fmt_first,
+	const char_type* fmt_last,
+	regex_constants::match_flag_type flags,
+	NameResolver name_resolver,
+	bool oniguruma_mode) const
+{
+	(void)flags; // Currently unused, reserved for future use
+
+	const char_type* p = fmt_first;
+	while (p != fmt_last) {
+		// Handle '$' placeholders
+		if (*p == char_type('$') && p + 1 != fmt_last) {
+			char_type next = *(p + 1);
+
+			// $$ -> literal '$'
+			if (next == char_type('$')) {
+				*out++ = char_type('$');
+				p += 2;
+				continue;
+			}
+
+			// $& -> full match ($0)
+			if (next == char_type('&')) {
+				if (!this->empty() && (*this)[0].matched) {
+					out = std::copy((*this)[0].first, (*this)[0].second, out);
+				}
+				p += 2;
+				continue;
+			}
+
+			// $` -> prefix
+			if (next == char_type('`')) {
+				auto pf = this->prefix();
+				if (pf.matched) {
+					out = std::copy(pf.first, pf.second, out);
+				}
+				p += 2;
+				continue;
+			}
+
+			// $' -> suffix
+			if (next == char_type('\'')) {
+				auto sf = this->suffix();
+				if (sf.matched) {
+					out = std::copy(sf.first, sf.second, out);
+				}
+				p += 2;
+				continue;
+			}
+
+			// ${n} or ${name} - safe numbered reference or named group reference
+			if (next == char_type('{')) {
+				const char_type* name_start = p + 2;
+				const char_type* name_end = name_start;
+				while (name_end != fmt_last && *name_end != char_type('}')) {
+					++name_end;
+				}
+				if (name_end != fmt_last && name_end > name_start) {
+					// Found a valid ${...} reference with non-empty content
+					// Use helper to parse numeric content
+					const char_type* parse_end = name_start;
+					int num = _format_parse_numeric<char_type>::parse_bounded(name_start, name_end, parse_end);
+					if (num >= 0) {
+						// Valid numeric reference: ${1}, ${2}, etc.
+						if (static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
+							out = std::copy((*this)[num].first, (*this)[num].second, out);
+						}
+					} else {
+						// Try as named group reference: ${name}
+						num = name_resolver(name_start, name_end);
+						if (num >= 0 && static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
+							out = std::copy((*this)[num].first, (*this)[num].second, out);
+						}
+					}
+					p = name_end + 1; // Skip past the closing '}'
+					continue;
+				} else {
+					// Invalid ${...} reference (empty or unclosed), output literal '$'
+					*out++ = *p++;
+					continue;
+				}
+			}
+
+			// $n, $nn - numeric capture group reference
+			if (next >= char_type('0') && next <= char_type('9')) {
+				// Use helper to parse digits greedily
+				const char_type* q;
+				int num = _format_parse_numeric<char_type>::parse_greedy(p + 1, fmt_last, q);
+				if (static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
+					out = std::copy((*this)[num].first, (*this)[num].second, out);
+				}
+				p = q;
+				continue;
+			}
+
+			// Unknown $ sequence - output as-is
+			*out++ = *p++;
+			continue;
+		}
+
+		// Handle '\' sequences (different behavior based on oniguruma_mode)
+		if (*p == char_type('\\') && p + 1 != fmt_last) {
+			char_type next = *(p + 1);
+
+			// \\ -> literal backslash (same in both modes)
+			if (next == char_type('\\')) {
+				*out++ = char_type('\\');
+				p += 2;
+				continue;
+			}
+
+			if (oniguruma_mode) {
+				// Oniguruma mode: backslash escapes are backreferences
+				// \k<name> or \k'name' - named group reference
+				if (next == char_type('k') && p + 2 != fmt_last) {
+					char_type delim = *(p + 2);
+					char_type close_delim = char_type('\0');
+					if (delim == char_type('<')) {
+						close_delim = char_type('>');
+					} else if (delim == char_type('\'')) {
+						close_delim = char_type('\'');
+					}
+					if (close_delim != char_type('\0')) {
+						const char_type* name_start = p + 3;
+						const char_type* name_end = name_start;
+						while (name_end != fmt_last && *name_end != close_delim) {
+							++name_end;
+						}
+						if (name_end != fmt_last && name_end > name_start) {
+							// Found a valid \k<name> or \k'name' reference
+							int num = name_resolver(name_start, name_end);
+							if (num >= 0 && static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
+								out = std::copy((*this)[num].first, (*this)[num].second, out);
+							}
+							p = name_end + 1; // Skip past the closing delimiter
+							continue;
+						} else {
+							// Invalid \k<...> or \k'...' reference, output literal '\k'
+							*out++ = char_type('\\');
+							*out++ = char_type('k');
+							p += 2;
+							continue;
+						}
+					} else {
+						// \k not followed by < or ', output literal '\k'
+						*out++ = char_type('\\');
+						*out++ = char_type('k');
+						p += 2;
+						continue;
+					}
+				}
+
+				// \n - numeric backreference (Oniguruma-style)
+				if (next >= char_type('0') && next <= char_type('9')) {
+					// Use helper to parse digits greedily
+					const char_type* q;
+					int num = _format_parse_numeric<char_type>::parse_greedy(p + 1, fmt_last, q);
+					if (static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
+						out = std::copy((*this)[num].first, (*this)[num].second, out);
+					}
+					p = q;
+					continue;
+				}
+
+				// Other escape sequences in oniguruma mode - output literal backslash
+				*out++ = *p++;
+				continue;
+			} else {
+				// Standard mode: backslash escapes are escape sequences
+				// \n -> newline
+				if (next == char_type('n')) {
+					*out++ = char_type('\n');
+					p += 2;
+					continue;
+				}
+
+				// \t -> tab
+				if (next == char_type('t')) {
+					*out++ = char_type('\t');
+					p += 2;
+					continue;
+				}
+
+				// \r -> carriage return
+				if (next == char_type('r')) {
+					*out++ = char_type('\r');
+					p += 2;
+					continue;
+				}
+
+				// Unknown escape - output as-is
+				*out++ = *p++;
+				continue;
+			}
 		}
 
 		// Regular character
