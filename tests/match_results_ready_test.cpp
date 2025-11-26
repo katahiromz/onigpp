@@ -18,8 +18,9 @@ int main() {
 		assert(!m.ready());
 		std::cout << "  Default-constructed smatch ready() = false ✓\n";
 		#else
-		// std::regex has ready() that returns true after construction in some implementations
-		std::cout << "  Default-constructed smatch ready() = " << m.ready() << " (std::regex)\n";
+		// Note: For std::regex comparison, we just print the value
+		// Per C++ standard, default-constructed match_results should have ready() == false
+		std::cout << "  Default-constructed smatch ready() = " << (m.ready() ? "true" : "false") << " (std::regex)\n";
 		#endif
 		std::cout << "✅ Default construction test passed\n";
 	}
