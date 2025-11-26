@@ -1161,8 +1161,8 @@ inline const sub_match<BidirIt> match_results<BidirIt, Alloc>::suffix() const {
 
 // Helper struct for parsing numeric sequences in format strings
 // Used by match_results::format to reduce code duplication
-// Returns: pair<int, const CharT*> where first is the parsed number (-1 if invalid)
-// and second is the pointer past the last digit parsed
+// Methods return the parsed number (or -1 if invalid) and update an output parameter
+// (end_ptr) to point past the last digit parsed.
 template <class CharT>
 struct _format_parse_numeric {
 	// Maximum digits to parse (prevents int overflow, 9 digits = max 999999999 which fits in int)
@@ -1296,8 +1296,8 @@ OutputIt match_results<BidirIt, Alloc>::format(
 						continue;
 					}
 					// Non-numeric ${...} (named groups) - not supported in basic format,
-					// output as-is (will be handled by extended format with name resolver)
-					*out++ = *p++;
+					// skip the entire ${...} and output nothing (consistent with out-of-range group behavior)
+					p = name_end + 1; // Skip past the closing '}'
 					continue;
 				} else {
 					// Invalid ${...} reference (empty or unclosed), output literal '$'
