@@ -475,27 +475,6 @@ When backreferencing with a name that is assigned to more than one groups, the l
 
 Destine a group on the recursion level relative to the referring position.
 
-**Example 1:**
-```
-/\A(?<a>|.|(?:(?<b>.)\g<a>\k<b>))\z/.match("reee")
-/\A(?<a>|.|(?:(?<b>.)\g<a>\k<b+0>))\z/.match("reer")
-```
-`\k<b+0>` refers to the `(?<b>.)` on the same recursion level with it.
-
-**Example 2:**
-```ruby
-r = Regexp.compile(<<'__REGEXP__'.strip, Regexp::EXTENDED)
-(?<element> \g<stag> \g<content>* \g<etag> ){0}
-(?<stag> < \g<name> \s* > ){0}
-(?<name> [a-zA-Z_:]+ ){0}
-(?<content> [^<&]+ (\g<element> | [^<&]+)* ){0}
-(?<etag> </ \k<name+1> >){0}
-\g<element>
-__REGEXP__
-
-p r.match("<foo>f<bar>bbb</bar>f</foo>").captures
-```
-
 ---
 
 ## 9. Subexp calls ("Tanaka Akira special")

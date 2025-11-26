@@ -475,27 +475,6 @@ Absentストッパーによる効果をクリアします。
 
 参照位置に対して相対的な再帰レベル上のグループを指定します。
 
-**例 1:**
-```
-/\A(?<a>|.|(?:(?<b>.)\g<a>\k<b>))\z/.match("reee")
-/\A(?<a>|.|(?:(?<b>.)\g<a>\k<b+0>))\z/.match("reer")
-```
-`\k<b+0>` は同じ再帰レベル上の `(?<b>.)` を参照します。
-
-**例 2:**
-```ruby
-r = Regexp.compile(<<'__REGEXP__'.strip, Regexp::EXTENDED)
-(?<element> \g<stag> \g<content>* \g<etag> ){0}
-(?<stag> < \g<name> \s* > ){0}
-(?<name> [a-zA-Z_:]+ ){0}
-(?<content> [^<&]+ (\g<element> | [^<&]+)* ){0}
-(?<etag> </ \k<name+1> >){0}
-\g<element>
-__REGEXP__
-
-p r.match("<foo>f<bar>bbb</bar>f</foo>").captures
-```
-
 ---
 
 ## 9. 部分式呼び出し（「田中あきらスペシャル」）
