@@ -210,6 +210,123 @@ void TestOnigurumaFlagWithMultiline() {
 	TEST_CASE_END("TestOnigurumaFlagWithMultiline")
 }
 
+// Test named reference expansion in replacement string with ${name} syntax
+void TestOnigurumaNamedReplacementDollarBrace() {
+	TEST_CASE("TestOnigurumaNamedReplacementDollarBrace")
+	
+	// Pattern with named groups
+	sregex re(std::string("(?<first>a)(?<second>b)(?<third>c)"), myns::regex_constants::oniguruma);
+	
+	// Test ${name} replacement syntax
+	std::string input = "abc";
+	std::string result = myns::regex_replace(input, re, std::string("_${first}-${second}-${third}_"));
+	assert(result == "_a-b-c_");
+	std::cout << "  ${name} replacement: '" << result << "'" << std::endl;
+	
+	// Test mixed ${name} and $1 syntax
+	std::string result2 = myns::regex_replace(input, re, std::string("${first}=$1"));
+	assert(result2 == "a=a");
+	std::cout << "  Mixed ${name} and $1: '" << result2 << "'" << std::endl;
+	
+	TEST_CASE_END("TestOnigurumaNamedReplacementDollarBrace")
+}
+
+// Test named reference expansion in replacement string with \k<name> syntax
+void TestOnigurumaNamedReplacementBackslashK() {
+	TEST_CASE("TestOnigurumaNamedReplacementBackslashK")
+	
+	// Pattern with named groups
+	sregex re(std::string("(?<first>a)(?<second>b)(?<third>c)"), myns::regex_constants::oniguruma);
+	
+	// Test \k<name> replacement syntax
+	std::string input = "abc";
+	std::string result = myns::regex_replace(input, re, std::string("_\\k<first>-\\k<second>-\\k<third>_"));
+	assert(result == "_a-b-c_");
+	std::cout << "  \\k<name> replacement: '" << result << "'" << std::endl;
+	
+	TEST_CASE_END("TestOnigurumaNamedReplacementBackslashK")
+}
+
+// Test named reference expansion in replacement string with \k'name' syntax
+void TestOnigurumaNamedReplacementBackslashKQuote() {
+	TEST_CASE("TestOnigurumaNamedReplacementBackslashKQuote")
+	
+	// Pattern with named groups
+	sregex re(std::string("(?<first>a)(?<second>b)(?<third>c)"), myns::regex_constants::oniguruma);
+	
+	// Test \k'name' replacement syntax
+	std::string input = "abc";
+	std::string result = myns::regex_replace(input, re, std::string("_\\k'first'-\\k'second'-\\k'third'_"));
+	assert(result == "_a-b-c_");
+	std::cout << "  \\k'name' replacement: '" << result << "'" << std::endl;
+	
+	TEST_CASE_END("TestOnigurumaNamedReplacementBackslashKQuote")
+}
+
+// Test numeric backreference in replacement string with \1 syntax (oniguruma mode)
+void TestOnigurumaNumericReplacementBackslash() {
+	TEST_CASE("TestOnigurumaNumericReplacementBackslash")
+	
+	// Pattern with groups
+	sregex re(std::string("(a)(b)(c)"), myns::regex_constants::oniguruma);
+	
+	// Test \1, \2, \3 replacement syntax
+	std::string input = "abc";
+	std::string result = myns::regex_replace(input, re, std::string("\\1-\\2-\\3"));
+	assert(result == "a-b-c");
+	std::cout << "  \\1, \\2, \\3 replacement: '" << result << "'" << std::endl;
+	
+	// Test \0 for whole match
+	std::string result2 = myns::regex_replace(input, re, std::string("[\\0]"));
+	assert(result2 == "[abc]");
+	std::cout << "  \\0 (whole match): '" << result2 << "'" << std::endl;
+	
+	// Test \\ for literal backslash
+	std::string result3 = myns::regex_replace(input, re, std::string("\\\\1"));
+	assert(result3 == "\\1");
+	std::cout << "  \\\\ (literal backslash): '" << result3 << "'" << std::endl;
+	
+	TEST_CASE_END("TestOnigurumaNumericReplacementBackslash")
+}
+
+// Test that without oniguruma flag, \k<name> is NOT expanded
+void TestNoOnigurumaFlagNamedRefLiteral() {
+	TEST_CASE("TestNoOnigurumaFlagNamedRefLiteral")
+	
+	// Without oniguruma flag, \k<name> should remain literal
+	std::string pattern = "(?<first>a)(?<second>b)";
+	sregex re(pattern, myns::regex_constants::ECMAScript);  // No oniguruma flag
+	std::string input = "ab";
+	std::string result = myns::regex_replace(input, re, std::string("\\k<first>"));
+	// \k<first> should NOT be expanded (literal output)
+	assert(result == "\\k<first>");
+	std::cout << "  Without oniguruma flag, \\k<name> is literal: PASSED" << std::endl;
+	
+	TEST_CASE_END("TestNoOnigurumaFlagNamedRefLiteral")
+}
+
+// Test ${name} works in both ECMAScript and oniguruma modes
+void TestDollarBraceNamedRefBothModes() {
+	TEST_CASE("TestDollarBraceNamedRefBothModes")
+	
+	std::string pattern = "(?<word>\\w+)";
+	
+	// Test in ECMAScript mode
+	sregex re1(pattern, myns::regex_constants::ECMAScript);
+	std::string input = "hello";
+	std::string result1 = myns::regex_replace(input, re1, std::string("[${word}]"));
+	assert(result1 == "[hello]");
+	std::cout << "  ${name} in ECMAScript mode: '" << result1 << "'" << std::endl;
+	
+	// Test in oniguruma mode
+	sregex re2(pattern, myns::regex_constants::oniguruma);
+	std::string result2 = myns::regex_replace(input, re2, std::string("[${word}]"));
+	assert(result2 == "[hello]");
+	std::cout << "  ${name} in oniguruma mode: '" << result2 << "'" << std::endl;
+	
+	TEST_CASE_END("TestDollarBraceNamedRefBothModes")
+}
+
 int main() {
 	TESTS_OUTPUT_INIT();
 	ONIGPP_TEST_INIT;
@@ -226,6 +343,12 @@ int main() {
 	TestOnigurumaFlagVsDefault();
 	TestOnigurumaFlagWithIcase();
 	TestOnigurumaFlagWithMultiline();
+	TestOnigurumaNamedReplacementDollarBrace();
+	TestOnigurumaNamedReplacementBackslashK();
+	TestOnigurumaNamedReplacementBackslashKQuote();
+	TestOnigurumaNumericReplacementBackslash();
+	TestNoOnigurumaFlagNamedRefLiteral();
+	TestDollarBraceNamedRefBothModes();
 	
 	std::cout << "\n========================================" << std::endl;
 	std::cout << "All oniguruma flag tests PASSED!" << std::endl;

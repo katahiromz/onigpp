@@ -1619,6 +1619,26 @@ bool regex_match(
 ////////////////////////////////////////////
 // regex_replace implementation
 
+// Helper function to get group number from a named group
+// Returns -1 if the name is not found
+template <class CharT, class Traits>
+int _get_named_group_number(
+	const basic_regex<CharT, Traits>& e,
+	const CharT* name_begin,
+	const CharT* name_end)
+{
+	OnigRegex reg = regex_access<CharT, Traits>::get(e);
+	if (!reg) return -1;
+
+	const OnigUChar* u_name_begin = reinterpret_cast<const OnigUChar*>(name_begin);
+	const OnigUChar* u_name_end = reinterpret_cast<const OnigUChar*>(name_end);
+
+	// Use onig_name_to_backref_number to get the group number
+	// Pass nullptr for region since we just want the first group with this name
+	int num = onig_name_to_backref_number(reg, u_name_begin, u_name_end, nullptr);
+	return num;
+}
+
 template <class OutputIt, class BidirIt, class CharT, class Traits>
 OutputIt regex_replace(
 	OutputIt out,
@@ -1633,6 +1653,7 @@ OutputIt regex_replace(
 	bool first_only = (flags & regex_constants::format_first_only) != 0;
 	bool no_copy = (flags & regex_constants::format_no_copy) != 0;
 	bool literal = (flags & regex_constants::format_literal) != 0;
+	bool oniguruma_mode = (regex_access<CharT, Traits>::get_flags(e) & regex_constants::oniguruma) != 0;
 
 	// Use regex_iterator to enumerate matches (it already handles zero-width advancement)
 	for (iterator_t it(first, last, e, flags), end; it != end; ++it) {
@@ -1658,6 +1679,26 @@ OutputIt regex_replace(
 						std::copy(first, m[0].first, out); ++i;
 					} else if (nx == CharT('\'')) {
 						std::copy(m[0].second, last, out); ++i;
+					} else if (nx == CharT('{')) {
+						// Handle ${name} syntax for named groups
+						size_type name_start = i + 2;
+						size_type name_end = name_start;
+						while (name_end < fmt.size() && fmt[name_end] != CharT('}')) {
+							++name_end;
+						}
+						if (name_end < fmt.size() && name_end > name_start) {
+							// Found a valid ${name} reference
+							const CharT* name_ptr = &fmt[name_start];
+							const CharT* name_end_ptr = &fmt[name_end];
+							int num = _get_named_group_number(e, name_ptr, name_end_ptr);
+							if (num >= 0 && static_cast<size_type>(num) < m.size()) {
+								std::copy(m[num].first, m[num].second, out);
+							}
+							i = name_end; // Skip past the closing '}'
+						} else {
+							// Invalid ${...} reference, output literal '$'
+							*out++ = CharT('$');
+						}
 					} else if (std::isdigit(static_cast<unsigned char>(nx))) {
 						int num = 0;
 						size_type j = i + 1;
@@ -1671,6 +1712,64 @@ OutputIt regex_replace(
 						i = j - 1;
 					} else {
 						*out++ = CharT('$');
+					}
+				} else if (oniguruma_mode && c == CharT('\\') && i + 1 < fmt.size()) {
+					// Handle Oniguruma-style backreferences in replacement when oniguruma flag is set
+					CharT nx = fmt[i + 1];
+					if (nx == CharT('\\')) {
+						// \\ -> literal backslash
+						*out++ = CharT('\\'); ++i;
+					} else if (nx == CharT('k') && i + 2 < fmt.size()) {
+						// Handle \k<name> and \k'name' syntax
+						CharT delim = fmt[i + 2];
+						CharT close_delim = CharT('\0');
+						if (delim == CharT('<')) {
+							close_delim = CharT('>');
+						} else if (delim == CharT('\'')) {
+							close_delim = CharT('\'');
+						}
+						if (close_delim != CharT('\0')) {
+							size_type name_start = i + 3;
+							size_type name_end = name_start;
+							while (name_end < fmt.size() && fmt[name_end] != close_delim) {
+								++name_end;
+							}
+							if (name_end < fmt.size() && name_end > name_start) {
+								// Found a valid \k<name> or \k'name' reference
+								const CharT* name_ptr = &fmt[name_start];
+								const CharT* name_end_ptr = &fmt[name_end];
+								int num = _get_named_group_number(e, name_ptr, name_end_ptr);
+								if (num >= 0 && static_cast<size_type>(num) < m.size()) {
+									std::copy(m[num].first, m[num].second, out);
+								}
+								i = name_end; // Skip past the closing delimiter
+							} else {
+								// Invalid \k<...> or \k'...' reference, output literal '\k'
+								*out++ = CharT('\\');
+								*out++ = CharT('k');
+								++i;
+							}
+						} else {
+							// \k not followed by < or ', output literal '\k'
+							*out++ = CharT('\\');
+							*out++ = CharT('k');
+							++i;
+						}
+					} else if (std::isdigit(static_cast<unsigned char>(nx))) {
+						// Handle \0, \1, \2, ... numeric backreferences (Oniguruma-style)
+						int num = 0;
+						size_type j = i + 1;
+						while (j < fmt.size() && std::isdigit(static_cast<unsigned char>(fmt[j]))) {
+							num = num * 10 + (fmt[j] - CharT('0'));
+							++j;
+						}
+						if (num >= 0 && static_cast<size_type>(num) < m.size()) {
+							std::copy(m[num].first, m[num].second, out);
+						}
+						i = j - 1;
+					} else {
+						// Other escape sequences, output literal backslash
+						*out++ = CharT('\\');
 					}
 				} else {
 					*out++ = c;

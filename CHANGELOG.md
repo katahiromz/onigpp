@@ -10,6 +10,11 @@
 - Deleted `regex_constants::oniguruma`.
 - Restored `regex_constants::oniguruma` flag to enable Oniguruma's native syntax and behavior.
 - Added MSYS2 CI support (MINGW64/MINGW32) to GitHub Actions workflow.
+- Added named reference expansion in replacement strings for `regex_replace`:
+  - `${name}` syntax: Works in both ECMAScript and oniguruma modes
+  - `\k<name>` syntax: Works only when `oniguruma` flag is set
+  - `\k'name'` syntax: Works only when `oniguruma` flag is set
+  - This enables users to reference named capture groups in replacement strings
 
 ## 2025-11-25 Ver.6.9.14
 
