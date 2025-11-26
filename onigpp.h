@@ -1159,6 +1159,56 @@ inline const sub_match<BidirIt> match_results<BidirIt, Alloc>::suffix() const {
 	return sub_match<BidirIt>((*this)[0].second, m_str_end, true);
 }
 
+// Helper struct for parsing numeric sequences in format strings
+// Used by match_results::format to reduce code duplication
+// Returns: pair<int, const CharT*> where first is the parsed number (-1 if invalid)
+// and second is the pointer past the last digit parsed
+template <class CharT>
+struct _format_parse_numeric {
+	// Maximum digits to parse (prevents int overflow, 9 digits = max 999999999 which fits in int)
+	static const int max_digits = 9;
+
+	// Parse a numeric string from [first, last) returning the number or -1 if non-numeric
+	// Updates end_ptr to point past the last digit parsed
+	static int parse_bounded(const CharT* first, const CharT* last, const CharT*& end_ptr) {
+		// Check if content is purely numeric and within max_digits
+		size_t len = last - first;
+		if (len == 0 || len > static_cast<size_t>(max_digits)) {
+			end_ptr = first;
+			return -1;
+		}
+		int num = 0;
+		for (const CharT* q = first; q != last; ++q) {
+			if (*q < CharT('0') || *q > CharT('9')) {
+				end_ptr = first;
+				return -1; // Non-numeric character found
+			}
+			num = num * 10 + static_cast<int>(*q - CharT('0'));
+		}
+		end_ptr = last;
+		return num;
+	}
+
+	// Parse digits greedily from p, up to max_digits, returning the number
+	// Updates end_ptr to point past the last digit consumed
+	static int parse_greedy(const CharT* p, const CharT* fmt_last, const CharT*& end_ptr) {
+		int num = 0;
+		const CharT* q = p;
+		int digit_count = 0;
+		while (q != fmt_last && *q >= CharT('0') && *q <= CharT('9') && digit_count < max_digits) {
+			num = num * 10 + static_cast<int>(*q - CharT('0'));
+			++q;
+			++digit_count;
+		}
+		// Skip any remaining digits beyond max_digits (overflow protection)
+		while (q != fmt_last && *q >= CharT('0') && *q <= CharT('9')) {
+			++q;
+		}
+		end_ptr = q;
+		return num;
+	}
+};
+
 // match_results::format implementation
 // Produces a string using the format string, supporting placeholders:
 //   $n   - n-th submatch (0-9, multi-digit supported)
@@ -1234,27 +1284,12 @@ OutputIt match_results<BidirIt, Alloc>::format(
 				}
 				if (name_end != fmt_last && name_end > name_start) {
 					// Found a valid ${...} reference with non-empty content
-					// Check if the content is purely numeric
-					bool is_numeric = true;
-					size_type content_len = name_end - name_start;
-					// Limit numeric parsing to reasonable length to avoid overflow (max 9 digits fits in int)
-					if (content_len > 9) {
-						is_numeric = false;
-					} else {
-						for (const char_type* q = name_start; q != name_end; ++q) {
-							if (*q < char_type('0') || *q > char_type('9')) {
-								is_numeric = false;
-								break;
-							}
-						}
-					}
-					if (is_numeric) {
-						// Parse as numbered group reference: ${1}, ${2}, etc.
-						int num = 0;
-						for (const char_type* q = name_start; q != name_end; ++q) {
-							num = num * 10 + static_cast<int>(*q - char_type('0'));
-						}
-						if (num >= 0 && static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
+					// Use helper to parse numeric content
+					const char_type* parse_end = name_start;
+					int num = _format_parse_numeric<char_type>::parse_bounded(name_start, name_end, parse_end);
+					if (num >= 0) {
+						// Valid numeric reference: ${1}, ${2}, etc.
+						if (static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
 							out = std::copy((*this)[num].first, (*this)[num].second, out);
 						}
 						p = name_end + 1; // Skip past the closing '}'
@@ -1273,21 +1308,9 @@ OutputIt match_results<BidirIt, Alloc>::format(
 
 			// $n, $nn - numeric capture group reference
 			if (next >= char_type('0') && next <= char_type('9')) {
-				// Parse multi-digit group number with overflow protection
-				// Limit parsing to reasonable number of digits (max 9 for safety with int)
-				int num = 0;
-				const char_type* q = p + 1;
-				int digit_count = 0;
-				const int max_digits = 9;  // Prevents overflow for int
-				while (q != fmt_last && *q >= char_type('0') && *q <= char_type('9') && digit_count < max_digits) {
-					num = num * 10 + static_cast<int>(*q - char_type('0'));
-					++q;
-					++digit_count;
-				}
-				// Skip any remaining digits beyond max_digits
-				while (q != fmt_last && *q >= char_type('0') && *q <= char_type('9')) {
-					++q;
-				}
+				// Use helper to parse digits greedily
+				const char_type* q;
+				int num = _format_parse_numeric<char_type>::parse_greedy(p + 1, fmt_last, q);
 				// Output the submatch if valid and matched
 				if (static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
 					out = std::copy((*this)[num].first, (*this)[num].second, out);
@@ -1416,31 +1439,17 @@ OutputIt match_results<BidirIt, Alloc>::format(
 				}
 				if (name_end != fmt_last && name_end > name_start) {
 					// Found a valid ${...} reference with non-empty content
-					// Check if the content is purely numeric
-					bool is_numeric = true;
-					size_type content_len = name_end - name_start;
-					if (content_len > 9) {
-						is_numeric = false;
-					} else {
-						for (const char_type* q = name_start; q != name_end; ++q) {
-							if (*q < char_type('0') || *q > char_type('9')) {
-								is_numeric = false;
-								break;
-							}
-						}
-					}
-					if (is_numeric) {
-						// Parse as numbered group reference: ${1}, ${2}, etc.
-						int num = 0;
-						for (const char_type* q = name_start; q != name_end; ++q) {
-							num = num * 10 + static_cast<int>(*q - char_type('0'));
-						}
-						if (num >= 0 && static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
+					// Use helper to parse numeric content
+					const char_type* parse_end = name_start;
+					int num = _format_parse_numeric<char_type>::parse_bounded(name_start, name_end, parse_end);
+					if (num >= 0) {
+						// Valid numeric reference: ${1}, ${2}, etc.
+						if (static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
 							out = std::copy((*this)[num].first, (*this)[num].second, out);
 						}
 					} else {
 						// Try as named group reference: ${name}
-						int num = name_resolver(name_start, name_end);
+						num = name_resolver(name_start, name_end);
 						if (num >= 0 && static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
 							out = std::copy((*this)[num].first, (*this)[num].second, out);
 						}
@@ -1456,18 +1465,9 @@ OutputIt match_results<BidirIt, Alloc>::format(
 
 			// $n, $nn - numeric capture group reference
 			if (next >= char_type('0') && next <= char_type('9')) {
-				int num = 0;
-				const char_type* q = p + 1;
-				int digit_count = 0;
-				const int max_digits = 9;
-				while (q != fmt_last && *q >= char_type('0') && *q <= char_type('9') && digit_count < max_digits) {
-					num = num * 10 + static_cast<int>(*q - char_type('0'));
-					++q;
-					++digit_count;
-				}
-				while (q != fmt_last && *q >= char_type('0') && *q <= char_type('9')) {
-					++q;
-				}
+				// Use helper to parse digits greedily
+				const char_type* q;
+				int num = _format_parse_numeric<char_type>::parse_greedy(p + 1, fmt_last, q);
 				if (static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
 					out = std::copy((*this)[num].first, (*this)[num].second, out);
 				}
@@ -1534,12 +1534,9 @@ OutputIt match_results<BidirIt, Alloc>::format(
 
 				// \n - numeric backreference (Oniguruma-style)
 				if (next >= char_type('0') && next <= char_type('9')) {
-					int num = 0;
-					const char_type* q = p + 1;
-					while (q != fmt_last && *q >= char_type('0') && *q <= char_type('9')) {
-						num = num * 10 + static_cast<int>(*q - char_type('0'));
-						++q;
-					}
+					// Use helper to parse digits greedily
+					const char_type* q;
+					int num = _format_parse_numeric<char_type>::parse_greedy(p + 1, fmt_last, q);
 					if (static_cast<size_type>(num) < this->size() && (*this)[num].matched) {
 						out = std::copy((*this)[num].first, (*this)[num].second, out);
 					}
