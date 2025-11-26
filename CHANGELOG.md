@@ -1,6 +1,6 @@
 # Changelog
 
-## 2025-XX-YY Ver.6.9.15
+## 2025-11-26 Ver.6.9.15
 
 - Added missing `std::regex_traits` methods to `onigpp::regex_traits` for improved standard library compatibility:
   - `translate_nocase(char_type c)`: Returns the lowercase version of a character for case-insensitive matching.
