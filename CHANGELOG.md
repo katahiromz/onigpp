@@ -2,6 +2,10 @@
 
 ## 2025-XX-YY Ver.6.9.15
 
+- Added `match_results::ready()` member function to check if match results have been populated.
+  - Returns `true` after a successful or unsuccessful `regex_match` or `regex_search` operation.
+  - Returns `false` for default-constructed `match_results`.
+  - This matches `std::match_results::ready()` semantics for compatibility.
 - Added `match_results::format` member function for template-based string formatting using sub-matches.
   - Supports `$n` and `$nn` for numbered capture groups (e.g., `$0`, `$1`, `$12`)
   - Supports `$&` for full match (equivalent to `$0`)

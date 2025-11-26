@@ -393,6 +393,12 @@ private:
 		onigpp::match_results<std::string::const_iterator> match;
 		result.matched = onigpp::regex_match(input, match, re, match_flags);
 		
+		// Verify ready() is true after match operation
+		if (!match.ready()) {
+			std::cerr << "ERROR: match_results not ready after regex_match!" << std::endl;
+			std::abort();
+		}
+		
 		if (result.matched) {
 			for (size_t i = 0; i < match.size(); ++i) {
 				result.captures.push_back(match[i].str());
@@ -408,6 +414,12 @@ private:
 		MatchResult result;
 		onigpp::match_results<std::string::const_iterator> match;
 		result.matched = onigpp::regex_search(input, match, re, match_flags);
+		
+		// Verify ready() is true after search operation
+		if (!match.ready()) {
+			std::cerr << "ERROR: match_results not ready after regex_search!" << std::endl;
+			std::abort();
+		}
 		
 		if (result.matched) {
 			for (size_t i = 0; i < match.size(); ++i) {

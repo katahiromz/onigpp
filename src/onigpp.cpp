@@ -188,6 +188,7 @@ bool _process_onig_region_result(
 			// If match length is zero, treat it as a match failure
 			if (region->beg[0] == region->end[0]) {
 				onig_region_free(region, 1);
+				m.m_ready = true; // Mark as ready even on failure
 				return false; // Equivalent to ONIG_MISMATCH
 			}
 		}
@@ -195,6 +196,7 @@ bool _process_onig_region_result(
 		// If matched, store results in match_results
 		m.m_str_begin = whole_first;
 		m.m_str_end = last;
+		m.m_ready = true; // Mark as ready after successful match
 		m.clear();
 
 		// Check if nosubs flag is set (either in regex constructor or match-time flags)
@@ -260,6 +262,7 @@ bool _process_onig_region_result(
 	}
 	else if (r == ONIG_MISMATCH) {
 		onig_region_free(region, 1);
+		m.m_ready = true; // Mark as ready even when no match found
 		return false;
 	}
 	else {
@@ -302,6 +305,7 @@ bool _onig_region_to_match_results(
 		// region->end[0] is in bytes, so convert to characters for comparison
 		if (region->end[0] != (int)(len * sizeof(CharT))) {
 			onig_region_free(region, 1);
+			m.m_ready = true; // Mark as ready even on partial match failure
 			return false;
 		}
 
@@ -309,6 +313,7 @@ bool _onig_region_to_match_results(
 			// If match length is zero, treat it as a match failure
 			if (region->beg[0] == region->end[0]) {
 				onig_region_free(region, 1);
+				m.m_ready = true; // Mark as ready even on failure
 				return false;
 			}
 		}
@@ -316,6 +321,7 @@ bool _onig_region_to_match_results(
 		// If matched, store results in match_results
 		m.m_str_begin = first;
 		m.m_str_end = last;
+		m.m_ready = true; // Mark as ready after successful match
 		m.clear();
 
 		// Check if nosubs flag is set (either in regex constructor or match-time flags)
@@ -382,6 +388,7 @@ bool _onig_region_to_match_results(
 	}
 	else if (r == ONIG_MISMATCH) {
 		onig_region_free(region, 1);
+		m.m_ready = true; // Mark as ready even when no match found
 		return false;
 	}
 	else {

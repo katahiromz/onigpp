@@ -438,7 +438,13 @@ public:
 	// "not found" for unmatched or out-of-range submatches
 	static constexpr difference_type npos = -1;
 
-	match_results() : m_str_begin(), m_str_end() {}
+	match_results() : m_str_begin(), m_str_end(), m_ready(false) {}
+
+	// Returns true if the match_results is ready (i.e., has been populated
+	// by a regex_match or regex_search operation, regardless of whether
+	// a match was found). Returns false for default-constructed match_results.
+	// This matches std::match_results::ready() semantics.
+	bool ready() const noexcept { return m_ready; }
 
 	// Static assertion to ensure npos semantics match expectations
 	static_assert(npos == static_cast<difference_type>(-1),
@@ -525,6 +531,7 @@ public:
 public:
 	BidirIt m_str_begin; // Start iterator of the search range
 	BidirIt m_str_end;   // End iterator of the search range
+	bool m_ready;        // True if populated by a regex operation
 };
 
 using cmatch = match_results<const char*>;
