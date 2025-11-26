@@ -186,8 +186,6 @@ Character properties can be specified using:
 
 > **Note:** `{n,m}+`, `{n,}+`, `{n}+` are possessive operators in `ONIG_SYNTAX_JAVA` and `ONIG_SYNTAX_PERL` only.
 
-**Example:** `/a*+/` === `/(?>a*)/`
-
 ---
 
 ## 5. Anchors
@@ -235,8 +233,6 @@ The meaning of these operators (`\y`, `\Y`) changes depending on the setting of 
 | `x-y` | range from x to y |
 | `[...]` | set (character class in character class) |
 | `..&&..` | intersection (low precedence, only higher than ^) |
-
-**Example:** `[a-w&&[^c-g]z]` ==> `([a-w] AND ([^c-g] OR z))` ==> `[abh-w]`
 
 > **Note:** If you want to use '[', '-', or ']' as a normal character in character class, you should escape them with '\'.
 
@@ -316,8 +312,6 @@ Options:
 (?imxWDSPy-imxWDSP)
 ```
 It makes a group to the next ')' or end of the pattern.
-
-Example: `/ab(?i)c|def|gh/` == `/ab(?i:c|def|gh)/`
 
 > **Note:** `(?i)` option has no effect on word types (`\w`, `\p{Word}`). However, if the word types are used within a character class, it is valid. But, this would only be a concern when word types are used with the `(?W)` option.
 
@@ -408,8 +402,6 @@ This works like `.*` (more precisely `\O*`), but it is limited by the range that
 ```
 This works like "exp", but it is limited by the range that does not include the string match with `<absent>`.
 
-**Example:** `(?~|345|\d*)` on `"12345678"` ==> `"12"`, `"1"`, `""`
-
 **Absent stopper** (original):
 ```
 (?~|absent)
@@ -494,15 +486,12 @@ When we say "call a group," it actually means, "re-execute the subexp in that gr
 ### Restrictions
 
 - Left-most recursive calls are not allowed.
-  - Example: `(?<name>a|\g<name>b)` => error
-  - Example: `(?<name>a|b\g<name>c)` => OK
 
 - Calls with a name that is assigned to more than one groups are not allowed.
 
 - Call by number is forbidden if any named group is defined and ONIG_OPTION_CAPTURE_GROUP is not set.
 
 - The option status of the called group is always effective.
-  - Example: `/(?-i:\g<name>)(?i:(?<name>a)){0}/.match("A")`
 
 ---
 
