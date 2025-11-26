@@ -192,14 +192,14 @@ add_test(
 	COMMAND $<TARGET_FILE:sub_match_behavior_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 add_test(
-	NAME compat_test
+	NAME test20
 	COMMAND $<TARGET_FILE:compat_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 add_test(
-	NAME backref_test
+	NAME test21
 	COMMAND $<TARGET_FILE:backref_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 add_test(
-	NAME test_empty_pattern
+	NAME test22
 	COMMAND $<TARGET_FILE:empty_pattern_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
