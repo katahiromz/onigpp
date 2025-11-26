@@ -39,17 +39,14 @@ int main() {
 	assert(bow != format_no_copy);
 	
 #ifndef USE_STD_FOR_TESTS
-	// format_literal is only defined in onigpp, not in std::regex
-	assert(bow != format_literal);
-	
 	// onigpp uses different bit positions than std::regex
-	assert(match_not_bow == (1 << 11));
-	assert(match_not_eow == (1 << 12));
-	assert(match_continuous == (1 << 13));
+	assert(match_not_bow == (1 << 10));
+	assert(match_not_eow == (1 << 11));
+	assert(match_continuous == (1 << 12));
 	
-	std::cout << "match_not_bow = " << match_not_bow << " (bit 11)" << std::endl;
-	std::cout << "match_not_eow = " << match_not_eow << " (bit 12)" << std::endl;
-	std::cout << "match_continuous = " << match_continuous << " (bit 13)" << std::endl;
+	std::cout << "match_not_bow = " << match_not_bow << " (bit 10)" << std::endl;
+	std::cout << "match_not_eow = " << match_not_eow << " (bit 11)" << std::endl;
+	std::cout << "match_continuous = " << match_continuous << " (bit 12)" << std::endl;
 #else
 	// std::regex uses different bit positions
 	assert(match_not_bow == (1 << 2));
