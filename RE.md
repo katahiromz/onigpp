@@ -612,6 +612,54 @@ Behavior of an unnamed group `(...)` changes with the following conditions. (But
 
 ---
 
+## 11. Substitution References
+
+When using `regex_replace`, the following references can be used in the replacement string to insert matched content:
+
+### Standard References
+
+| Reference | Description |
+|-----------|-------------|
+| `$n` | Numbered reference. Inserts the string matched by the nth capture group (n ≥ 1). |
+| `$&` | Entire matched string. Inserts the full match. |
+| `$`` | Prefix. Inserts the text before the match. |
+| `$'` | Suffix. Inserts the text after the match. |
+| `$$` | Literal dollar sign. Inserts a single `$`. |
+
+### Oniguruma-specific References
+
+The following references are available only when the `oniguruma` flag is specified:
+
+| Reference | Description |
+|-----------|-------------|
+| `${n}` | Safe numbered reference. Allows digits immediately after (e.g., `${1}0` inserts group 1 followed by '0'). |
+| `\k<name>` | Named reference. Inserts the string matched by the named group. |
+| `${name}` | Named reference. Alternative syntax for named group insertion. |
+| `\n` | Numbered reference. Inserts the string matched by the nth capture group (n ≥ 1). |
+| `\0` | Entire matched string. Equivalent to `$&`. |
+| `\\` | Literal backslash. Inserts a single `\`. |
+
+### Examples
+
+```cpp
+// Standard $1, $2 references
+regex re("(\\w+):(\\w+)");
+string result = regex_replace("key:value", re, "$2=$1");
+// result: "value=key"
+
+// Entire match with $&
+regex re2("\\w+");
+string result2 = regex_replace("hello world", re2, "[$&]");
+// result2: "[hello] [world]"
+
+// Named reference with Oniguruma flag
+regex re3("(?<word>\\w+)", regex::oniguruma);
+string result3 = regex_replace("hello", re3, "${word}!");
+// result3: "hello!"
+```
+
+---
+
 ## See also
 
 - [Unicode Standard Annex #29 - Unicode Text Segmentation](http://unicode.org/reports/tr29/)
