@@ -1056,6 +1056,7 @@ public:
 	using regex_type = basic_regex<CharT, Traits>;
 	using match_flag_type = regex_constants::match_flag_type;
 	using regex_iterator_type = regex_iterator<BidirIt, CharT, Traits>;
+	using match_results_type = match_results<BidirIt>;
 
 protected:
 	regex_iterator_type m_itor;
@@ -1106,6 +1107,13 @@ public:
 	// 4. Increment (move to the next token)
 	regex_token_iterator& operator++(); // Pre-increment
 	regex_token_iterator operator++(int); // Post-increment
+
+	// 5. Extension API: Access to the underlying match_results
+	// Returns a const reference to the match_results for the current match.
+	// This allows access to prefix(), suffix(), and all capture groups.
+	// Note: This is an extension to the standard C++ regex_token_iterator API.
+	// Precondition: The iterator must not be at the end-of-sequence.
+	const match_results_type& current_match_results() const { return *m_itor; }
 };
 
 using cregex_token_iterator = regex_token_iterator<const char*>;

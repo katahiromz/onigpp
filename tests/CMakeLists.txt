@@ -139,6 +139,11 @@ add_executable(regex_exception_test regex_exception_test.cpp)
 target_include_directories(regex_exception_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(regex_exception_test PRIVATE onigpp)
 
+# regex_token_iterator_match_results_test.exe
+add_executable(regex_token_iterator_match_results_test regex_token_iterator_match_results_test.cpp)
+target_include_directories(regex_token_iterator_match_results_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(regex_token_iterator_match_results_test PRIVATE onigpp)
+
 # compat tests subdirectory
 add_subdirectory(compat)
 
@@ -256,4 +261,8 @@ add_test(
 add_test(
 	NAME test28
 	COMMAND $<TARGET_FILE:regex_exception_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
+	NAME test29
+	COMMAND $<TARGET_FILE:regex_token_iterator_match_results_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})

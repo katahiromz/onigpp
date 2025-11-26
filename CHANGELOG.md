@@ -2,6 +2,12 @@
 
 ## 2025-XX-YY Ver.6.9.15
 
+- Added `current_match_results()` method to `regex_token_iterator` as an extension API:
+  - Returns a const reference to the underlying `match_results` for the current match.
+  - Enables access to `prefix()`, `suffix()`, and all capture groups during token iteration.
+  - Added `match_results_type` typedef to `regex_token_iterator` for type convenience.
+  - Note: This is an extension to the standard C++ `regex_token_iterator` API.
+  - Added comprehensive test suite (`regex_token_iterator_match_results_test.cpp`).
 - Added comprehensive test suite for `regex_iterator` zero-width match handling:
   - `regex_iterator_zero_width_test.cpp` tests empty patterns, lookaheads, word boundaries, anchors, and optional patterns.
   - Verifies std::regex_iterator compatibility for consecutive zero-width matches at string boundaries.
