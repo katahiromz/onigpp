@@ -1680,30 +1680,60 @@ OutputIt regex_replace(
 					} else if (nx == CharT('\'')) {
 						std::copy(m[0].second, last, out); ++i;
 					} else if (nx == CharT('{')) {
-						// Handle ${name} syntax for named groups
+						// Handle ${n} (safe numbered reference) and ${name} (named reference)
 						size_type name_start = i + 2;
 						size_type name_end = name_start;
 						while (name_end < fmt.size() && fmt[name_end] != CharT('}')) {
 							++name_end;
 						}
 						if (name_end < fmt.size() && name_end > name_start) {
-							// Found a valid ${name} reference
-							const CharT* name_ptr = &fmt[name_start];
-							const CharT* name_end_ptr = &fmt[name_end];
-							int num = _get_named_group_number(e, name_ptr, name_end_ptr);
-							if (num >= 0 && static_cast<size_type>(num) < m.size()) {
-								std::copy(m[num].first, m[num].second, out);
+							// Found a valid ${...} reference with non-empty content
+							// First check if the content is purely numeric (safe numbered reference)
+							// Use direct comparison with ASCII digits for safety with all CharT types
+							bool is_numeric = true;
+							size_type content_len = name_end - name_start;
+							// Limit numeric parsing to reasonable length to avoid overflow (max 9 digits fits in int)
+							if (content_len > 9) {
+								is_numeric = false;
+							} else {
+								for (size_type k = name_start; k < name_end; ++k) {
+									CharT ch = fmt[k];
+									// Safe ASCII digit check for all character types
+									if (ch < CharT('0') || ch > CharT('9')) {
+										is_numeric = false;
+										break;
+									}
+								}
+							}
+							if (is_numeric) {
+								// Parse as numbered group reference: ${1}, ${2}, etc.
+								int num = 0;
+								for (size_type k = name_start; k < name_end; ++k) {
+									num = num * 10 + static_cast<int>(fmt[k] - CharT('0'));
+								}
+								if (num >= 0 && static_cast<size_type>(num) < m.size()) {
+									std::copy(m[num].first, m[num].second, out);
+								}
+							} else {
+								// Try as named group reference: ${name}
+								const CharT* name_ptr = &fmt[name_start];
+								const CharT* name_end_ptr = &fmt[name_end];
+								int num = _get_named_group_number(e, name_ptr, name_end_ptr);
+								if (num >= 0 && static_cast<size_type>(num) < m.size()) {
+									std::copy(m[num].first, m[num].second, out);
+								}
 							}
 							i = name_end; // Skip past the closing '}'
 						} else {
-							// Invalid ${...} reference, output literal '$'
+							// Invalid ${...} reference (empty or unclosed), output literal '$'
 							*out++ = CharT('$');
 						}
-					} else if (std::isdigit(static_cast<unsigned char>(nx))) {
+					} else if (nx >= CharT('0') && nx <= CharT('9')) {
+						// Handle $1, $2, ... numeric backreferences
 						int num = 0;
 						size_type j = i + 1;
-						while (j < fmt.size() && std::isdigit(static_cast<unsigned char>(fmt[j]))) {
-							num = num * 10 + (fmt[j] - CharT('0'));
+						while (j < fmt.size() && fmt[j] >= CharT('0') && fmt[j] <= CharT('9')) {
+							num = num * 10 + static_cast<int>(fmt[j] - CharT('0'));
 							++j;
 						}
 						if (num >= 0 && static_cast<size_type>(num) < m.size()) {
@@ -1755,12 +1785,12 @@ OutputIt regex_replace(
 							*out++ = CharT('k');
 							++i;
 						}
-					} else if (std::isdigit(static_cast<unsigned char>(nx))) {
+					} else if (nx >= CharT('0') && nx <= CharT('9')) {
 						// Handle \0, \1, \2, ... numeric backreferences (Oniguruma-style)
 						int num = 0;
 						size_type j = i + 1;
-						while (j < fmt.size() && std::isdigit(static_cast<unsigned char>(fmt[j]))) {
-							num = num * 10 + (fmt[j] - CharT('0'));
+						while (j < fmt.size() && fmt[j] >= CharT('0') && fmt[j] <= CharT('9')) {
+							num = num * 10 + static_cast<int>(fmt[j] - CharT('0'));
 							++j;
 						}
 						if (num >= 0 && static_cast<size_type>(num) < m.size()) {

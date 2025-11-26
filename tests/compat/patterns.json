@@ -486,5 +486,25 @@
     "operation": "match",
     "replace_template": "",
     "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "safe_numbered_reference_brace",
+    "description": "Safe numbered reference ${1} expands to capture group 1",
+    "pattern": "(\\w+):(\\w+)",
+    "flags": "ECMAScript",
+    "input": "key:value",
+    "operation": "replace",
+    "replace_template": "${2}=${1}",
+    "encoding_hint": "UTF-8"
+  },
+  {
+    "id": "safe_numbered_reference_adjacent_literal",
+    "description": "Safe numbered reference ${1}0 expands to group 1 followed by literal 0",
+    "pattern": "(\\w+)",
+    "flags": "ECMAScript",
+    "input": "test",
+    "operation": "replace",
+    "replace_template": "${1}0",
+    "encoding_hint": "UTF-8"
   }
 ]
