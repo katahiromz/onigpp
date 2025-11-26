@@ -1112,8 +1112,15 @@ public:
 	// Returns a const reference to the match_results for the current match.
 	// This allows access to prefix(), suffix(), and all capture groups.
 	// Note: This is an extension to the standard C++ regex_token_iterator API.
-	// Precondition: The iterator must not be at the end-of-sequence.
-	const match_results_type& current_match_results() const { return *m_itor; }
+	// Precondition: The iterator must not be at the end-of-sequence,
+	//               and the underlying regex_iterator must have a valid match.
+	// When the iterator is processing suffix tokens (after all matches are found),
+	// the underlying regex_iterator may be at end, so this method should only
+	// be called when the iterator has a valid match, not when processing suffix.
+	const match_results_type& current_match_results() const {
+		assert(m_itor != m_end && "current_match_results() called on end-of-sequence or during suffix processing");
+		return *m_itor;
+	}
 };
 
 using cregex_token_iterator = regex_token_iterator<const char*>;

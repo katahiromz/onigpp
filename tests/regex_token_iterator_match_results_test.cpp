@@ -8,14 +8,15 @@
 #include <vector>
 #include <cassert>
 
-// Test 1: Basic current_match_results() access
+// Test 1: Basic current_match_results() access (using full match, not split mode)
 void test_basic_current_match_results() {
     std::cout << "Test 1: Basic current_match_results() access..." << std::endl;
     
     std::string text = "apple,banana,cherry";
-    onigpp::regex re(",");
+    onigpp::regex re("\\w+"); // Match words
     
-    onigpp::sregex_token_iterator it(text.begin(), text.end(), re, -1);
+    // Use submatch 0 (full match) to ensure we always have valid match_results
+    onigpp::sregex_token_iterator it(text.begin(), text.end(), re, 0);
     onigpp::sregex_token_iterator end;
     
     std::vector<std::string> tokens;
@@ -25,9 +26,9 @@ void test_basic_current_match_results() {
         // Access current_match_results to get match information
         const auto& mr = it.current_match_results();
         
-        // For splitting (submatch -1), the match_results still gives us the delimiter match info
-        // The iterator may be at end-of-matches for some tokens
-        (void)mr; // Just verify we can access it
+        // Verify we have valid match results
+        assert(mr.size() >= 1);
+        assert(mr[0].matched);
         
         ++it;
     }
@@ -208,9 +209,9 @@ void test_wide_string_support() {
     std::cout << "Test 8: Wide string support..." << std::endl;
     
     std::wstring text = L"apple,banana";
-    onigpp::wregex re(L",");
+    onigpp::wregex re(L"\\w+"); // Match words (not split mode to ensure valid match_results)
     
-    onigpp::wsregex_token_iterator it(text.begin(), text.end(), re, -1);
+    onigpp::wsregex_token_iterator it(text.begin(), text.end(), re, 0);
     onigpp::wsregex_token_iterator end;
     
     std::vector<std::wstring> tokens;
@@ -219,7 +220,7 @@ void test_wide_string_support() {
         
         // Access current_match_results for wide strings
         const auto& mr = it.current_match_results();
-        (void)mr; // Just verify we can access it
+        assert(mr.size() >= 1);
         
         ++it;
     }
@@ -227,6 +228,46 @@ void test_wide_string_support() {
     assert(tokens.size() == 2);
     assert(tokens[0] == L"apple");
     assert(tokens[1] == L"banana");
+    
+    std::cout << "  PASSED" << std::endl;
+}
+
+// Test 9: Split mode limitation - current_match_results() is valid for non-suffix tokens
+void test_split_mode_non_suffix() {
+    std::cout << "Test 9: Split mode - current_match_results() valid for non-suffix tokens..." << std::endl;
+    
+    std::string text = "a,b,c";
+    onigpp::regex re(",");
+    
+    // Use submatch -1 (split mode)
+    onigpp::sregex_token_iterator it(text.begin(), text.end(), re, -1);
+    onigpp::sregex_token_iterator end;
+    
+    int token_count = 0;
+    while (it != end) {
+        std::string token = it->str();
+        
+        // For split mode, the last token is the suffix after the last match.
+        // At that point, the regex_iterator is at end, so current_match_results()
+        // should not be called. We can check by counting tokens.
+        // "a,b,c" has 2 commas, so there are 2 matches, yielding 3 split tokens:
+        // "a" (prefix), "b" (between), "c" (suffix)
+        
+        // For the first and second tokens, the regex_iterator still has valid matches
+        // For the third (suffix) token, the regex_iterator is at end
+        
+        // We only call current_match_results() for the first two tokens
+        if (token_count < 2) {
+            const auto& mr = it.current_match_results();
+            // The match is the comma
+            assert(mr[0].str() == ",");
+        }
+        
+        token_count++;
+        ++it;
+    }
+    
+    assert(token_count == 3);
     
     std::cout << "  PASSED" << std::endl;
 }
@@ -247,6 +288,7 @@ int main() {
     test_position_length_via_current_match_results();
     test_format_via_current_match_results();
     test_wide_string_support();
+    test_split_mode_non_suffix();
     
     std::cout << "========================================" << std::endl;
     std::cout << "All tests PASSED!" << std::endl;
