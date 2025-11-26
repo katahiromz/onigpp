@@ -276,6 +276,7 @@ cmake --build build --target ecmascript_compat_test
 ## API / Reference
 
 - [RE.md](RE.md) — Oniguruma 正規表現リファレンス（英語）
+- [RE_ja.md](RE_ja.md) — Oniguruma 正規表現リファレンス（日本語）
 - [API.md](API.md) — Oniguruma C API リファレンス（英語）
 
 ## Header

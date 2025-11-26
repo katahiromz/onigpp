@@ -2,6 +2,7 @@
 
 ## 2025-XX-YY Ver.6.9.15
 
+- Added `RE_ja.md` — Japanese translation of `RE.md` (Oniguruma++ regular expression specification).
 - Added `dialog`.
 - Added `empty_pattern_test` to verify empty regex pattern compatibility with std::regex.
 - Fixed `regex_iterator` to correctly handle zero-width pattern matching at all positions including the end of string.
