@@ -903,11 +903,19 @@ OutputIt match_results<BidirIt, Alloc>::format(
 
 			// $n, $nn - numeric capture group reference
 			if (next >= char_type('0') && next <= char_type('9')) {
-				// Parse multi-digit group number
+				// Parse multi-digit group number with overflow protection
+				// Limit parsing to reasonable number of digits (max 9 for safety with int)
 				int num = 0;
 				const char_type* q = p + 1;
-				while (q != fmt_last && *q >= char_type('0') && *q <= char_type('9')) {
+				int digit_count = 0;
+				const int max_digits = 9;  // Prevents overflow for int
+				while (q != fmt_last && *q >= char_type('0') && *q <= char_type('9') && digit_count < max_digits) {
 					num = num * 10 + static_cast<int>(*q - char_type('0'));
+					++q;
+					++digit_count;
+				}
+				// Skip any remaining digits beyond max_digits
+				while (q != fmt_last && *q >= char_type('0') && *q <= char_type('9')) {
 					++q;
 				}
 				// Output the submatch if valid and matched
