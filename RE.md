@@ -1,8 +1,6 @@
-# Oniguruma Regular Expressions
+# Oniguruma++ Regular Expressions
 
-**Version 6.9.11** — 2025/03/21
-
-**Syntax:** `ONIG_SYNTAX_ONIGURUMA` (default syntax)
+**Version 6.9.15** — 2025/11/26
 
 ---
 
@@ -639,7 +637,7 @@ The following references are available only when the `oniguruma` flag is specifi
 | `\0` | Entire matched string. Equivalent to `$&`. |
 | `\\` | Literal backslash. Inserts a single `\`. |
 
-### Examples
+## Examples
 
 ```cpp
 // Standard $1, $2 references
