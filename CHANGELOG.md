@@ -18,6 +18,11 @@
 - Fixed `${n}` safe numbered reference in replacement strings to correctly expand to capture group contents:
   - `${1}`, `${2}`, etc. now correctly expand to the corresponding capture group
   - This allows safe disambiguation when a number is followed by more digits (e.g., `${1}0` expands to group 1 followed by literal "0")
+- Refactored `src/onigpp.cpp` to consolidate duplicated OnigRegion processing logic:
+  - Added `_adjust_region_offsets_prefix()` helper function for region offset adjustment when handling match_not_bow prefix.
+  - Added `_onig_region_to_match_results()` helper function for regex_match implementations (with full-match checking).
+  - Reduced code duplication in `_regex_search_with_context_impl` and `_regex_match_impl` SFINAE variants.
+  - Improved maintainability and readability of match result processing code.
 
 ## 2025-11-25 Ver.6.9.14
 
