@@ -15,6 +15,9 @@
   - `\k<name>` syntax: Works only when `oniguruma` flag is set
   - `\k'name'` syntax: Works only when `oniguruma` flag is set
   - This enables users to reference named capture groups in replacement strings
+- Fixed `${n}` safe numbered reference in replacement strings to correctly expand to capture group contents:
+  - `${1}`, `${2}`, etc. now correctly expand to the corresponding capture group
+  - This allows safe disambiguation when a number is followed by more digits (e.g., `${1}0` expands to group 1 followed by literal "0")
 
 ## 2025-11-25 Ver.6.9.14
 
