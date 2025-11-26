@@ -2,6 +2,15 @@
 
 ## 2025-XX-YY Ver.6.9.15
 
+- Added `match_results::format` member function for template-based string formatting using sub-matches.
+  - Supports `$n` and `$nn` for numbered capture groups (e.g., `$0`, `$1`, `$12`)
+  - Supports `$&` for full match (equivalent to `$0`)
+  - Supports `$`` for prefix (text before match)
+  - Supports `$'` for suffix (text after match)
+  - Supports `$$` for literal `$`
+  - Supports escape sequences: `\n`, `\t`, `\r`, `\\`
+  - Unmatched submatches are replaced with an empty string
+  - Compatible with `std::match_results::format` interface
 - Added `RE_ja.md` — Japanese translation of `RE.md` (Oniguruma++ regular expression specification).
 - Added `dialog`.
 - Added `empty_pattern_test` to verify empty regex pattern compatibility with std::regex.

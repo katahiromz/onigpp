@@ -114,6 +114,11 @@ add_executable(oniguruma_flag_test oniguruma_flag_test.cpp)
 target_include_directories(oniguruma_flag_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(oniguruma_flag_test PRIVATE onigpp)
 
+# match_results_format_test.exe
+add_executable(match_results_format_test match_results_format_test.cpp)
+target_include_directories(match_results_format_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(match_results_format_test PRIVATE onigpp)
+
 # compat tests subdirectory
 add_subdirectory(compat)
 
@@ -211,4 +216,8 @@ add_test(
 add_test(
 	NAME test23
 	COMMAND $<TARGET_FILE:oniguruma_flag_test>
+	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+add_test(
+	NAME test24
+	COMMAND $<TARGET_FILE:match_results_format_test>
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR})

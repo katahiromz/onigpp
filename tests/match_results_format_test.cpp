@@ -1,0 +1,370 @@
+// match_results_format_test.cpp --- Tests for match_results::format
+// Author: katahiromz
+// License: BSD-2-Clause
+#include "tests.h"
+#include <iterator>
+#include <sstream>
+
+// Helper to print test case start and result
+#define TEST_CASE(name) \
+	std::cout << "\n--- " << (name) << " ---\n"; \
+	try {
+
+#define TEST_CASE_END(name) \
+	std::cout << "✅ " << (name) << " PASSED.\n"; \
+	} catch (const myns::regex_error& e) { \
+		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
+		assert(false); \
+	} catch (const std::exception& e) { \
+		std::cout << "❌ " << (name) << " FAILED with std::exception: " << e.what() << "\n"; \
+		assert(false); \
+	} catch (...) { \
+		std::cout << "❌ " << (name) << " FAILED with unknown exception.\n"; \
+		assert(false); \
+	}
+
+// -----------------------------------------------------------------
+// 1. Basic $n replacements
+// -----------------------------------------------------------------
+
+void TestBasicNumericReplacement() {
+	TEST_CASE("TestBasicNumericReplacement")
+
+	std::string text = "Hello World";
+	myns::regex re("(\\w+)\\s+(\\w+)");
+	myns::smatch m;
+
+	assert(myns::regex_search(text, m, re));
+	assert(m.size() == 3);  // Full match + 2 groups
+
+	// Test $0 for full match
+	std::string result0 = m.format("[$0]");
+	std::cout << "  $0: " << result0 << std::endl;
+	assert(result0 == "[Hello World]");
+
+	// Test $1, $2
+	std::string result1 = m.format("$2 $1");
+	std::cout << "  $2 $1: " << result1 << std::endl;
+	assert(result1 == "World Hello");
+
+	// Test multi-digit group numbers (if available)
+	std::string text2 = "abcdefghij";
+	myns::regex re2("(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)");
+	myns::smatch m2;
+	assert(myns::regex_search(text2, m2, re2));
+	assert(m2.size() == 11);  // Full match + 10 groups
+
+	std::string result2 = m2.format("$10=$10, $1=$1");
+	std::cout << "  $10: " << result2 << std::endl;
+	assert(result2 == "j=j, a=a");
+
+	TEST_CASE_END("TestBasicNumericReplacement")
+}
+
+// -----------------------------------------------------------------
+// 2. $& replacement (full match)
+// -----------------------------------------------------------------
+
+void TestFullMatchReplacement() {
+	TEST_CASE("TestFullMatchReplacement")
+
+	std::string text = "Hello World";
+	myns::regex re("\\w+\\s+\\w+");
+	myns::smatch m;
+
+	assert(myns::regex_search(text, m, re));
+
+	std::string result = m.format("[$&]");
+	std::cout << "  $&: " << result << std::endl;
+	assert(result == "[Hello World]");
+
+	TEST_CASE_END("TestFullMatchReplacement")
+}
+
+// -----------------------------------------------------------------
+// 3. $` and $' replacements (prefix and suffix)
+// -----------------------------------------------------------------
+
+void TestPrefixSuffixReplacement() {
+	TEST_CASE("TestPrefixSuffixReplacement")
+
+	std::string text = "BEFORE_Match_AFTER";
+	myns::regex re("Match");
+	myns::smatch m;
+
+	assert(myns::regex_search(text, m, re));
+
+	// Test prefix
+	std::string result_prefix = m.format("Before=[$`]");
+	std::cout << "  Prefix: " << result_prefix << std::endl;
+	assert(result_prefix == "Before=[BEFORE_]");
+
+	// Test suffix
+	std::string result_suffix = m.format("After=[$']");
+	std::cout << "  Suffix: " << result_suffix << std::endl;
+	assert(result_suffix == "After=[_AFTER]");
+
+	// Test combined
+	std::string result_combined = m.format("$`[$&]$'");
+	std::cout << "  Combined: " << result_combined << std::endl;
+	assert(result_combined == "BEFORE_[Match]_AFTER");
+
+	TEST_CASE_END("TestPrefixSuffixReplacement")
+}
+
+// -----------------------------------------------------------------
+// 4. $$ replacement (literal $)
+// -----------------------------------------------------------------
+
+void TestLiteralDollarReplacement() {
+	TEST_CASE("TestLiteralDollarReplacement")
+
+	std::string text = "Hello";
+	myns::regex re("Hello");
+	myns::smatch m;
+
+	assert(myns::regex_search(text, m, re));
+
+	std::string result = m.format("$$100.00");
+	std::cout << "  $$: " << result << std::endl;
+	assert(result == "$100.00");
+
+	// Test $$ in middle
+	std::string result2 = m.format("Price: $$50");
+	std::cout << "  $$ in middle: " << result2 << std::endl;
+	assert(result2 == "Price: $50");
+
+	TEST_CASE_END("TestLiteralDollarReplacement")
+}
+
+// -----------------------------------------------------------------
+// 5. Escape sequences (\n, \t, \r, \\)
+// -----------------------------------------------------------------
+
+void TestEscapeSequences() {
+	TEST_CASE("TestEscapeSequences")
+
+	std::string text = "Hello";
+	myns::regex re("Hello");
+	myns::smatch m;
+
+	assert(myns::regex_search(text, m, re));
+
+	// Test \n
+	std::string result_n = m.format("Line1\\nLine2");
+	std::cout << "  \\n: [" << result_n << "]" << std::endl;
+	assert(result_n == "Line1\nLine2");
+
+	// Test \t
+	std::string result_t = m.format("Col1\\tCol2");
+	std::cout << "  \\t: [" << result_t << "]" << std::endl;
+	assert(result_t == "Col1\tCol2");
+
+	// Test \r
+	std::string result_r = m.format("Line1\\rLine2");
+	std::cout << "  \\r length: " << result_r.size() << std::endl;
+	assert(result_r == "Line1\rLine2");
+
+	// Test \\ (literal backslash)
+	std::string result_bs = m.format("Path\\\\File");
+	std::cout << "  \\\\: [" << result_bs << "]" << std::endl;
+	assert(result_bs == "Path\\File");
+
+	TEST_CASE_END("TestEscapeSequences")
+}
+
+// -----------------------------------------------------------------
+// 6. Unmatched submatches (replaced with empty string)
+// -----------------------------------------------------------------
+
+void TestUnmatchedSubmatches() {
+	TEST_CASE("TestUnmatchedSubmatches")
+
+	// Pattern with optional groups
+	std::string text = "abc";
+	myns::regex re("(a)(b)?(c)?");
+	myns::smatch m;
+
+	assert(myns::regex_search(text, m, re));
+	std::cout << "  Match size: " << m.size() << std::endl;
+	for (size_t i = 0; i < m.size(); ++i) {
+		std::cout << "    m[" << i << "] = '" << m[i].str() << "' matched=" << m[i].matched << std::endl;
+	}
+
+	// Even if group 3 might be matched, let's test with a pattern that has unmatched groups
+	std::string text2 = "a";
+	myns::regex re2("(a)(b)?");
+	myns::smatch m2;
+
+	assert(myns::regex_search(text2, m2, re2));
+	std::cout << "  Match2 size: " << m2.size() << std::endl;
+	for (size_t i = 0; i < m2.size(); ++i) {
+		std::cout << "    m2[" << i << "] = '" << m2[i].str() << "' matched=" << m2[i].matched << std::endl;
+	}
+
+	// Group 2 (b)? should be unmatched, so $2 should be empty
+	std::string result = m2.format("Group1=[$1] Group2=[$2]");
+	std::cout << "  Result: " << result << std::endl;
+	assert(result == "Group1=[a] Group2=[]");
+
+	// Test out-of-range group reference
+	std::string result_oor = m2.format("Group99=[$99]");
+	std::cout << "  Out of range: " << result_oor << std::endl;
+	assert(result_oor == "Group99=[]");
+
+	TEST_CASE_END("TestUnmatchedSubmatches")
+}
+
+// -----------------------------------------------------------------
+// 7. Full match vs partial match scenarios
+// -----------------------------------------------------------------
+
+void TestFullPartialMatchScenarios() {
+	TEST_CASE("TestFullPartialMatchScenarios")
+
+	// Full match using regex_match
+	std::string text = "Hello World";
+	myns::regex re("(\\w+)\\s+(\\w+)");
+	myns::smatch m;
+
+	assert(myns::regex_match(text, m, re));
+	std::string result_full = m.format("Full: $0, Parts: $1 and $2");
+	std::cout << "  Full match: " << result_full << std::endl;
+	assert(result_full == "Full: Hello World, Parts: Hello and World");
+
+	// Partial match using regex_search (with prefix and suffix)
+	// Use a more specific pattern to match "Hello World" exactly
+	std::string text2 = "Start_Hello_World_End";
+	myns::regex re2("Hello_World");
+	myns::smatch m2;
+
+	assert(myns::regex_search(text2, m2, re2));
+	std::string result_partial = m2.format("Before=[$`] Match=[$&] After=[$']");
+	std::cout << "  Partial match: " << result_partial << std::endl;
+	assert(result_partial == "Before=[Start_] Match=[Hello_World] After=[_End]");
+
+	TEST_CASE_END("TestFullPartialMatchScenarios")
+}
+
+// -----------------------------------------------------------------
+// 8. OutputIterator overload test
+// -----------------------------------------------------------------
+
+void TestOutputIteratorFormat() {
+	TEST_CASE("TestOutputIteratorFormat")
+
+	std::string text = "Hello World";
+	myns::regex re("(\\w+)\\s+(\\w+)");
+	myns::smatch m;
+
+	assert(myns::regex_search(text, m, re));
+
+	// Test with back_inserter
+	std::string result;
+	m.format(std::back_inserter(result), std::string("$2 $1"));
+	std::cout << "  back_inserter: " << result << std::endl;
+	assert(result == "World Hello");
+
+	// Test with ostream_iterator
+	std::ostringstream oss;
+	m.format(std::ostreambuf_iterator<char>(oss), std::string("[$0]"));
+	std::cout << "  ostreambuf_iterator: " << oss.str() << std::endl;
+	assert(oss.str() == "[Hello World]");
+
+	TEST_CASE_END("TestOutputIteratorFormat")
+}
+
+// -----------------------------------------------------------------
+// 9. C-string format overload test
+// -----------------------------------------------------------------
+
+void TestCStringFormat() {
+	TEST_CASE("TestCStringFormat")
+
+	std::string text = "Hello World";
+	myns::regex re("(\\w+)\\s+(\\w+)");
+	myns::smatch m;
+
+	assert(myns::regex_search(text, m, re));
+
+	// Test C-string overload
+	std::string result = m.format("$2 $1");
+	std::cout << "  C-string format: " << result << std::endl;
+	assert(result == "World Hello");
+
+	TEST_CASE_END("TestCStringFormat")
+}
+
+// -----------------------------------------------------------------
+// 10. format_literal flag test
+// -----------------------------------------------------------------
+
+void TestFormatLiteralFlag() {
+	TEST_CASE("TestFormatLiteralFlag")
+
+	std::string text = "Hello World";
+	myns::regex re("(\\w+)\\s+(\\w+)");
+	myns::smatch m;
+
+	assert(myns::regex_search(text, m, re));
+
+	// With format_literal, $1 should NOT be replaced
+	std::string result = m.format("$1 $2", myns::regex_constants::format_literal);
+	std::cout << "  format_literal: " << result << std::endl;
+	assert(result == "$1 $2");
+
+	TEST_CASE_END("TestFormatLiteralFlag")
+}
+
+// -----------------------------------------------------------------
+// 11. Wide string support test
+// -----------------------------------------------------------------
+
+void TestWideStringFormat() {
+	TEST_CASE("TestWideStringFormat")
+
+	std::wstring text = L"Hello World";
+	myns::wregex re(L"(\\w+)\\s+(\\w+)");
+	myns::wsmatch m;
+
+	assert(myns::regex_search(text, m, re));
+
+	std::wstring result = m.format(L"$2 $1");
+	std::wcout << L"  Wide string format: " << result << std::endl;
+	assert(result == L"World Hello");
+
+	TEST_CASE_END("TestWideStringFormat")
+}
+
+// =================================================================
+// Main Function
+// =================================================================
+
+int main() {
+	TESTS_OUTPUT_INIT();
+
+	// Oniguruma initialization (no-op for std::regex)
+	ONIGPP_TEST_INIT;
+
+	std::cout << "========================================================\n";
+	std::cout << " match_results::format Test Suite\n";
+	std::cout << "========================================================\n";
+
+	TestBasicNumericReplacement();
+	TestFullMatchReplacement();
+	TestPrefixSuffixReplacement();
+	TestLiteralDollarReplacement();
+	TestEscapeSequences();
+	TestUnmatchedSubmatches();
+	TestFullPartialMatchScenarios();
+	TestOutputIteratorFormat();
+	TestCStringFormat();
+	TestFormatLiteralFlag();
+	TestWideStringFormat();
+
+	std::cout << "\n========================================================\n";
+	std::cout << "✨ All match_results::format tests succeeded.\n";
+	std::cout << "========================================================\n";
+
+	return 0;
+}
