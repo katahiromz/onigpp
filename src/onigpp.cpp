@@ -148,7 +148,7 @@ inline bool _is_nosubs_active(regex_constants::syntax_option_type regex_flags,
 // Parameters:
 //   region: OnigRegion containing match positions to adjust
 //   prefix_len: number of characters that were prepended (typically 1 for 'a')
-//   char_size: sizeof(CharT), the character size in bytes
+// Template parameter CharT: character type (determines byte size per character)
 template <class CharT>
 inline void _adjust_region_offsets_prefix(OnigRegion* region, size_type prefix_len) {
 	if (prefix_len > 0) {
@@ -272,8 +272,9 @@ bool _process_onig_region_result(
 }
 
 // Helper function to process OnigRegion result for regex_match and populate match_results.
-// This is similar to _process_onig_region_result but includes the full-match check
-// required by regex_match semantics (the entire string must match the pattern).
+// Unlike _process_onig_region_result (used by regex_search which allows partial matches),
+// this function includes full-match validation required by regex_match semantics:
+// the match must cover the entire input string (from first to last).
 // Parameters:
 //   r: Oniguruma result code (>= 0 for match, ONIG_MISMATCH for no match, < 0 for error)
 //   region: OnigRegion containing match positions (will be freed by this function)
