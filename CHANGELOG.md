@@ -2,6 +2,14 @@
 
 ## 2025-XX-YY Ver.6.9.15
 
+- Added missing `std::regex_traits` methods to `onigpp::regex_traits` for improved standard library compatibility:
+  - `translate_nocase(char_type c)`: Returns the lowercase version of a character for case-insensitive matching.
+  - `transform_primary(const char_type*, const char_type*)`: Returns a primary collation key (case-insensitive) for sorting.
+  - `lookup_classname(const char_type*, const char_type*, bool icase = false)`: Looks up POSIX character class names and returns a `char_class_type` bitmask.
+    - Supports: alnum, alpha, blank, cntrl, digit, graph, lower, print, punct, space, upper, xdigit, d, w, s
+    - When `icase=true`, lower/upper classes return alpha to match both cases.
+  - All new methods work with char, wchar_t, char16_t, and char32_t types.
+  - Added comprehensive tests in `regex_traits_test.cpp`.
 - Refactored `regex_replace` to use `match_results::format` for replacement string processing:
   - Separated responsibilities: `regex_replace` handles matching iteration, `match_results::format` handles format expansion.
   - Added extended `match_results::format` overload with name resolver callback for named group support.

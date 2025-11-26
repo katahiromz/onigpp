@@ -226,6 +226,127 @@ int main() {
 		std::cout << "length method works correctly\n";
 	TEST_CASE_END("length")
 
+	// Test 11: translate_nocase (new method)
+	TEST_CASE("translate_nocase")
+		myns::regex_traits<char> traits;
+		
+		// translate_nocase should return lowercase version of the character
+		assert(traits.translate_nocase('A') == 'a');
+		assert(traits.translate_nocase('Z') == 'z');
+		assert(traits.translate_nocase('a') == 'a'); // Already lowercase
+		assert(traits.translate_nocase('z') == 'z');
+		assert(traits.translate_nocase('5') == '5'); // Non-alphabetic unchanged
+		assert(traits.translate_nocase(' ') == ' ');
+		
+		// Test wchar_t
+		myns::regex_traits<wchar_t> wtraits;
+		assert(wtraits.translate_nocase(L'A') == L'a');
+		assert(wtraits.translate_nocase(L'Z') == L'z');
+		assert(wtraits.translate_nocase(L'a') == L'a');
+		
+		std::cout << "translate_nocase works correctly\n";
+	TEST_CASE_END("translate_nocase")
+
+	// Test 12: transform_primary (new method)
+	TEST_CASE("transform_primary")
+		myns::regex_traits<char> traits;
+		
+		// transform_primary should return a lowercase collation key
+		std::string s1 = "TEST";
+		std::string result = traits.transform_primary(s1.data(), s1.data() + s1.size());
+		
+		// The result should be a valid string (exact result is locale-dependent)
+		// For ASCII input, the result should be lowercase
+		assert(!result.empty() || s1.empty());
+		
+		// Test that primary transform produces same result for different cases
+		std::string s2 = "test";
+		std::string result2 = traits.transform_primary(s2.data(), s2.data() + s2.size());
+		// Both should produce the same primary key (case-insensitive)
+		assert(result == result2);
+		
+		// Test wchar_t
+		myns::regex_traits<wchar_t> wtraits;
+		std::wstring ws1 = L"TEST";
+		std::wstring ws2 = L"test";
+		std::wstring wresult1 = wtraits.transform_primary(ws1.data(), ws1.data() + ws1.size());
+		std::wstring wresult2 = wtraits.transform_primary(ws2.data(), ws2.data() + ws2.size());
+		assert(wresult1 == wresult2);
+		
+		std::cout << "transform_primary works correctly\n";
+	TEST_CASE_END("transform_primary")
+
+	// Test 13: lookup_classname (new method)
+	TEST_CASE("lookup_classname")
+		myns::regex_traits<char> traits;
+		
+		// Test standard POSIX character class names
+		const char* digit = "digit";
+		const char* alpha = "alpha";
+		const char* alnum = "alnum";
+		const char* space = "space";
+		const char* upper = "upper";
+		const char* lower = "lower";
+		
+		auto digit_class = traits.lookup_classname(digit, digit + 5);
+		auto alpha_class = traits.lookup_classname(alpha, alpha + 5);
+		auto alnum_class = traits.lookup_classname(alnum, alnum + 5);
+		auto space_class = traits.lookup_classname(space, space + 5);
+		auto upper_class = traits.lookup_classname(upper, upper + 5);
+		auto lower_class = traits.lookup_classname(lower, lower + 5);
+		
+		// Classes should be non-zero (valid)
+		assert(digit_class != 0);
+		assert(alpha_class != 0);
+		assert(alnum_class != 0);
+		assert(space_class != 0);
+		assert(upper_class != 0);
+		assert(lower_class != 0);
+		
+		// Test that isctype works with the returned class
+		assert(traits.isctype('5', digit_class) == true);
+		assert(traits.isctype('a', digit_class) == false);
+		assert(traits.isctype('a', alpha_class) == true);
+		assert(traits.isctype('5', alpha_class) == false);
+		assert(traits.isctype(' ', space_class) == true);
+		assert(traits.isctype('A', upper_class) == true);
+		assert(traits.isctype('a', lower_class) == true);
+		
+		// Test unknown class returns 0
+		const char* unknown = "unknown_class";
+		auto unknown_class = traits.lookup_classname(unknown, unknown + 13);
+		assert(unknown_class == 0);
+		
+		// Test case-insensitive flag for lower/upper
+		auto lower_icase = traits.lookup_classname(lower, lower + 5, true);
+		auto upper_icase = traits.lookup_classname(upper, upper + 5, true);
+		// With icase, both should return alpha (matching both cases)
+		assert(lower_icase == static_cast<int>(std::ctype_base::alpha));
+		assert(upper_icase == static_cast<int>(std::ctype_base::alpha));
+		
+		std::cout << "lookup_classname works correctly\n";
+	TEST_CASE_END("lookup_classname")
+
+#ifndef USE_STD_FOR_TESTS // char16_t/char32_t translate_nocase is onigpp-specific
+	// Test 14: char16_t and char32_t translate_nocase
+	TEST_CASE("char16_t and char32_t translate_nocase")
+		myns::regex_traits<char16_t> u16traits;
+		myns::regex_traits<char32_t> u32traits;
+		
+		// Test translate_nocase for char16_t
+		assert(u16traits.translate_nocase(u'A') == u'a');
+		assert(u16traits.translate_nocase(u'Z') == u'z');
+		assert(u16traits.translate_nocase(u'a') == u'a');
+		
+		// Test translate_nocase for char32_t
+		assert(u32traits.translate_nocase(U'A') == U'a');
+		assert(u32traits.translate_nocase(U'Z') == U'z');
+		assert(u32traits.translate_nocase(U'a') == U'a');
+		
+		std::cout << "char16_t and char32_t translate_nocase work correctly\n";
+	TEST_CASE_END("char16_t and char32_t translate_nocase")
+#endif
+
 	std::cout << "\n=== All regex_traits Tests Passed ===\n";
 	return 0;
 }

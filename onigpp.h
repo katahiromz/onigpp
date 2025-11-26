@@ -489,9 +489,25 @@ public:
 		return transform_impl(first, last, typename std::is_same<char_type, char>::type());
 	}
 
+	// Transform a character sequence for primary collation (ignoring case and accents)
+	// This returns a sort key that represents the primary equivalence class
+	// Used for case-insensitive and accent-insensitive sorting
+	string_type transform_primary(const char_type* first, const char_type* last) const {
+		// For primary collation, we use the same transformation as transform()
+		// and then convert to lowercase for case-insensitive comparison
+		// This is a portable approximation; full primary collation would require ICU
+		return transform_primary_impl(first, last, typename std::is_same<char_type, char>::type());
+	}
+
 	// Translate a character (identity transformation)
 	char_type translate(char_type c) const {
 		return c;
+	}
+
+	// Translate a character for case-insensitive matching
+	// Returns the lowercase version of the character using the locale's ctype facet
+	char_type translate_nocase(char_type c) const {
+		return translate_nocase_impl(c, typename std::is_same<char_type, char>::type());
 	}
 
 	// Check if character is of a specific character class
@@ -550,6 +566,62 @@ public:
 		return string_type(first, last);
 	}
 
+	// Lookup character class name and return a char_class_type bitmask
+	// Supports standard POSIX character class names: alnum, alpha, blank, cntrl,
+	// digit, graph, lower, print, punct, space, upper, xdigit, d, w, s
+	// Returns 0 if the class name is not recognized
+	char_class_type lookup_classname(const char_type* first, const char_type* last, bool icase = false) const {
+		// Convert input to a narrow string for comparison
+		std::string name;
+		for (const char_type* p = first; p != last; ++p) {
+			// Convert to lowercase for case-insensitive comparison of class names
+			char c = static_cast<char>(*p);
+			if (c >= 'A' && c <= 'Z') c = c - 'A' + 'a';
+			name.push_back(c);
+		}
+
+		// Map class names to ctype_base masks
+		char_class_type result = 0;
+
+		if (name == "alnum") {
+			result = std::ctype_base::alnum;
+		} else if (name == "alpha") {
+			result = std::ctype_base::alpha;
+		} else if (name == "blank") {
+			result = std::ctype_base::blank;
+		} else if (name == "cntrl") {
+			result = std::ctype_base::cntrl;
+		} else if (name == "digit" || name == "d") {
+			result = std::ctype_base::digit;
+		} else if (name == "graph") {
+			result = std::ctype_base::graph;
+		} else if (name == "lower") {
+			result = std::ctype_base::lower;
+		} else if (name == "print") {
+			result = std::ctype_base::print;
+		} else if (name == "punct") {
+			result = std::ctype_base::punct;
+		} else if (name == "space" || name == "s") {
+			result = std::ctype_base::space;
+		} else if (name == "upper") {
+			result = std::ctype_base::upper;
+		} else if (name == "xdigit") {
+			result = std::ctype_base::xdigit;
+		} else if (name == "w") {
+			// \w matches [a-zA-Z0-9_] - word characters
+			// Use alnum as the base, _ is checked separately in isctype
+			result = std::ctype_base::alnum;
+		}
+
+		// For case-insensitive matching, if the class is lower or upper,
+		// combine them to match both cases
+		if (icase && (result == std::ctype_base::lower || result == std::ctype_base::upper)) {
+			result = std::ctype_base::alpha;
+		}
+
+		return result;
+	}
+
 private:
 	locale_type m_locale;
 
@@ -587,6 +659,98 @@ private:
 	string_type transform_wchar_impl(const char_type* first, const char_type* last, std::false_type) const {
 		// Simple copy for char16_t and char32_t (portable default)
 		return string_type(first, last);
+	}
+
+	// transform_primary implementation for char
+	string_type transform_primary_impl(const char_type* first, const char_type* last, std::true_type) const {
+		// Get the standard transform first
+		string_type result = transform_impl(first, last, std::true_type());
+		// Convert to lowercase for primary collation (case-insensitive)
+		try {
+			const std::ctype<char_type>& ct = std::use_facet<std::ctype<char_type>>(m_locale);
+			for (auto& c : result) {
+				c = ct.tolower(c);
+			}
+		} catch (...) {
+			// Fallback: manual ASCII lowercase conversion
+			for (auto& c : result) {
+				if (c >= 'A' && c <= 'Z') c = c - 'A' + 'a';
+			}
+		}
+		return result;
+	}
+
+	// transform_primary implementation for non-char types
+	string_type transform_primary_impl(const char_type* first, const char_type* last, std::false_type) const {
+		return transform_primary_wchar_impl(first, last, typename std::is_same<char_type, wchar_t>::type());
+	}
+
+	// transform_primary implementation for wchar_t
+	string_type transform_primary_wchar_impl(const char_type* first, const char_type* last, std::true_type) const {
+		string_type result = transform_wchar_impl(first, last, std::true_type());
+		try {
+			const std::ctype<char_type>& ct = std::use_facet<std::ctype<char_type>>(m_locale);
+			for (auto& c : result) {
+				c = ct.tolower(c);
+			}
+		} catch (...) {
+			// Fallback: manual ASCII lowercase conversion
+			for (auto& c : result) {
+				if (c >= L'A' && c <= L'Z') c = c - L'A' + L'a';
+			}
+		}
+		return result;
+	}
+
+	// transform_primary implementation for char16_t and char32_t
+	string_type transform_primary_wchar_impl(const char_type* first, const char_type* last, std::false_type) const {
+		// Simple copy with lowercase for char16_t and char32_t
+		string_type result(first, last);
+		for (auto& c : result) {
+			// Basic ASCII lowercase conversion
+			if (c >= static_cast<char_type>('A') && c <= static_cast<char_type>('Z')) {
+				c = c - static_cast<char_type>('A') + static_cast<char_type>('a');
+			}
+		}
+		return result;
+	}
+
+	// translate_nocase implementation for char
+	char_type translate_nocase_impl(char_type c, std::true_type) const {
+		try {
+			const std::ctype<char_type>& ct = std::use_facet<std::ctype<char_type>>(m_locale);
+			return ct.tolower(c);
+		} catch (...) {
+			// Fallback: manual ASCII lowercase
+			if (c >= 'A' && c <= 'Z') return c - 'A' + 'a';
+			return c;
+		}
+	}
+
+	// translate_nocase implementation for non-char types
+	char_type translate_nocase_impl(char_type c, std::false_type) const {
+		return translate_nocase_wchar_impl(c, typename std::is_same<char_type, wchar_t>::type());
+	}
+
+	// translate_nocase implementation for wchar_t
+	char_type translate_nocase_wchar_impl(char_type c, std::true_type) const {
+		try {
+			const std::ctype<char_type>& ct = std::use_facet<std::ctype<char_type>>(m_locale);
+			return ct.tolower(c);
+		} catch (...) {
+			// Fallback: manual ASCII lowercase
+			if (c >= L'A' && c <= L'Z') return c - L'A' + L'a';
+			return c;
+		}
+	}
+
+	// translate_nocase implementation for char16_t and char32_t
+	char_type translate_nocase_wchar_impl(char_type c, std::false_type) const {
+		// Basic ASCII lowercase conversion
+		if (c >= static_cast<char_type>('A') && c <= static_cast<char_type>('Z')) {
+			return c - static_cast<char_type>('A') + static_cast<char_type>('a');
+		}
+		return c;
 	}
 
 	// isctype implementation for char
