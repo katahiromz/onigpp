@@ -23,7 +23,6 @@
 
 int main() {
 	onigpp::auto_init init;
-	int failures = 0;
 
 	std::cout << "Testing onigpp::regex_escape..." << std::endl;
 
@@ -221,9 +220,9 @@ int main() {
 		std::string test1 = "ab";
 		std::string test2 = "abc";
 		std::string test3 = "aabbcc";
-		TEST_ASSERT(!onigpp::regex_match(test1, match, re));        // '+' not acting as quantifier
-		TEST_ASSERT(!onigpp::regex_match(test2, match, re));       // '*' not acting as quantifier
-		TEST_ASSERT(!onigpp::regex_match(test3, match, re));    // Just to be sure
+		TEST_ASSERT(!onigpp::regex_match(test1, match, re));  // '+' not acting as quantifier
+		TEST_ASSERT(!onigpp::regex_match(test2, match, re));  // '*' not acting as quantifier
+		TEST_ASSERT(!onigpp::regex_match(test3, match, re));  // Just to be sure
 		
 		std::cout << "  [PASS] Regex literal match verification test" << std::endl;
 	}
