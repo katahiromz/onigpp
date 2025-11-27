@@ -24,9 +24,9 @@ int main() {
 		assert(std_m[0].str() == "" && "std::regex first match should be empty string");
 
 		// onigpp
-		myns::regex onig_re(pattern);
-		myns::smatch onig_m;
-		bool onig_found = myns::regex_search(input, onig_m, onig_re);
+		rex::regex onig_re(pattern);
+		rex::smatch onig_m;
+		bool onig_found = rex::regex_search(input, onig_m, onig_re);
 		assert(onig_found && "onigpp regex_search should find empty match in 'abc' with empty pattern");
 		assert(onig_m.size() >= 1);
 		assert(onig_m[0].str() == "" && "onigpp first match should be empty string");
@@ -49,10 +49,10 @@ int main() {
 		assert(std_match_empty && "std::regex_match('', '') must be true");
 
 		// onigpp
-		myns::regex onig_re(pattern);
-		myns::smatch onig_m;
-		bool onig_match_nonempty = myns::regex_match(input_nonempty, onig_m, onig_re);
-		bool onig_match_empty = myns::regex_match(input_empty, onig_m, onig_re);
+		rex::regex onig_re(pattern);
+		rex::smatch onig_m;
+		bool onig_match_nonempty = rex::regex_match(input_nonempty, onig_m, onig_re);
+		bool onig_match_empty = rex::regex_match(input_empty, onig_m, onig_re);
 		assert(!onig_match_nonempty && "onigpp regex_match('abc','') must be false");
 		assert(onig_match_empty && "onigpp regex_match('', '') must be true");
 
@@ -74,9 +74,9 @@ int main() {
 		}
 
 		// onigpp iterator
-		myns::regex onig_re(pattern);
-		auto onig_begin = myns::sregex_iterator(input.begin(), input.end(), onig_re);
-		auto onig_end = myns::sregex_iterator();
+		rex::regex onig_re(pattern);
+		auto onig_begin = rex::sregex_iterator(input.begin(), input.end(), onig_re);
+		auto onig_end = rex::sregex_iterator();
 		std::vector<std::string> onig_matches;
 		for (auto it = onig_begin; it != onig_end; ++it) {
 			onig_matches.push_back((*it)[0].str());
@@ -102,8 +102,8 @@ int main() {
 		std::string std_result = std::regex_replace(input, std_re, replacement);
 
 		// onigpp regex_replace
-		myns::regex onig_re(pattern);
-		std::string onig_result = myns::regex_replace(input, onig_re, replacement);
+		rex::regex onig_re(pattern);
+		std::string onig_result = rex::regex_replace(input, onig_re, replacement);
 
 		// Compare results
 		assert(std_result == onig_result && "regex_replace with empty pattern should match between implementations");

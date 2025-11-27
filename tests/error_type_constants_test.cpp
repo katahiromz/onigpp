@@ -8,7 +8,7 @@
 int main() {
 	TESTS_OUTPUT_INIT();
 
-	using namespace myns::regex_constants;
+	using namespace rex::regex_constants;
 	
 	// Both onigpp and std::regex now use the same error constant values (starting from 0)
 	assert(error_collate == 0);

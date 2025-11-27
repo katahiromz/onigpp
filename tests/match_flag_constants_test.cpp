@@ -4,7 +4,7 @@
 #include "tests.h"
 
 int main() {
-	using namespace myns::regex_constants;
+	using namespace rex::regex_constants;
 
 	TESTS_OUTPUT_INIT();
 

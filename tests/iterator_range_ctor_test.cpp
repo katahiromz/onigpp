@@ -7,7 +7,7 @@
 #include <vector>
 
 // Type aliases for match_results
-using smatch = myns::match_results<std::string::const_iterator>;
+using smatch = rex::match_results<std::string::const_iterator>;
 
 // =================================================================
 // Helper Functions
@@ -20,7 +20,7 @@ using smatch = myns::match_results<std::string::const_iterator>;
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const myns::regex_error& e) { \
+	} catch (const rex::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -43,12 +43,12 @@ void TestIteratorRangeCtorWithList() {
 	std::list<char> pattern_list(pattern_str.begin(), pattern_str.end());
 
 	// Create regex using iterator-range constructor
-	myns::regex re(pattern_list.begin(), pattern_list.end());
+	rex::regex re(pattern_list.begin(), pattern_list.end());
 
 	// Test the regex on a subject string
 	std::string subject = "Hello World 123";
 	smatch m;
-	bool found = myns::regex_search(subject, m, re);
+	bool found = rex::regex_search(subject, m, re);
 
 	assert(found);
 	assert(m.size() == 2); // Entire match + 1 capture group
@@ -70,12 +70,12 @@ void TestIteratorRangeCtorWithDeque() {
 	std::deque<char> pattern_deque(pattern_str.begin(), pattern_str.end());
 
 	// Create regex using iterator-range constructor
-	myns::regex re(pattern_deque.begin(), pattern_deque.end());
+	rex::regex re(pattern_deque.begin(), pattern_deque.end());
 
 	// Test the regex on a subject string
 	std::string subject = "test123";
 	smatch m;
-	bool matched = myns::regex_match(subject, m, re);
+	bool matched = rex::regex_match(subject, m, re);
 
 	assert(matched);
 	assert(m.size() == 1);
@@ -96,12 +96,12 @@ void TestIteratorRangeCtorWithVector() {
 	std::vector<char> pattern_vec(pattern_str.begin(), pattern_str.end());
 
 	// Create regex using iterator-range constructor
-	myns::regex re(pattern_vec.begin(), pattern_vec.end());
+	rex::regex re(pattern_vec.begin(), pattern_vec.end());
 
 	// Test the regex on a subject string
 	std::string subject = "test vector 42";
 	smatch m;
-	bool found = myns::regex_search(subject, m, re);
+	bool found = rex::regex_search(subject, m, re);
 
 	assert(found);
 	assert(m.size() == 2);
@@ -120,12 +120,12 @@ void TestIteratorRangeCtorWithStringIterators() {
 
 	// Create regex using string iterators directly
 	std::string pattern_str = "Name: (\\w+)";
-	myns::regex re(pattern_str.begin(), pattern_str.end());
+	rex::regex re(pattern_str.begin(), pattern_str.end());
 
 	// Test the regex on a subject string
 	std::string subject = "Name: John";
 	smatch m;
-	bool found = myns::regex_search(subject, m, re);
+	bool found = rex::regex_search(subject, m, re);
 
 	assert(found);
 	assert(m.size() == 2);
@@ -143,7 +143,7 @@ void TestIteratorRangeAssignWithList() {
 	TEST_CASE("TestIteratorRangeAssignWithList")
 
 	// Create an initial regex
-	myns::regex re("initial");
+	rex::regex re("initial");
 
 	// Create a list containing a new regex pattern
 	std::string pattern_str = "Age: (\\d+)";
@@ -155,7 +155,7 @@ void TestIteratorRangeAssignWithList() {
 	// Test the regex on a subject string
 	std::string subject = "Age: 30";
 	smatch m;
-	bool found = myns::regex_search(subject, m, re);
+	bool found = rex::regex_search(subject, m, re);
 
 	assert(found);
 	assert(m.size() == 2);
@@ -173,7 +173,7 @@ void TestIteratorRangeAssignWithDeque() {
 	TEST_CASE("TestIteratorRangeAssignWithDeque")
 
 	// Create an initial regex
-	myns::regex re("initial");
+	rex::regex re("initial");
 
 	// Create a deque containing a new regex pattern
 	std::string pattern_str = "abc\\d+";
@@ -185,7 +185,7 @@ void TestIteratorRangeAssignWithDeque() {
 	// Test the regex on a subject string
 	std::string subject = "abc123";
 	smatch m;
-	bool matched = myns::regex_match(subject, m, re);
+	bool matched = rex::regex_match(subject, m, re);
 
 	assert(matched);
 	assert(m.size() == 1);
@@ -202,7 +202,7 @@ void TestIteratorRangeAssignWithStringIterators() {
 	TEST_CASE("TestIteratorRangeAssignWithStringIterators")
 
 	// Create an initial regex
-	myns::regex re("initial");
+	rex::regex re("initial");
 
 	// Assign using string iterators directly
 	std::string pattern_str = "City: (\\w+)";
@@ -211,7 +211,7 @@ void TestIteratorRangeAssignWithStringIterators() {
 	// Test the regex on a subject string
 	std::string subject = "City: Paris";
 	smatch m;
-	bool found = myns::regex_search(subject, m, re);
+	bool found = rex::regex_search(subject, m, re);
 
 	assert(found);
 	assert(m.size() == 2);
@@ -233,12 +233,12 @@ void TestIteratorRangeCtorWithFlags() {
 	std::list<char> pattern_list(pattern_str.begin(), pattern_str.end());
 
 	// Create regex using iterator-range constructor with icase flag
-	myns::regex re(pattern_list.begin(), pattern_list.end(), myns::regex_constants::icase);
+	rex::regex re(pattern_list.begin(), pattern_list.end(), rex::regex_constants::icase);
 
 	// Test the regex on a subject string with different case
 	std::string subject = "TEST";
 	smatch m;
-	bool matched = myns::regex_match(subject, m, re);
+	bool matched = rex::regex_match(subject, m, re);
 
 	assert(matched);
 	assert(m.size() == 1);
@@ -255,19 +255,19 @@ void TestIteratorRangeAssignWithFlags() {
 	TEST_CASE("TestIteratorRangeAssignWithFlags")
 
 	// Create an initial regex
-	myns::regex re("initial");
+	rex::regex re("initial");
 
 	// Create a deque containing a new regex pattern
 	std::string pattern_str = "hello";
 	std::deque<char> pattern_deque(pattern_str.begin(), pattern_str.end());
 
 	// Assign using iterator-range with icase flag
-	re.assign(pattern_deque.begin(), pattern_deque.end(), myns::regex_constants::icase);
+	re.assign(pattern_deque.begin(), pattern_deque.end(), rex::regex_constants::icase);
 
 	// Test the regex on a subject string with different case
 	std::string subject = "HELLO";
 	smatch m;
-	bool matched = myns::regex_match(subject, m, re);
+	bool matched = rex::regex_match(subject, m, re);
 
 	assert(matched);
 	assert(m.size() == 1);

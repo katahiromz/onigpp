@@ -24,9 +24,9 @@ int main() {
 			bool std_found = std::regex_search(input, std_m, std_re);
 			
 			// Test with onigpp
-			myns::regex onigpp_re(pattern.c_str(), pattern.length(), myns::regex_constants::nosubs);
-			myns::smatch onigpp_m;
-			bool onigpp_found = myns::regex_search(input, onigpp_m, onigpp_re);
+			rex::regex onigpp_re(pattern.c_str(), pattern.length(), rex::regex_constants::nosubs);
+			rex::smatch onigpp_m;
+			bool onigpp_found = rex::regex_search(input, onigpp_m, onigpp_re);
 			
 			// Verify both matched
 			assert(std_found && onigpp_found && "Both should find a match");
@@ -59,9 +59,9 @@ int main() {
 			bool std_found = std::regex_search(input, std_m, std_re);
 			
 			// Test with onigpp - use explicit flag to avoid ambiguity
-			myns::regex onigpp_re(pattern.c_str(), pattern.length(), myns::regex_constants::ECMAScript);
-			myns::smatch onigpp_m;
-			bool onigpp_found = myns::regex_search(input, onigpp_m, onigpp_re);
+			rex::regex onigpp_re(pattern.c_str(), pattern.length(), rex::regex_constants::ECMAScript);
+			rex::smatch onigpp_m;
+			bool onigpp_found = rex::regex_search(input, onigpp_m, onigpp_re);
 			
 			// Verify both matched
 			assert(std_found && onigpp_found && "Both should find a match");
@@ -96,9 +96,9 @@ int main() {
 			bool std_matched = std::regex_match(input, std_m, std_re);
 			
 			// Test with onigpp
-			myns::regex onigpp_re(pattern.c_str(), pattern.length(), myns::regex_constants::nosubs);
-			myns::smatch onigpp_m;
-			bool onigpp_matched = myns::regex_match(input, onigpp_m, onigpp_re);
+			rex::regex onigpp_re(pattern.c_str(), pattern.length(), rex::regex_constants::nosubs);
+			rex::smatch onigpp_m;
+			bool onigpp_matched = rex::regex_match(input, onigpp_m, onigpp_re);
 			
 			// Verify both matched
 			assert(std_matched && onigpp_matched && "Both should match");
@@ -131,9 +131,9 @@ int main() {
 			bool std_found = std::regex_search(input, std_m, std_re);
 			
 			// Test with onigpp
-			myns::regex onigpp_re(pattern.c_str(), pattern.length(), myns::regex_constants::nosubs);
-			myns::smatch onigpp_m;
-			bool onigpp_found = myns::regex_search(input, onigpp_m, onigpp_re);
+			rex::regex onigpp_re(pattern.c_str(), pattern.length(), rex::regex_constants::nosubs);
+			rex::smatch onigpp_m;
+			bool onigpp_found = rex::regex_search(input, onigpp_m, onigpp_re);
 			
 			// Verify both matched
 			assert(std_found && onigpp_found && "Both should find a match");
@@ -166,9 +166,9 @@ int main() {
 			bool std_found = std::regex_search(input, std_m, std_re);
 			
 			// Test with onigpp - use explicit flag to avoid ambiguity
-			myns::regex onigpp_re(pattern.c_str(), pattern.length(), myns::regex_constants::ECMAScript);
-			myns::smatch onigpp_m;
-			bool onigpp_found = myns::regex_search(input, onigpp_m, onigpp_re);
+			rex::regex onigpp_re(pattern.c_str(), pattern.length(), rex::regex_constants::ECMAScript);
+			rex::smatch onigpp_m;
+			bool onigpp_found = rex::regex_search(input, onigpp_m, onigpp_re);
 			
 			// Verify both matched
 			assert(std_found && onigpp_found && "Both should find a match");

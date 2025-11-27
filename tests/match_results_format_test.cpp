@@ -19,7 +19,7 @@
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const myns::regex_error& e) { \
+	} catch (const rex::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -38,10 +38,10 @@ void TestBasicNumericReplacement() {
 	TEST_CASE("TestBasicNumericReplacement")
 
 	std::string text = "Hello World";
-	myns::regex re("(\\w+)\\s+(\\w+)");
-	myns::smatch m;
+	rex::regex re("(\\w+)\\s+(\\w+)");
+	rex::smatch m;
 
-	assert(myns::regex_search(text, m, re));
+	assert(rex::regex_search(text, m, re));
 	assert(m.size() == 3);  // Full match + 2 groups
 
 	// Test $0 for full match
@@ -56,9 +56,9 @@ void TestBasicNumericReplacement() {
 
 	// Test multi-digit group numbers (if available)
 	std::string text2 = "abcdefghij";
-	myns::regex re2("(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)");
-	myns::smatch m2;
-	assert(myns::regex_search(text2, m2, re2));
+	rex::regex re2("(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)");
+	rex::smatch m2;
+	assert(rex::regex_search(text2, m2, re2));
 	assert(m2.size() == 11);  // Full match + 10 groups
 
 	std::string result2 = m2.format("$10=$10, $1=$1");
@@ -76,10 +76,10 @@ void TestFullMatchReplacement() {
 	TEST_CASE("TestFullMatchReplacement")
 
 	std::string text = "Hello World";
-	myns::regex re("\\w+\\s+\\w+");
-	myns::smatch m;
+	rex::regex re("\\w+\\s+\\w+");
+	rex::smatch m;
 
-	assert(myns::regex_search(text, m, re));
+	assert(rex::regex_search(text, m, re));
 
 	std::string result = m.format("[$&]");
 	std::cout << "  $&: " << result << std::endl;
@@ -96,10 +96,10 @@ void TestPrefixSuffixReplacement() {
 	TEST_CASE("TestPrefixSuffixReplacement")
 
 	std::string text = "BEFORE_Match_AFTER";
-	myns::regex re("Match");
-	myns::smatch m;
+	rex::regex re("Match");
+	rex::smatch m;
 
-	assert(myns::regex_search(text, m, re));
+	assert(rex::regex_search(text, m, re));
 
 	// Test prefix
 	std::string result_prefix = m.format("Before=[$`]");
@@ -127,10 +127,10 @@ void TestLiteralDollarReplacement() {
 	TEST_CASE("TestLiteralDollarReplacement")
 
 	std::string text = "Hello";
-	myns::regex re("Hello");
-	myns::smatch m;
+	rex::regex re("Hello");
+	rex::smatch m;
 
-	assert(myns::regex_search(text, m, re));
+	assert(rex::regex_search(text, m, re));
 
 	std::string result = m.format("$$100.00");
 	std::cout << "  $$: " << result << std::endl;
@@ -152,10 +152,10 @@ void TestEscapeSequences() {
 	TEST_CASE("TestEscapeSequences")
 
 	std::string text = "Hello";
-	myns::regex re("Hello");
-	myns::smatch m;
+	rex::regex re("Hello");
+	rex::smatch m;
 
-	assert(myns::regex_search(text, m, re));
+	assert(rex::regex_search(text, m, re));
 
 	// Test \n
 	std::string result_n = m.format("Line1\\nLine2");
@@ -189,10 +189,10 @@ void TestUnmatchedSubmatches() {
 
 	// Pattern with optional groups
 	std::string text = "abc";
-	myns::regex re("(a)(b)?(c)?");
-	myns::smatch m;
+	rex::regex re("(a)(b)?(c)?");
+	rex::smatch m;
 
-	assert(myns::regex_search(text, m, re));
+	assert(rex::regex_search(text, m, re));
 	std::cout << "  Match size: " << m.size() << std::endl;
 	for (size_t i = 0; i < m.size(); ++i) {
 		std::cout << "    m[" << i << "] = '" << m[i].str() << "' matched=" << m[i].matched << std::endl;
@@ -200,10 +200,10 @@ void TestUnmatchedSubmatches() {
 
 	// Even if group 3 might be matched, let's test with a pattern that has unmatched groups
 	std::string text2 = "a";
-	myns::regex re2("(a)(b)?");
-	myns::smatch m2;
+	rex::regex re2("(a)(b)?");
+	rex::smatch m2;
 
-	assert(myns::regex_search(text2, m2, re2));
+	assert(rex::regex_search(text2, m2, re2));
 	std::cout << "  Match2 size: " << m2.size() << std::endl;
 	for (size_t i = 0; i < m2.size(); ++i) {
 		std::cout << "    m2[" << i << "] = '" << m2[i].str() << "' matched=" << m2[i].matched << std::endl;
@@ -231,10 +231,10 @@ void TestFullPartialMatchScenarios() {
 
 	// Full match using regex_match
 	std::string text = "Hello World";
-	myns::regex re("(\\w+)\\s+(\\w+)");
-	myns::smatch m;
+	rex::regex re("(\\w+)\\s+(\\w+)");
+	rex::smatch m;
 
-	assert(myns::regex_match(text, m, re));
+	assert(rex::regex_match(text, m, re));
 	std::string result_full = m.format("Full: $0, Parts: $1 and $2");
 	std::cout << "  Full match: " << result_full << std::endl;
 	assert(result_full == "Full: Hello World, Parts: Hello and World");
@@ -242,10 +242,10 @@ void TestFullPartialMatchScenarios() {
 	// Partial match using regex_search (with prefix and suffix)
 	// Use a more specific pattern to match "Hello World" exactly
 	std::string text2 = "Start_Hello_World_End";
-	myns::regex re2("Hello_World");
-	myns::smatch m2;
+	rex::regex re2("Hello_World");
+	rex::smatch m2;
 
-	assert(myns::regex_search(text2, m2, re2));
+	assert(rex::regex_search(text2, m2, re2));
 	std::string result_partial = m2.format("Before=[$`] Match=[$&] After=[$']");
 	std::cout << "  Partial match: " << result_partial << std::endl;
 	assert(result_partial == "Before=[Start_] Match=[Hello_World] After=[_End]");
@@ -261,10 +261,10 @@ void TestOutputIteratorFormat() {
 	TEST_CASE("TestOutputIteratorFormat")
 
 	std::string text = "Hello World";
-	myns::regex re("(\\w+)\\s+(\\w+)");
-	myns::smatch m;
+	rex::regex re("(\\w+)\\s+(\\w+)");
+	rex::smatch m;
 
-	assert(myns::regex_search(text, m, re));
+	assert(rex::regex_search(text, m, re));
 
 	// Test with back_inserter
 	std::string result;
@@ -289,10 +289,10 @@ void TestCStringFormat() {
 	TEST_CASE("TestCStringFormat")
 
 	std::string text = "Hello World";
-	myns::regex re("(\\w+)\\s+(\\w+)");
-	myns::smatch m;
+	rex::regex re("(\\w+)\\s+(\\w+)");
+	rex::smatch m;
 
-	assert(myns::regex_search(text, m, re));
+	assert(rex::regex_search(text, m, re));
 
 	// Test C-string overload
 	std::string result = m.format("$2 $1");
@@ -310,10 +310,10 @@ void TestWideStringFormat() {
 	TEST_CASE("TestWideStringFormat")
 
 	std::wstring text = L"Hello World";
-	myns::wregex re(L"(\\w+)\\s+(\\w+)");
-	myns::wsmatch m;
+	rex::wregex re(L"(\\w+)\\s+(\\w+)");
+	rex::wsmatch m;
 
-	assert(myns::regex_search(text, m, re));
+	assert(rex::regex_search(text, m, re));
 
 	std::wstring result = m.format(L"$2 $1");
 	std::wcout << L"  Wide string format: " << result << std::endl;
@@ -332,10 +332,10 @@ void TestSafeNumberedReference() {
 	// Test ${n} syntax which allows explicit group boundaries
 	// e.g., ${1}0 means "group 1 followed by literal 0" vs $10 which is "group 10"
 	std::string text = "abcdefghij";
-	myns::regex re("(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)");
-	myns::smatch m;
+	rex::regex re("(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)");
+	rex::smatch m;
 
-	assert(myns::regex_search(text, m, re));
+	assert(rex::regex_search(text, m, re));
 	assert(m.size() == 11);  // Full match + 10 groups
 
 	// Test ${1}0 - group 1 followed by literal '0'

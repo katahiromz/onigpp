@@ -17,7 +17,7 @@
 	#include <regex>
 
 	// When USE_STD_FOR_TESTS is defined, use std:: types
-	namespace myns = std;
+	namespace rex = std;
 	
 	// No initialization needed for std::regex
 	#define ONIGPP_TEST_INIT ((void)0)
@@ -25,10 +25,10 @@
 	#include "onigpp.h"
 
 	// When USE_STD_FOR_TESTS is not defined, use onigpp:: types
-	namespace myns = onigpp;
+	namespace rex = onigpp;
 	
 	// Oniguruma initialization is required
-	#define ONIGPP_TEST_INIT myns::auto_init onigpp_test_init
+	#define ONIGPP_TEST_INIT rex::auto_init onigpp_test_init
 #endif
 
 #ifdef _WIN32

@@ -6,14 +6,14 @@
 #include <chrono>
 
 template<typename Container>
-long long benchmark_regex_search(const Container& subject, const myns::regex& re, int iterations) {
+long long benchmark_regex_search(const Container& subject, const rex::regex& re, int iterations) {
 	using iter_type = typename Container::const_iterator;
-	myns::match_results<iter_type> m;
+	rex::match_results<iter_type> m;
 	
 	auto start = std::chrono::high_resolution_clock::now();
 	
 	for (int i = 0; i < iterations; ++i) {
-		myns::regex_search(subject.begin(), subject.end(), m, re);
+		rex::regex_search(subject.begin(), subject.end(), m, re);
 	}
 	
 	auto end = std::chrono::high_resolution_clock::now();
@@ -35,15 +35,15 @@ int main() {
 	std::vector<char> subject_vec(subject_str.begin(), subject_str.end());
 	std::list<char> subject_list(subject_str.begin(), subject_str.end());
 	
-	myns::regex re("\\d+");
+	rex::regex re("\\d+");
 	const int iterations = 10000;
 	
 	// Benchmark with pointer (const char* - optimized path)
 	{
-		myns::match_results<const char*> m;
+		rex::match_results<const char*> m;
 		auto start = std::chrono::high_resolution_clock::now();
 		for (int i = 0; i < iterations; ++i) {
-			myns::regex_search(subject_str.c_str(), subject_str.c_str() + subject_str.size(), m, re);
+			rex::regex_search(subject_str.c_str(), subject_str.c_str() + subject_str.size(), m, re);
 		}
 		auto end = std::chrono::high_resolution_clock::now();
 		auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();

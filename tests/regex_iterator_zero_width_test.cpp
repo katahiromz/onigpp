@@ -9,10 +9,10 @@
 #include <regex>
 
 // Helper to collect all matches from regex_iterator
-std::vector<std::pair<int, int>> collect_matches(const std::string& input, const myns::regex& re) {
+std::vector<std::pair<int, int>> collect_matches(const std::string& input, const rex::regex& re) {
 	std::vector<std::pair<int, int>> results;
-	auto it = myns::sregex_iterator(input.begin(), input.end(), re);
-	auto end = myns::sregex_iterator();
+	auto it = rex::sregex_iterator(input.begin(), input.end(), re);
+	auto end = rex::sregex_iterator();
 	for (; it != end; ++it) {
 		results.push_back(std::make_pair(static_cast<int>(it->position()), static_cast<int>(it->length())));
 	}
@@ -55,7 +55,7 @@ void test_empty_pattern() {
 
 	// Empty pattern matches at every position (n+1 matches for string of length n)
 	{
-		myns::regex re("");
+		rex::regex re("");
 		auto results = collect_matches("ab", re);
 		// Expected: matches at positions 0, 1, 2 (all zero-width)
 		std::vector<std::pair<int, int>> expected = {{0, 0}, {1, 0}, {2, 0}};
@@ -64,7 +64,7 @@ void test_empty_pattern() {
 
 	// Empty input with empty pattern
 	{
-		myns::regex re("");
+		rex::regex re("");
 		auto results = collect_matches("", re);
 		// Expected: single match at position 0
 		std::vector<std::pair<int, int>> expected = {{0, 0}};
@@ -79,7 +79,7 @@ void test_lookahead_patterns() {
 
 	// Positive lookahead at each position
 	{
-		myns::regex re("(?=.)");
+		rex::regex re("(?=.)");
 		auto results = collect_matches("abc", re);
 		// Matches before each character (not at end since (?=.) requires a char)
 		std::vector<std::pair<int, int>> expected = {{0, 0}, {1, 0}, {2, 0}};
@@ -88,7 +88,7 @@ void test_lookahead_patterns() {
 
 	// End-of-string lookahead
 	{
-		myns::regex re("(?=$)");
+		rex::regex re("(?=$)");
 		auto results = collect_matches("abc", re);
 		// Only matches at end of string
 		std::vector<std::pair<int, int>> expected = {{3, 0}};
@@ -103,7 +103,7 @@ void test_word_boundary() {
 
 	// Word boundary at start and end
 	{
-		myns::regex re("\\b");
+		rex::regex re("\\b");
 		auto results = collect_matches("word", re);
 		// Matches at start (pos 0) and end (pos 4)
 		std::vector<std::pair<int, int>> expected = {{0, 0}, {4, 0}};
@@ -112,7 +112,7 @@ void test_word_boundary() {
 
 	// Word boundary with multiple words
 	{
-		myns::regex re("\\b");
+		rex::regex re("\\b");
 		auto results = collect_matches("a b", re);
 		// Before 'a', after 'a', before 'b', after 'b'
 		std::vector<std::pair<int, int>> expected = {{0, 0}, {1, 0}, {2, 0}, {3, 0}};
@@ -127,7 +127,7 @@ void test_anchor_patterns() {
 
 	// Start anchor
 	{
-		myns::regex re("^");
+		rex::regex re("^");
 		auto results = collect_matches("abc", re);
 		std::vector<std::pair<int, int>> expected = {{0, 0}};
 		compare_results("^", "abc", expected, results);
@@ -135,7 +135,7 @@ void test_anchor_patterns() {
 
 	// End anchor
 	{
-		myns::regex re("$");
+		rex::regex re("$");
 		auto results = collect_matches("abc", re);
 		std::vector<std::pair<int, int>> expected = {{3, 0}};
 		compare_results("$", "abc", expected, results);
@@ -143,7 +143,7 @@ void test_anchor_patterns() {
 
 	// Both anchors on empty string
 	{
-		myns::regex re("^$");
+		rex::regex re("^$");
 		auto results = collect_matches("", re);
 		std::vector<std::pair<int, int>> expected = {{0, 0}};
 		compare_results("^$", "", expected, results);
@@ -157,7 +157,7 @@ void test_optional_patterns() {
 
 	// a* can match zero characters
 	{
-		myns::regex re("a*");
+		rex::regex re("a*");
 		auto results = collect_matches("aab", re);
 		// First: "aa" at pos 0, then "" at pos 2, then "" at pos 3
 		std::vector<std::pair<int, int>> expected = {{0, 2}, {2, 0}, {3, 0}};
@@ -166,7 +166,7 @@ void test_optional_patterns() {
 
 	// a? can match zero or one
 	{
-		myns::regex re("a?");
+		rex::regex re("a?");
 		auto results = collect_matches("ba", re);
 		// At pos 0: "" (no 'a' at start), at pos 1: "a", at pos 2: "" (end of string)
 		std::vector<std::pair<int, int>> expected = {{0, 0}, {1, 1}, {2, 0}};
@@ -181,7 +181,7 @@ void test_consecutive_zero_width() {
 
 	// Multiple consecutive zero-width matches
 	{
-		myns::regex re("");
+		rex::regex re("");
 		auto results = collect_matches("x", re);
 		// Positions 0 and 1
 		std::vector<std::pair<int, int>> expected = {{0, 0}, {1, 0}};
@@ -190,7 +190,7 @@ void test_consecutive_zero_width() {
 
 	// Zero-width at string boundaries
 	{
-		myns::regex re("(?=b|$)");
+		rex::regex re("(?=b|$)");
 		auto results = collect_matches("ab", re);
 		// Before 'b' (pos 1) and at end (pos 2)
 		std::vector<std::pair<int, int>> expected = {{1, 0}, {2, 0}};
@@ -205,25 +205,25 @@ void test_end_iterator_equality() {
 
 	// Default-constructed iterators should be equal
 	{
-		myns::sregex_iterator end1, end2;
+		rex::sregex_iterator end1, end2;
 		assert(end1 == end2 && "Two default-constructed iterators should be equal");
 	}
 
 	// Exhausted iterators should equal end
 	{
-		myns::regex re("x");
+		rex::regex re("x");
 		std::string input = "";
-		auto it = myns::sregex_iterator(input.begin(), input.end(), re);
-		myns::sregex_iterator end;
+		auto it = rex::sregex_iterator(input.begin(), input.end(), re);
+		rex::sregex_iterator end;
 		assert(it == end && "Iterator with no matches should equal end");
 	}
 
 	// Iterator incremented past last match should equal end
 	{
-		myns::regex re("a");
+		rex::regex re("a");
 		std::string input = "a";
-		auto it = myns::sregex_iterator(input.begin(), input.end(), re);
-		myns::sregex_iterator end;
+		auto it = rex::sregex_iterator(input.begin(), input.end(), re);
+		rex::sregex_iterator end;
 		assert(it != end && "Should have one match");
 		++it;
 		assert(it == end && "After incrementing past last match, should equal end");
@@ -237,10 +237,10 @@ void test_end_iterator_equality() {
 void test_increment_past_end() {
 	std::cout << "Test: Incrementing past end is safe" << std::endl;
 
-	myns::regex re("a");
+	rex::regex re("a");
 	std::string input = "a";
-	auto it = myns::sregex_iterator(input.begin(), input.end(), re);
-	myns::sregex_iterator end;
+	auto it = rex::sregex_iterator(input.begin(), input.end(), re);
+	rex::sregex_iterator end;
 
 	// Advance to end
 	++it;
@@ -262,7 +262,7 @@ void test_comparison_with_std() {
 		std::regex std_re(pattern);
 		auto std_results = collect_std_matches(input, std_re);
 
-		myns::regex onigpp_re(pattern);
+		rex::regex onigpp_re(pattern);
 		auto onigpp_results = collect_matches(input, onigpp_re);
 
 		if (std_results.size() != onigpp_results.size()) {

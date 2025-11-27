@@ -15,10 +15,10 @@ int main() {
 	// Test cmatch (const char*)
 	{
 		const char* text = "Hello World 123";
-		myns::regex re("World (\\d+)");
-		myns::cmatch m;
+		rex::regex re("World (\\d+)");
+		rex::cmatch m;
 
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.size() == 2);
 		assert(m[0].str() == "World 123");
@@ -29,10 +29,10 @@ int main() {
 	// Test smatch (string::const_iterator)
 	{
 		std::string text = "Test smatch 456";
-		myns::regex re("smatch (\\d+)");
-		myns::smatch m;
+		rex::regex re("smatch (\\d+)");
+		rex::smatch m;
 
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.size() == 2);
 		assert(m[0].str() == "smatch 456");
@@ -43,10 +43,10 @@ int main() {
 	// Test wsmatch (wstring::const_iterator)
 	{
 		std::wstring text = L"wsmatch test 789";
-		myns::wregex re(L"test (\\d+)");
-		myns::wsmatch m;
+		rex::wregex re(L"test (\\d+)");
+		rex::wsmatch m;
 
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.size() == 2);
 		assert(m[0].str() == L"test 789");
@@ -58,10 +58,10 @@ int main() {
 	// Test u16smatch (u16string::const_iterator)
 	{
 		std::u16string text = u"u16smatch 999";
-		myns::u16regex re(u"u16smatch (\\d+)");
-		myns::u16smatch m;
+		rex::u16regex re(u"u16smatch (\\d+)");
+		rex::u16smatch m;
 
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.size() == 2);
 		assert(m[0].str() == u"u16smatch 999");
@@ -72,10 +72,10 @@ int main() {
 	// Test u32smatch (u32string::const_iterator)
 	{
 		std::u32string text = U"u32smatch 777";
-		myns::u32regex re(U"u32smatch (\\d+)");
-		myns::u32smatch m;
+		rex::u32regex re(U"u32smatch (\\d+)");
+		rex::u32smatch m;
 
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.size() == 2);
 		assert(m[0].str() == U"u32smatch 777");

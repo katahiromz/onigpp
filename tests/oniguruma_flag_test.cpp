@@ -11,8 +11,8 @@
 
 #ifndef USE_STD_FOR_TESTS
 
-using sregex = myns::basic_regex<char>;
-using smatch = myns::match_results<std::string::const_iterator>;
+using sregex = rex::basic_regex<char>;
+using smatch = rex::match_results<std::string::const_iterator>;
 
 // Helper macros for test cases
 #define TEST_CASE(name) \
@@ -21,7 +21,7 @@ using smatch = myns::match_results<std::string::const_iterator>;
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const myns::regex_error& e) { \
+	} catch (const rex::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -37,12 +37,12 @@ void TestOnigurumaNumericBackref() {
 	TEST_CASE("TestOnigurumaNumericBackref")
 	
 	// Pattern with \1 backreference using oniguruma flag
-	sregex re(std::string("(.+)\\1"), myns::regex_constants::oniguruma);
+	sregex re(std::string("(.+)\\1"), rex::regex_constants::oniguruma);
 	smatch m;
 	
 	// "abab" should match: "ab" captured by group 1, then repeated
 	std::string input = "abab";
-	bool found = myns::regex_search(input, m, re);
+	bool found = rex::regex_search(input, m, re);
 	assert(found);
 	assert(m.size() >= 2);
 	assert(m[0].str() == "abab");
@@ -52,7 +52,7 @@ void TestOnigurumaNumericBackref() {
 	// "abc" should not match (no repetition)
 	std::string input2 = "abc";
 	smatch m2;
-	bool found2 = myns::regex_search(input2, m2, re);
+	bool found2 = rex::regex_search(input2, m2, re);
 	assert(!found2);
 	std::cout << "  Non-matching input correctly rejected" << std::endl;
 	
@@ -64,12 +64,12 @@ void TestOnigurumaNamedBackrefAngle() {
 	TEST_CASE("TestOnigurumaNamedBackrefAngle")
 	
 	// Pattern with \k<name> backreference using oniguruma flag
-	sregex re(std::string("(?<word>\\w+)\\s+\\k<word>"), myns::regex_constants::oniguruma);
+	sregex re(std::string("(?<word>\\w+)\\s+\\k<word>"), rex::regex_constants::oniguruma);
 	smatch m;
 	
 	// "hello hello" should match: "hello" captured, then repeated
 	std::string input = "hello hello";
-	bool found = myns::regex_search(input, m, re);
+	bool found = rex::regex_search(input, m, re);
 	assert(found);
 	assert(m.size() >= 2);
 	assert(m[0].str() == "hello hello");
@@ -79,7 +79,7 @@ void TestOnigurumaNamedBackrefAngle() {
 	// "hello world" should not match (different words)
 	std::string input2 = "hello world";
 	smatch m2;
-	bool found2 = myns::regex_search(input2, m2, re);
+	bool found2 = rex::regex_search(input2, m2, re);
 	assert(!found2);
 	std::cout << "  Non-matching input correctly rejected" << std::endl;
 	
@@ -91,12 +91,12 @@ void TestOnigurumaNamedBackrefQuote() {
 	TEST_CASE("TestOnigurumaNamedBackrefQuote")
 	
 	// Pattern with \k'name' backreference using oniguruma flag
-	sregex re(std::string("(?<word>\\w+)\\s+\\k'word'"), myns::regex_constants::oniguruma);
+	sregex re(std::string("(?<word>\\w+)\\s+\\k'word'"), rex::regex_constants::oniguruma);
 	smatch m;
 	
 	// "world world" should match
 	std::string input = "world world";
-	bool found = myns::regex_search(input, m, re);
+	bool found = rex::regex_search(input, m, re);
 	assert(found);
 	assert(m.size() >= 2);
 	assert(m[0].str() == "world world");
@@ -111,12 +111,12 @@ void TestOnigurumaMultipleBackrefs() {
 	TEST_CASE("TestOnigurumaMultipleBackrefs")
 	
 	// Pattern for palindrome-like matching
-	sregex re(std::string("(.)(.)(.)(.)(.)\\5\\4\\3\\2\\1"), myns::regex_constants::oniguruma);
+	sregex re(std::string("(.)(.)(.)(.)(.)\\5\\4\\3\\2\\1"), rex::regex_constants::oniguruma);
 	smatch m;
 	
 	// "abcdeedcba" should match
 	std::string input = "abcdeedcba";
-	bool found = myns::regex_match(input, m, re);
+	bool found = rex::regex_match(input, m, re);
 	assert(found);
 	assert(m[0].str() == "abcdeedcba");
 	assert(m[1].str() == "a");
@@ -134,12 +134,12 @@ void TestOnigurumaMultiDigitBackref() {
 	TEST_CASE("TestOnigurumaMultiDigitBackref")
 	
 	// Define 10 groups and use \10 to reference group 10
-	sregex re(std::string("(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)\\10"), myns::regex_constants::oniguruma);
+	sregex re(std::string("(a)(b)(c)(d)(e)(f)(g)(h)(i)(j)\\10"), rex::regex_constants::oniguruma);
 	smatch m;
 	
 	// "abcdefghijj" should match: \10 refers to group 10 ("j")
 	std::string input = "abcdefghijj";
-	bool found = myns::regex_match(input, m, re);
+	bool found = rex::regex_match(input, m, re);
 	assert(found);
 	assert(m.size() == 11);  // 10 groups + full match
 	assert(m[10].str() == "j");
@@ -153,17 +153,17 @@ void TestOnigurumaFlagVsDefault() {
 	TEST_CASE("TestOnigurumaFlagVsDefault")
 	
 	// With oniguruma flag: native Oniguruma behavior
-	sregex re_onig(std::string("(.+)\\1"), myns::regex_constants::oniguruma);
+	sregex re_onig(std::string("(.+)\\1"), rex::regex_constants::oniguruma);
 	smatch m1;
 	std::string input = "abab";
-	bool found1 = myns::regex_search(input, m1, re_onig);
+	bool found1 = rex::regex_search(input, m1, re_onig);
 	assert(found1);
 	std::cout << "  With oniguruma flag: matched '" << m1[0].str() << "'" << std::endl;
 	
 	// Without oniguruma flag (default ECMAScript): should also work for simple backrefs
 	sregex re_default(std::string("(.+)\\1"));  // Default is ECMAScript
 	smatch m2;
-	bool found2 = myns::regex_search(input, m2, re_default);
+	bool found2 = rex::regex_search(input, m2, re_default);
 	assert(found2);
 	std::cout << "  Without oniguruma flag: matched '" << m2[0].str() << "'" << std::endl;
 	
@@ -179,12 +179,12 @@ void TestOnigurumaFlagWithIcase() {
 	TEST_CASE("TestOnigurumaFlagWithIcase")
 	
 	// Combine oniguruma and icase flags
-	sregex re(std::string("(\\w+)\\s+\\1"), myns::regex_constants::oniguruma | myns::regex_constants::icase);
+	sregex re(std::string("(\\w+)\\s+\\1"), rex::regex_constants::oniguruma | rex::regex_constants::icase);
 	smatch m;
 	
 	// "Hello HELLO" should match with case-insensitive backreference
 	std::string input = "Hello HELLO";
-	bool found = myns::regex_search(input, m, re);
+	bool found = rex::regex_search(input, m, re);
 	assert(found);
 	assert(m[0].str() == "Hello HELLO");
 	assert(m[1].str() == "Hello");
@@ -199,11 +199,11 @@ void TestOnigurumaFlagWithMultiline() {
 	
 	// Combine oniguruma and multiline flags
 	// In native Oniguruma mode, dot should match newline with multiline
-	sregex re(std::string("^(.+)$"), myns::regex_constants::oniguruma | myns::regex_constants::multiline);
+	sregex re(std::string("^(.+)$"), rex::regex_constants::oniguruma | rex::regex_constants::multiline);
 	smatch m;
 	
 	std::string input = "line1\nline2";
-	bool found = myns::regex_search(input, m, re);
+	bool found = rex::regex_search(input, m, re);
 	assert(found);
 	std::cout << "  Multiline match: " << m[0].str() << std::endl;
 	
@@ -215,16 +215,16 @@ void TestOnigurumaNamedReplacementDollarBrace() {
 	TEST_CASE("TestOnigurumaNamedReplacementDollarBrace")
 	
 	// Pattern with named groups
-	sregex re(std::string("(?<first>a)(?<second>b)(?<third>c)"), myns::regex_constants::oniguruma);
+	sregex re(std::string("(?<first>a)(?<second>b)(?<third>c)"), rex::regex_constants::oniguruma);
 	
 	// Test ${name} replacement syntax
 	std::string input = "abc";
-	std::string result = myns::regex_replace(input, re, std::string("_${first}-${second}-${third}_"));
+	std::string result = rex::regex_replace(input, re, std::string("_${first}-${second}-${third}_"));
 	assert(result == "_a-b-c_");
 	std::cout << "  ${name} replacement: '" << result << "'" << std::endl;
 	
 	// Test mixed ${name} and $1 syntax
-	std::string result2 = myns::regex_replace(input, re, std::string("${first}=$1"));
+	std::string result2 = rex::regex_replace(input, re, std::string("${first}=$1"));
 	assert(result2 == "a=a");
 	std::cout << "  Mixed ${name} and $1: '" << result2 << "'" << std::endl;
 	
@@ -236,11 +236,11 @@ void TestOnigurumaNamedReplacementBackslashK() {
 	TEST_CASE("TestOnigurumaNamedReplacementBackslashK")
 	
 	// Pattern with named groups
-	sregex re(std::string("(?<first>a)(?<second>b)(?<third>c)"), myns::regex_constants::oniguruma);
+	sregex re(std::string("(?<first>a)(?<second>b)(?<third>c)"), rex::regex_constants::oniguruma);
 	
 	// Test \k<name> replacement syntax
 	std::string input = "abc";
-	std::string result = myns::regex_replace(input, re, std::string("_\\k<first>-\\k<second>-\\k<third>_"));
+	std::string result = rex::regex_replace(input, re, std::string("_\\k<first>-\\k<second>-\\k<third>_"));
 	assert(result == "_a-b-c_");
 	std::cout << "  \\k<name> replacement: '" << result << "'" << std::endl;
 	
@@ -252,11 +252,11 @@ void TestOnigurumaNamedReplacementBackslashKQuote() {
 	TEST_CASE("TestOnigurumaNamedReplacementBackslashKQuote")
 	
 	// Pattern with named groups
-	sregex re(std::string("(?<first>a)(?<second>b)(?<third>c)"), myns::regex_constants::oniguruma);
+	sregex re(std::string("(?<first>a)(?<second>b)(?<third>c)"), rex::regex_constants::oniguruma);
 	
 	// Test \k'name' replacement syntax
 	std::string input = "abc";
-	std::string result = myns::regex_replace(input, re, std::string("_\\k'first'-\\k'second'-\\k'third'_"));
+	std::string result = rex::regex_replace(input, re, std::string("_\\k'first'-\\k'second'-\\k'third'_"));
 	assert(result == "_a-b-c_");
 	std::cout << "  \\k'name' replacement: '" << result << "'" << std::endl;
 	
@@ -268,21 +268,21 @@ void TestOnigurumaNumericReplacementBackslash() {
 	TEST_CASE("TestOnigurumaNumericReplacementBackslash")
 	
 	// Pattern with groups
-	sregex re(std::string("(a)(b)(c)"), myns::regex_constants::oniguruma);
+	sregex re(std::string("(a)(b)(c)"), rex::regex_constants::oniguruma);
 	
 	// Test \1, \2, \3 replacement syntax
 	std::string input = "abc";
-	std::string result = myns::regex_replace(input, re, std::string("\\1-\\2-\\3"));
+	std::string result = rex::regex_replace(input, re, std::string("\\1-\\2-\\3"));
 	assert(result == "a-b-c");
 	std::cout << "  \\1, \\2, \\3 replacement: '" << result << "'" << std::endl;
 	
 	// Test \0 for whole match
-	std::string result2 = myns::regex_replace(input, re, std::string("[\\0]"));
+	std::string result2 = rex::regex_replace(input, re, std::string("[\\0]"));
 	assert(result2 == "[abc]");
 	std::cout << "  \\0 (whole match): '" << result2 << "'" << std::endl;
 	
 	// Test \\ for literal backslash
-	std::string result3 = myns::regex_replace(input, re, std::string("\\\\1"));
+	std::string result3 = rex::regex_replace(input, re, std::string("\\\\1"));
 	assert(result3 == "\\1");
 	std::cout << "  \\\\ (literal backslash): '" << result3 << "'" << std::endl;
 	
@@ -295,9 +295,9 @@ void TestNoOnigurumaFlagNamedRefLiteral() {
 	
 	// Without oniguruma flag, \k<name> should remain literal
 	std::string pattern = "(?<first>a)(?<second>b)";
-	sregex re(pattern, myns::regex_constants::ECMAScript);  // No oniguruma flag
+	sregex re(pattern, rex::regex_constants::ECMAScript);  // No oniguruma flag
 	std::string input = "ab";
-	std::string result = myns::regex_replace(input, re, std::string("\\k<first>"));
+	std::string result = rex::regex_replace(input, re, std::string("\\k<first>"));
 	// \k<first> should NOT be expanded (literal output)
 	assert(result == "\\k<first>");
 	std::cout << "  Without oniguruma flag, \\k<name> is literal: PASSED" << std::endl;
@@ -312,15 +312,15 @@ void TestDollarBraceNamedRefBothModes() {
 	std::string pattern = "(?<word>\\w+)";
 	
 	// Test in ECMAScript mode
-	sregex re1(pattern, myns::regex_constants::ECMAScript);
+	sregex re1(pattern, rex::regex_constants::ECMAScript);
 	std::string input = "hello";
-	std::string result1 = myns::regex_replace(input, re1, std::string("[${word}]"));
+	std::string result1 = rex::regex_replace(input, re1, std::string("[${word}]"));
 	assert(result1 == "[hello]");
 	std::cout << "  ${name} in ECMAScript mode: '" << result1 << "'" << std::endl;
 	
 	// Test in oniguruma mode
-	sregex re2(pattern, myns::regex_constants::oniguruma);
-	std::string result2 = myns::regex_replace(input, re2, std::string("[${word}]"));
+	sregex re2(pattern, rex::regex_constants::oniguruma);
+	std::string result2 = rex::regex_replace(input, re2, std::string("[${word}]"));
 	assert(result2 == "[hello]");
 	std::cout << "  ${name} in oniguruma mode: '" << result2 << "'" << std::endl;
 	

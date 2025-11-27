@@ -8,11 +8,11 @@ void test_nosubs() {
 	// Test 1: nosubs flag should prevent capturing submatches
 	{
 		std::string pattern = R"((\w+)\s+(\w+))";
-		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::nosubs);
+		rex::regex re(pattern.c_str(), pattern.length(), rex::regex_constants::nosubs);
 		std::string text = "hello world";
-		myns::smatch m;
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found && "Should find a match");
 		// With nosubs, no sub-expressions are captured
 		// onigpp: m.empty() == true, std::regex: m.size() == 1 (only full match)
@@ -23,11 +23,11 @@ void test_nosubs() {
 	// Test 2: Without nosubs, submatches should be captured
 	{
 		std::string pattern = R"((\w+)\s+(\w+))";
-		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::ECMAScript);
+		rex::regex re(pattern.c_str(), pattern.length(), rex::regex_constants::ECMAScript);
 		std::string text = "hello world";
-		myns::smatch m;
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found && "Should find a match");
 		assert(!m.empty() && "Match results should not be empty without nosubs");
 		assert(m.size() == 3 && "Should have 3 matches (full match + 2 groups)");
@@ -40,11 +40,11 @@ void test_nosubs() {
 	// Test 3: nosubs with regex_match
 	{
 		std::string pattern = R"((\d+))";
-		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::nosubs);
+		rex::regex re(pattern.c_str(), pattern.length(), rex::regex_constants::nosubs);
 		std::string text = "123";
-		myns::smatch m;
+		rex::smatch m;
 		
-		bool matched = myns::regex_match(text, m, re);
+		bool matched = rex::regex_match(text, m, re);
 		assert(matched && "Should match");
 		// With nosubs, no sub-expressions are captured
 		// onigpp: m.empty() == true, std::regex: m.size() == 1 (only full match)
@@ -55,11 +55,11 @@ void test_nosubs() {
 	// Test 4: Without nosubs in regex_match
 	{
 		std::string pattern = R"((\d+))";
-		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::ECMAScript);
+		rex::regex re(pattern.c_str(), pattern.length(), rex::regex_constants::ECMAScript);
 		std::string text = "123";
-		myns::smatch m;
+		rex::smatch m;
 		
-		bool matched = myns::regex_match(text, m, re);
+		bool matched = rex::regex_match(text, m, re);
 		assert(matched && "Should match");
 		assert(!m.empty() && "Match results should not be empty");
 		assert(m.size() == 2 && "Should have 2 matches (full match + 1 group)");
@@ -78,11 +78,11 @@ void test_collate() {
 	// This is a basic test to ensure the flag doesn't cause errors
 	{
 		std::string pattern = "[a-z]+";
-		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::collate);
+		rex::regex re(pattern.c_str(), pattern.length(), rex::regex_constants::collate);
 		std::string text = "hello";
-		myns::smatch m;
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found && "Should find a match with collate flag");
 		std::cout << "  Test 1 passed: collate flag works without errors\n";
 	}
@@ -90,11 +90,11 @@ void test_collate() {
 	// Test 2: Without collate, pattern should still work
 	{
 		std::string pattern = "[a-z]+";
-		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::ECMAScript);
+		rex::regex re(pattern.c_str(), pattern.length(), rex::regex_constants::ECMAScript);
 		std::string text = "hello";
-		myns::smatch m;
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found && "Should find a match without collate flag");
 		std::cout << "  Test 2 passed: pattern works without collate flag\n";
 	}
@@ -105,14 +105,14 @@ void test_collate() {
 		try {
 			// Try to imbue with the user's default locale
 			std::string pattern = "[[:lower:]]+";
-			myns::regex re;
+			rex::regex re;
 			re.imbue(std::locale(""));  // User's default locale
-			re.assign(pattern, myns::regex_constants::collate);
+			re.assign(pattern, rex::regex_constants::collate);
 			
 			std::string text = "hello WORLD";
-			myns::smatch m;
+			rex::smatch m;
 			
-			bool found = myns::regex_search(text, m, re);
+			bool found = rex::regex_search(text, m, re);
 			assert(found && "Should find lowercase match with [:lower:] and locale");
 			assert(m[0].str() == "hello" && "Should match only lowercase text");
 			std::cout << "  Test 3 passed: POSIX class [:lower:] with locale expansion works\n";
@@ -125,11 +125,11 @@ void test_collate() {
 	// Test 4: POSIX character class [:digit:] with collate
 	{
 		std::string pattern = "[[:digit:]]+";
-		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::collate);
+		rex::regex re(pattern.c_str(), pattern.length(), rex::regex_constants::collate);
 		std::string text = "abc123def";
-		myns::smatch m;
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found && "Should find digits with [:digit:]");
 		assert(m[0].str() == "123" && "Should match digit sequence");
 		std::cout << "  Test 4 passed: POSIX class [:digit:] works\n";
@@ -138,11 +138,11 @@ void test_collate() {
 	// Test 5: POSIX character class [:graph:] with collate
 	{
 		std::string pattern = "[[:graph:]]+";
-		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::collate);
+		rex::regex re(pattern.c_str(), pattern.length(), rex::regex_constants::collate);
 		std::string text = "abc 123";  // space is not in [:graph:]
-		myns::smatch m;
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found && "Should find graphical characters with [:graph:]");
 		assert(m[0].str() == "abc" && "Should match graphical characters before space");
 		std::cout << "  Test 5 passed: POSIX class [:graph:] works\n";
@@ -154,26 +154,26 @@ void test_collate() {
 		try {
 			// Test with [:lower:] - should match French lowercase letters
 			std::string pattern_lower = "[[:lower:]]+";
-			myns::regex re_lower;
+			rex::regex re_lower;
 			re_lower.imbue(std::locale(""));  // User's default locale
-			re_lower.assign(pattern_lower, myns::regex_constants::collate);
+			re_lower.assign(pattern_lower, rex::regex_constants::collate);
 			
 			// Text with French accented characters
 			std::string text_fr = "café";  // Contains 'é' (U+00E9)
-			myns::smatch m;
+			rex::smatch m;
 			
-			bool found = myns::regex_search(text_fr, m, re_lower);
+			bool found = rex::regex_search(text_fr, m, re_lower);
 			// Should match at least "caf" and possibly "café" depending on locale
 			assert(found && "Should find lowercase match with French text");
 			
 			// Test with [:alpha:] - should match all French letters
 			std::string pattern_alpha = "[[:alpha:]]+";
-			myns::regex re_alpha;
+			rex::regex re_alpha;
 			re_alpha.imbue(std::locale(""));
-			re_alpha.assign(pattern_alpha, myns::regex_constants::collate);
+			re_alpha.assign(pattern_alpha, rex::regex_constants::collate);
 			
 			std::string text_fr2 = "Éléphant";  // Mixed case French
-			bool found_alpha = myns::regex_search(text_fr2, m, re_alpha);
+			bool found_alpha = rex::regex_search(text_fr2, m, re_alpha);
 			assert(found_alpha && "Should find alphabetic match with French accented text");
 			
 			std::cout << "  Test 6 passed: French-accented characters work with locale\n";
@@ -192,11 +192,11 @@ void test_optimize() {
 	// Test 1: optimize flag should not cause errors (it's a no-op)
 	{
 		std::string pattern = R"(\d+)";
-		myns::regex re(pattern.c_str(), pattern.length(), myns::regex_constants::optimize);
+		rex::regex re(pattern.c_str(), pattern.length(), rex::regex_constants::optimize);
 		std::string text = "123";
-		myns::smatch m;
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found && "Should find a match with optimize flag");
 		std::cout << "  Test 1 passed: optimize flag (no-op) works\n";
 	}
@@ -210,12 +210,12 @@ void test_combined_flags() {
 	// Test: nosubs + collate + optimize
 	{
 		std::string pattern = R"((\w+))";
-		myns::regex re(pattern.c_str(), pattern.length(), 
-		         myns::regex_constants::nosubs | myns::regex_constants::collate | myns::regex_constants::optimize);
+		rex::regex re(pattern.c_str(), pattern.length(), 
+		         rex::regex_constants::nosubs | rex::regex_constants::collate | rex::regex_constants::optimize);
 		std::string text = "hello";
-		myns::smatch m;
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found && "Should find a match");
 		// With nosubs, no sub-expressions are captured
 		// onigpp: m.empty() == true, std::regex: m.size() == 1 (only full match)

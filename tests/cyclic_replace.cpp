@@ -8,24 +8,24 @@
 struct PatternKey {
 	std::wstring pattern;
 	bool is_regex;
-	myns::wregex compiled_regex;
+	rex::wregex compiled_regex;
 
 	// For string literals
 	static PatternKey Literal(const std::wstring& s) {
-		return {s, false, myns::wregex()};
+		return {s, false, rex::wregex()};
 	}
 
 	// For regular expressions
 	static PatternKey Regex(const std::wstring& s) {
-		return {s, true, myns::wregex(s)};
+		return {s, true, rex::wregex(s)};
 	}
 };
 
 // Function equivalent to Python's re.escape (wide character version)
 std::wstring regex_escape(const std::wstring& s) {
 	// Use wide string literal L"..."
-	static const myns::wregex special_chars(LR"([.^$|()\[\]{}*+?\\])");
-	return myns::regex_replace(s, special_chars, LR"(\$&)");
+	static const rex::wregex special_chars(LR"([.^$|()\[\]{}*+?\\])");
+	return rex::regex_replace(s, special_chars, LR"(\$&)");
 }
 
 /**
@@ -60,18 +60,18 @@ std::wstring multi_replace(const std::wstring& input, const std::vector<std::pai
 		current_group_idx += 1 + internal_groups;
 	}
 
-	myns::wregex catch_all_re(combined_pattern_str);
+	rex::wregex catch_all_re(combined_pattern_str);
 
 	// 2. Perform search and replace using iterators
 	std::wstring result;
 	std::wstring::const_iterator last_pos = input.begin();
 
-	// Use myns::regex_iterator<std::wstring::const_iterator, wchar_t>
-	auto begin = myns::regex_iterator<std::wstring::const_iterator, wchar_t>(input.begin(), input.end(), catch_all_re);
-	auto end = myns::regex_iterator<std::wstring::const_iterator, wchar_t>();
+	// Use rex::regex_iterator<std::wstring::const_iterator, wchar_t>
+	auto begin = rex::regex_iterator<std::wstring::const_iterator, wchar_t>(input.begin(), input.end(), catch_all_re);
+	auto end = rex::regex_iterator<std::wstring::const_iterator, wchar_t>();
 
 	for (auto i = begin; i != end; ++i) {
-		myns::match_results<std::wstring::const_iterator> match = *i;
+		rex::match_results<std::wstring::const_iterator> match = *i;
 
 		result.append(last_pos, match[0].first);
 		last_pos = match[0].second;

@@ -13,7 +13,7 @@ int main() {
 
 	// Test 1: Default-constructed match_results should not be ready
 	{
-		myns::smatch m;
+		rex::smatch m;
 		#ifndef USE_STD_FOR_TESTS
 		assert(!m.ready());
 		std::cout << "  Default-constructed smatch ready() = false ✓\n";
@@ -28,10 +28,10 @@ int main() {
 	// Test 2: After successful regex_search, match_results should be ready
 	{
 		std::string text = "Hello World";
-		myns::regex re("World");
-		myns::smatch m;
+		rex::regex re("World");
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.ready());
 		std::cout << "  smatch ready() after successful search = true ✓\n";
@@ -41,10 +41,10 @@ int main() {
 	// Test 3: After unsuccessful regex_search, match_results should still be ready
 	{
 		std::string text = "Hello World";
-		myns::regex re("NotFound");
-		myns::smatch m;
+		rex::regex re("NotFound");
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(!found);
 		assert(m.ready());
 		std::cout << "  smatch ready() after unsuccessful search = true ✓\n";
@@ -54,10 +54,10 @@ int main() {
 	// Test 4: After successful regex_match, match_results should be ready
 	{
 		std::string text = "Hello";
-		myns::regex re("Hello");
-		myns::smatch m;
+		rex::regex re("Hello");
+		rex::smatch m;
 		
-		bool found = myns::regex_match(text, m, re);
+		bool found = rex::regex_match(text, m, re);
 		assert(found);
 		assert(m.ready());
 		std::cout << "  smatch ready() after successful match = true ✓\n";
@@ -67,10 +67,10 @@ int main() {
 	// Test 5: After unsuccessful regex_match, match_results should still be ready
 	{
 		std::string text = "Hello World";
-		myns::regex re("Hello");  // Pattern doesn't match entire string
-		myns::smatch m;
+		rex::regex re("Hello");  // Pattern doesn't match entire string
+		rex::smatch m;
 		
-		bool found = myns::regex_match(text, m, re);
+		bool found = rex::regex_match(text, m, re);
 		assert(!found);
 		assert(m.ready());
 		std::cout << "  smatch ready() after unsuccessful match = true ✓\n";
@@ -80,14 +80,14 @@ int main() {
 	// Test 6: Test with cmatch (pointer-based)
 	{
 		const char* text = "Test String";
-		myns::regex re("String");
-		myns::cmatch m;
+		rex::regex re("String");
+		rex::cmatch m;
 		
 		#ifndef USE_STD_FOR_TESTS
 		assert(!m.ready());
 		#endif
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.ready());
 		std::cout << "  cmatch ready() after search = true ✓\n";
@@ -97,14 +97,14 @@ int main() {
 	// Test 7: Test with wsmatch (wide string)
 	{
 		std::wstring text = L"Wide Test";
-		myns::wregex re(L"Test");
-		myns::wsmatch m;
+		rex::wregex re(L"Test");
+		rex::wsmatch m;
 		
 		#ifndef USE_STD_FOR_TESTS
 		assert(!m.ready());
 		#endif
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.ready());
 		std::cout << "  wsmatch ready() after search = true ✓\n";
@@ -114,7 +114,7 @@ int main() {
 	// Test 8: Verify ready() is noexcept (onigpp-specific, std::match_results::ready() is not noexcept)
 	#ifndef USE_STD_FOR_TESTS
 	{
-		myns::smatch m;
+		rex::smatch m;
 		static_assert(noexcept(m.ready()), "ready() must be noexcept");
 		std::cout << "  ready() is noexcept ✓\n";
 		std::cout << "✅ noexcept test passed\n";
@@ -124,10 +124,10 @@ int main() {
 	// Test 9: Test that empty() and ready() have different semantics
 	{
 		std::string text = "Test";
-		myns::regex re("NotFound");
-		myns::smatch m;
+		rex::regex re("NotFound");
+		rex::smatch m;
 		
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(!found);
 		// After unsuccessful search, match_results is ready but empty
 		assert(m.ready());

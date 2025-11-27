@@ -12,7 +12,7 @@
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const myns::regex_error& e) { \
+	} catch (const rex::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -30,10 +30,10 @@ void TestPositionLengthMatched() {
 	TEST_CASE("TestPositionLengthMatched")
 	
 	const char* text = "Hello World 123";
-	myns::regex re("World (\\d+)");
-	myns::cmatch m;
+	rex::regex re("World (\\d+)");
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() == 2);
 	
@@ -68,10 +68,10 @@ void TestPositionLengthUnmatched() {
 	
 	// Pattern with optional capture group
 	const char* text = "Hello";
-	myns::regex re("Hello(\\d+)?");
-	myns::cmatch m;
+	rex::regex re("Hello(\\d+)?");
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() == 2);
 	assert(m[0].matched == true);
@@ -114,10 +114,10 @@ void TestPositionLengthOutOfRange() {
 	TEST_CASE("TestPositionLengthOutOfRange")
 	
 	const char* text = "Test";
-	myns::regex re("Test");
-	myns::cmatch m;
+	rex::regex re("Test");
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() == 1); // Only full match, no capture groups
 	
@@ -147,10 +147,10 @@ void TestPrefixSuffixRegular() {
 	TEST_CASE("TestPrefixSuffixRegular")
 	
 	const char* text = "Hello World Test";
-	myns::regex re("World");
-	myns::cmatch m;
+	rex::regex re("World");
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	
 	// Test prefix() - should be "Hello "
@@ -175,10 +175,10 @@ void TestPrefixSuffixEmpty() {
 	TEST_CASE("TestPrefixSuffixEmpty")
 	
 	const char* text = "Test";
-	myns::regex re("NoMatch");
-	myns::cmatch m;
+	rex::regex re("NoMatch");
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(!found);
 	assert(m.empty());
 	
@@ -204,10 +204,10 @@ void TestSubMatchStr() {
 	TEST_CASE("TestSubMatchStr")
 	
 	const char* text = "Test 123";
-	myns::regex re("Test (\\d+)?(\\w+)?");
-	myns::cmatch m;
+	rex::regex re("Test (\\d+)?(\\w+)?");
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() >= 2);
 	
@@ -241,10 +241,10 @@ void TestSubMatchImplicitConversion() {
 	TEST_CASE("TestSubMatchImplicitConversion")
 	
 	const char* text = "Convert 789";
-	myns::regex re("Convert (\\d+)");
-	myns::cmatch m;
+	rex::regex re("Convert (\\d+)");
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	
 	// Test implicit conversion for matched sub_match
@@ -268,10 +268,10 @@ void TestNosubsSearch() {
 	const char* text = "hello world";
 	// Use explicit constructor with length to avoid ambiguity
 	const char* pattern = "(hello) (world)";
-	myns::regex re(pattern, std::strlen(pattern), myns::regex_constants::nosubs);
-	myns::cmatch m;
+	rex::regex re(pattern, std::strlen(pattern), rex::regex_constants::nosubs);
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	
 	// With nosubs, match_results should have size 1 (full match only)
@@ -311,10 +311,10 @@ void TestNosubsMatch() {
 	const char* text = "abc";
 	// Use explicit constructor with length to avoid ambiguity
 	const char* pattern = "(a)(b)(c)";
-	myns::regex re(pattern, std::strlen(pattern), myns::regex_constants::nosubs);
-	myns::cmatch m;
+	rex::regex re(pattern, std::strlen(pattern), rex::regex_constants::nosubs);
+	rex::cmatch m;
 	
-	bool matched = myns::regex_match(text, m, re);
+	bool matched = rex::regex_match(text, m, re);
 	assert(matched);
 	
 	// With nosubs, match_results should have size 1
@@ -339,11 +339,11 @@ void TestNonRandomAccessIterators() {
 	std::string text_str = "find 456 here";
 	text_list.assign(text_str.begin(), text_str.end());
 	
-	myns::regex re("find (\\d+) here");
-	myns::match_results<std::list<char>::const_iterator> m;
+	rex::regex re("find (\\d+) here");
+	rex::match_results<std::list<char>::const_iterator> m;
 	
 	// Use const_iterator consistently
-	bool found = myns::regex_search(text_list.cbegin(), text_list.cend(), m, re);
+	bool found = rex::regex_search(text_list.cbegin(), text_list.cend(), m, re);
 	assert(found);
 	assert(m.size() == 2);
 	
@@ -384,24 +384,24 @@ void TestNposValue() {
 #ifndef USE_STD_FOR_TESTS
 	// npos is an onigpp extension (not in std::regex until C++23)
 	// Verify npos is -1 (signed difference_type)
-	assert(myns::cmatch::npos == -1);
+	assert(rex::cmatch::npos == -1);
 	std::cout << "  cmatch::npos == -1 ✓\n";
 	
-	assert(myns::smatch::npos == -1);
+	assert(rex::smatch::npos == -1);
 	std::cout << "  smatch::npos == -1 ✓\n";
 	
 	// Verify npos is of type difference_type
-	static_assert(std::is_same<decltype(myns::cmatch::npos), 
-	              const myns::cmatch::difference_type>::value,
+	static_assert(std::is_same<decltype(rex::cmatch::npos), 
+	              const rex::cmatch::difference_type>::value,
 	              "npos should be of type difference_type");
 	std::cout << "  npos type is difference_type ✓\n";
 #else
 	// When using std::regex, test that length() returns 0 for unmatched
 	// (std::regex doesn't have npos member until C++23)
 	const char* text = "test";
-	myns::regex re("test(\\d+)?");
-	myns::cmatch m;
-	myns::regex_search(text, m, re);
+	rex::regex re("test(\\d+)?");
+	rex::cmatch m;
+	rex::regex_search(text, m, re);
 	assert(m.length(1) == 0);
 	assert(!m[1].matched);
 	std::cout << "  length() returns 0 for unmatched (std::regex) ✓\n";
@@ -417,10 +417,10 @@ void TestMultipleUnmatchedGroups() {
 	TEST_CASE("TestMultipleUnmatchedGroups")
 	
 	const char* text = "test";
-	myns::regex re("(t)(e)(s)(t)(\\d+)?(\\w+)?");
-	myns::cmatch m;
+	rex::regex re("(t)(e)(s)(t)(\\d+)?(\\w+)?");
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() >= 6);
 	
@@ -466,10 +466,10 @@ void TestEmptyMatchAtBeginning() {
 	TEST_CASE("TestEmptyMatchAtBeginning")
 	
 	const char* text = "test";
-	myns::regex re("^"); // Matches empty string at beginning
-	myns::cmatch m;
+	rex::regex re("^"); // Matches empty string at beginning
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	assert(m[0].matched == true);
 	
@@ -489,10 +489,10 @@ void TestSubMatchLength() {
 	TEST_CASE("TestSubMatchLength")
 	
 	const char* text = "length test";
-	myns::regex re("(length) (test)");
-	myns::cmatch m;
+	rex::regex re("(length) (test)");
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	
 	// Test that sub_match::length() matches str().length() for matched groups
@@ -518,10 +518,10 @@ void TestUnmatchedSubMatchLength() {
 	TEST_CASE("TestUnmatchedSubMatchLength")
 	
 	const char* text = "test";
-	myns::regex re("test(\\d+)?");
-	myns::cmatch m;
+	rex::regex re("test(\\d+)?");
+	rex::cmatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() == 2);
 	assert(m[1].matched == false);

@@ -14,7 +14,7 @@
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const myns::regex_error& e) { \
+	} catch (const rex::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -38,7 +38,7 @@ void TestConvertingConstructor() {
 	const char* end = str + 5; // "hello"
 	
 	// Create a sub_match with const char* iterators
-	myns::csub_match csm;
+	rex::csub_match csm;
 	csm.first = start;
 	csm.second = end;
 	csm.matched = true;
@@ -46,19 +46,19 @@ void TestConvertingConstructor() {
 	assert(csm.matched == true);
 	
 	// Test copy construction (same type)
-	myns::csub_match csm_copy(csm);
+	rex::csub_match csm_copy(csm);
 	assert(csm_copy.matched == true);
 	assert(csm_copy.str() == "hello");
 	
 	// Test converting unmatched sub_match
-	myns::csub_match csm_unmatched;
+	rex::csub_match csm_unmatched;
 	csm_unmatched.first = start;
 	csm_unmatched.second = start;
 	csm_unmatched.matched = false;
 	assert(csm_unmatched.matched == false);
 	assert(csm_unmatched.str() == "");
 	
-	myns::csub_match csm_unmatched_copy(csm_unmatched);
+	rex::csub_match csm_unmatched_copy(csm_unmatched);
 	assert(csm_unmatched_copy.matched == false);
 	assert(csm_unmatched_copy.str() == "");
 
@@ -77,7 +77,7 @@ void TestDefaultIsMatched() {
 	const char* end = str + 4;
 	
 	// Test with matched flag set to true
-	myns::csub_match csm;
+	rex::csub_match csm;
 	csm.first = start;
 	csm.second = end;
 	csm.matched = true;
@@ -85,7 +85,7 @@ void TestDefaultIsMatched() {
 	assert(csm.str() == "test");
 	
 	// Explicitly set to false
-	myns::csub_match csm_false;
+	rex::csub_match csm_false;
 	csm_false.first = start;
 	csm_false.second = end;
 	csm_false.matched = false;
@@ -94,7 +94,7 @@ void TestDefaultIsMatched() {
 	assert(csm_false.str() == "");
 	
 	// Explicitly set to true
-	myns::csub_match csm_true;
+	rex::csub_match csm_true;
 	csm_true.first = start;
 	csm_true.second = end;
 	csm_true.matched = true;
@@ -115,7 +115,7 @@ void TestImplicitStringConversion() {
 	const char* start = str;
 	const char* end = str + 7;
 	
-	myns::csub_match csm;
+	rex::csub_match csm;
 	csm.first = start;
 	csm.second = end;
 	csm.matched = true;
@@ -126,7 +126,7 @@ void TestImplicitStringConversion() {
 	
 	// Test with string iterator
 	std::string s = "testing";
-	myns::ssub_match ssm;
+	rex::ssub_match ssm;
 	ssm.first = s.begin();
 	ssm.second = s.begin() + 4;
 	ssm.matched = true;
@@ -152,7 +152,7 @@ void TestLengthHelper() {
 	const char* start = str;
 	const char* end = str + 5; // "hello"
 	
-	myns::csub_match csm;
+	rex::csub_match csm;
 	csm.first = start;
 	csm.second = end;
 	csm.matched = true;
@@ -160,7 +160,7 @@ void TestLengthHelper() {
 	assert(csm.str() == "hello");
 	
 	// Test with empty match
-	myns::csub_match csm_empty;
+	rex::csub_match csm_empty;
 	csm_empty.first = start;
 	csm_empty.second = start;
 	csm_empty.matched = true;
@@ -169,7 +169,7 @@ void TestLengthHelper() {
 	
 	// Test with string iterator
 	std::string s = "testing";
-	myns::ssub_match ssm;
+	rex::ssub_match ssm;
 	ssm.first = s.begin();
 	ssm.second = s.begin() + 7;
 	ssm.matched = true;
@@ -191,10 +191,10 @@ void TestIntegrationWithRegex() {
 	TEST_CASE("TestIntegrationWithRegex")
 
 	std::string text = "User ID: u123";
-	myns::regex re("ID: ([a-z0-9]+)");
-	myns::smatch m;
+	rex::regex re("ID: ([a-z0-9]+)");
+	rex::smatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() == 2);
 	
@@ -209,7 +209,7 @@ void TestIntegrationWithRegex() {
 	assert(captured == "u123");
 	
 	// Test that default constructor still sets matched to false
-	myns::ssub_match default_sm;
+	rex::ssub_match default_sm;
 	assert(default_sm.matched == false);
 
 	TEST_CASE_END("TestIntegrationWithRegex")
@@ -226,17 +226,17 @@ void TestCompareMethod() {
 	const char* str2 = "abd";
 	const char* str3 = "abc";
 
-	myns::csub_match sm1;
+	rex::csub_match sm1;
 	sm1.first = str1;
 	sm1.second = str1 + 3; // "abc"
 	sm1.matched = true;
 
-	myns::csub_match sm2;
+	rex::csub_match sm2;
 	sm2.first = str2;
 	sm2.second = str2 + 3; // "abd"
 	sm2.matched = true;
 
-	myns::csub_match sm3;
+	rex::csub_match sm3;
 	sm3.first = str3;
 	sm3.second = str3 + 3; // "abc"
 	sm3.matched = true;
@@ -258,7 +258,7 @@ void TestCompareMethod() {
 	assert(sm1.compare("abb") > 0);
 	
 	// Test unmatched sub_match (should compare as empty string)
-	myns::csub_match sm_unmatched;
+	rex::csub_match sm_unmatched;
 	sm_unmatched.first = str1;
 	sm_unmatched.second = str1 + 3;
 	sm_unmatched.matched = false;
@@ -279,17 +279,17 @@ void TestSubMatchComparisonOperators() {
 	const char* str2 = "banana";
 	const char* str3 = "apple";
 
-	myns::csub_match sm1;
+	rex::csub_match sm1;
 	sm1.first = str1;
 	sm1.second = str1 + 5; // "apple"
 	sm1.matched = true;
 
-	myns::csub_match sm2;
+	rex::csub_match sm2;
 	sm2.first = str2;
 	sm2.second = str2 + 6; // "banana"
 	sm2.matched = true;
 
-	myns::csub_match sm3;
+	rex::csub_match sm3;
 	sm3.first = str3;
 	sm3.second = str3 + 5; // "apple"
 	sm3.matched = true;
@@ -328,7 +328,7 @@ void TestSubMatchStringComparison() {
 	TEST_CASE("TestSubMatchStringComparison")
 
 	const char* str = "hello";
-	myns::csub_match sm;
+	rex::csub_match sm;
 	sm.first = str;
 	sm.second = str + 5; // "hello"
 	sm.matched = true;
@@ -372,7 +372,7 @@ void TestSubMatchCStringComparison() {
 	TEST_CASE("TestSubMatchCStringComparison")
 
 	const char* str = "test";
-	myns::csub_match sm;
+	rex::csub_match sm;
 	sm.first = str;
 	sm.second = str + 4; // "test"
 	sm.matched = true;
@@ -412,7 +412,7 @@ void TestStreamOutputOperator() {
 	TEST_CASE("TestStreamOutputOperator")
 
 	const char* str = "output test";
-	myns::csub_match sm;
+	rex::csub_match sm;
 	sm.first = str;
 	sm.second = str + 11; // "output test"
 	sm.matched = true;
@@ -422,7 +422,7 @@ void TestStreamOutputOperator() {
 	assert(oss.str() == "output test");
 	
 	// Test with unmatched sub_match (should output empty string)
-	myns::csub_match sm_unmatched;
+	rex::csub_match sm_unmatched;
 	sm_unmatched.first = str;
 	sm_unmatched.second = str + 5;
 	sm_unmatched.matched = false;
@@ -433,7 +433,7 @@ void TestStreamOutputOperator() {
 	
 	// Test with string iterator
 	std::string s = "string iterator test";
-	myns::ssub_match ssm;
+	rex::ssub_match ssm;
 	ssm.first = s.begin();
 	ssm.second = s.begin() + 6; // "string"
 	ssm.matched = true;
@@ -453,10 +453,10 @@ void TestComparisonWithRegexResults() {
 	TEST_CASE("TestComparisonWithRegexResults")
 
 	std::string text = "The quick brown fox jumps over the lazy dog";
-	myns::regex re("(\\w+) (\\w+) (\\w+)");
-	myns::smatch m;
+	rex::regex re("(\\w+) (\\w+) (\\w+)");
+	rex::smatch m;
 	
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() >= 4);
 	

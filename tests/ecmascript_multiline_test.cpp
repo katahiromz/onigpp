@@ -3,8 +3,8 @@
 // License: BSD-2-Clause
 #include "tests.h"
 
-using sregex = myns::basic_regex<char>;
-using smatch = myns::match_results<std::string::const_iterator>;
+using sregex = rex::basic_regex<char>;
+using smatch = rex::match_results<std::string::const_iterator>;
 
 // Helper to print test case start and result
 #define TEST_CASE(name) \
@@ -13,7 +13,7 @@ using smatch = myns::match_results<std::string::const_iterator>;
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const myns::regex_error& e) { \
+	} catch (const rex::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -32,11 +32,11 @@ void TestCaretMatchesLineStartLF() {
 	// Test pattern ^line matches at start of string and after \n
 	std::string text = "line1\nline2\nline3";
 	std::string pattern = "^line\\d";
-	sregex re(pattern, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
+	sregex re(pattern, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
 	
 	// Find all matches
-	auto begin = myns::sregex_iterator(text.begin(), text.end(), re);
-	auto end = myns::sregex_iterator();
+	auto begin = rex::sregex_iterator(text.begin(), text.end(), re);
+	auto end = rex::sregex_iterator();
 	
 	int count = 0;
 	std::vector<std::string> matches;
@@ -63,11 +63,11 @@ void TestDollarMatchesLineEndLF() {
 	// Test pattern line$ matches at end of each line
 	std::string text = "line1\nline2\nline3";
 	std::string pattern = "line\\d$";
-	sregex re(pattern, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
+	sregex re(pattern, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
 	
 	// Find all matches
-	auto begin = myns::sregex_iterator(text.begin(), text.end(), re);
-	auto end = myns::sregex_iterator();
+	auto begin = rex::sregex_iterator(text.begin(), text.end(), re);
+	auto end = rex::sregex_iterator();
 	
 	int count = 0;
 	std::vector<std::string> matches;
@@ -96,17 +96,17 @@ void TestAnchorsWithCRLF() {
 	
 	// Test ^
 	std::string pattern1 = "^line\\d";
-	sregex re1(pattern1, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
-	auto begin1 = myns::sregex_iterator(text.begin(), text.end(), re1);
-	auto end1 = myns::sregex_iterator();
+	sregex re1(pattern1, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
+	auto begin1 = rex::sregex_iterator(text.begin(), text.end(), re1);
+	auto end1 = rex::sregex_iterator();
 	int count1 = std::distance(begin1, end1);
 	assert(count1 == 3);
 	
 	// Test $
 	std::string pattern2 = "line\\d$";
-	sregex re2(pattern2, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
-	auto begin2 = myns::sregex_iterator(text.begin(), text.end(), re2);
-	auto end2 = myns::sregex_iterator();
+	sregex re2(pattern2, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
+	auto begin2 = rex::sregex_iterator(text.begin(), text.end(), re2);
+	auto end2 = rex::sregex_iterator();
 	int count2 = std::distance(begin2, end2);
 	assert(count2 == 3);
 #endif
@@ -124,17 +124,17 @@ void TestAnchorsWithCR() {
 	
 	// Test ^
 	std::string pattern1 = "^line\\d";
-	sregex re1(pattern1, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
-	auto begin1 = myns::sregex_iterator(text.begin(), text.end(), re1);
-	auto end1 = myns::sregex_iterator();
+	sregex re1(pattern1, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
+	auto begin1 = rex::sregex_iterator(text.begin(), text.end(), re1);
+	auto end1 = rex::sregex_iterator();
 	int count1 = std::distance(begin1, end1);
 	assert(count1 == 3);
 	
 	// Test $
 	std::string pattern2 = "line\\d$";
-	sregex re2(pattern2, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
-	auto begin2 = myns::sregex_iterator(text.begin(), text.end(), re2);
-	auto end2 = myns::sregex_iterator();
+	sregex re2(pattern2, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
+	auto begin2 = rex::sregex_iterator(text.begin(), text.end(), re2);
+	auto end2 = rex::sregex_iterator();
 	int count2 = std::distance(begin2, end2);
 	assert(count2 == 3);
 #endif
@@ -154,17 +154,17 @@ void TestAnchorsWithUnicodeSeparators() {
 	
 	// Test ^
 	std::string pattern1 = "^line\\d";
-	sregex re1(pattern1, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
-	auto begin1 = myns::sregex_iterator(text.begin(), text.end(), re1);
-	auto end1 = myns::sregex_iterator();
+	sregex re1(pattern1, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
+	auto begin1 = rex::sregex_iterator(text.begin(), text.end(), re1);
+	auto end1 = rex::sregex_iterator();
 	int count1 = std::distance(begin1, end1);
 	assert(count1 == 3);
 	
 	// Test $
 	std::string pattern2 = "line\\d$";
-	sregex re2(pattern2, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
-	auto begin2 = myns::sregex_iterator(text.begin(), text.end(), re2);
-	auto end2 = myns::sregex_iterator();
+	sregex re2(pattern2, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
+	auto begin2 = rex::sregex_iterator(text.begin(), text.end(), re2);
+	auto end2 = rex::sregex_iterator();
 	int count2 = std::distance(begin2, end2);
 	assert(count2 == 3);
 #endif
@@ -180,11 +180,11 @@ void TestDotDoesNotMatchNewlineWithMultiline() {
 	// Ensure dot still doesn't match newline when multiline is enabled
 	std::string text = "abc\ndef";
 	std::string pattern = "a.*f";
-	sregex re(pattern, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
+	sregex re(pattern, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
 	smatch m;
 	
 	// Should NOT match across newline
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(!found);
 #endif
 	
@@ -200,24 +200,24 @@ void TestAnchorsInCharacterClasses() {
 	// Pattern [^ab]c means: "any char except 'a' or 'b', followed by 'c'"
 	std::string text1 = "xc";
 	std::string pattern1 = "[^ab]c";
-	sregex re1(pattern1, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
+	sregex re1(pattern1, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
 	smatch m1;
-	bool found1 = myns::regex_search(text1, m1, re1);
+	bool found1 = rex::regex_search(text1, m1, re1);
 	assert(found1);
 	assert(m1[0].str() == "xc");
 	
 	// Test that the same pattern doesn't match when first char is 'a' or 'b'
 	std::string text1b = "ac";
 	smatch m1b;
-	bool found1b = myns::regex_search(text1b, m1b, re1);
+	bool found1b = rex::regex_search(text1b, m1b, re1);
 	assert(!found1b);
 	
 	// $ inside character class should be a literal character, not end anchor
 	std::string text2 = "ab$";
 	std::string pattern2 = "ab[$]";
-	sregex re2(pattern2, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
+	sregex re2(pattern2, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
 	smatch m2;
-	bool found2 = myns::regex_search(text2, m2, re2);
+	bool found2 = rex::regex_search(text2, m2, re2);
 	assert(found2);
 	assert(m2[0].str() == "ab$");
 #endif
@@ -233,18 +233,18 @@ void TestEscapedAnchors() {
 	// \^ should match literal ^
 	std::string text1 = "^test";
 	std::string pattern1 = "\\^test";
-	sregex re1(pattern1, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
+	sregex re1(pattern1, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
 	smatch m1;
-	bool found1 = myns::regex_search(text1, m1, re1);
+	bool found1 = rex::regex_search(text1, m1, re1);
 	assert(found1);
 	assert(m1[0].str() == "^test");
 	
 	// \$ should match literal $
 	std::string text2 = "test$";
 	std::string pattern2 = "test\\$";
-	sregex re2(pattern2, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
+	sregex re2(pattern2, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
 	smatch m2;
-	bool found2 = myns::regex_search(text2, m2, re2);
+	bool found2 = rex::regex_search(text2, m2, re2);
 	assert(found2);
 	assert(m2[0].str() == "test$");
 #endif
@@ -260,10 +260,10 @@ void TestComplexMultilinePattern() {
 	// Complex pattern with multiple anchors
 	std::string text = "Name: John\nAge: 30\nCity: NYC";
 	std::string pattern = "^[A-Z][a-z]+:";
-	sregex re(pattern, myns::regex_constants::ECMAScript | myns::regex_constants::multiline);
+	sregex re(pattern, rex::regex_constants::ECMAScript | rex::regex_constants::multiline);
 	
-	auto begin = myns::sregex_iterator(text.begin(), text.end(), re);
-	auto end = myns::sregex_iterator();
+	auto begin = rex::sregex_iterator(text.begin(), text.end(), re);
+	auto end = rex::sregex_iterator();
 	int count = std::distance(begin, end);
 	
 	// Should match "Name:", "Age:", "City:" at the start of each line
@@ -281,10 +281,10 @@ void TestWithoutMultilineFlag() {
 	// Without multiline, ^ should only match at string start
 	std::string text = "line1\nline2\nline3";
 	std::string pattern = "^line\\d";
-	sregex re(pattern, myns::regex_constants::ECMAScript); // No multiline flag
+	sregex re(pattern, rex::regex_constants::ECMAScript); // No multiline flag
 	
-	auto begin = myns::sregex_iterator(text.begin(), text.end(), re);
-	auto end = myns::sregex_iterator();
+	auto begin = rex::sregex_iterator(text.begin(), text.end(), re);
+	auto end = rex::sregex_iterator();
 	int count = std::distance(begin, end);
 	
 	// Should only match "line1" at string start

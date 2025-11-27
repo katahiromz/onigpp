@@ -9,8 +9,8 @@
 
 #include "tests.h"
 
-using sregex = myns::basic_regex<char>;
-using smatch = myns::match_results<std::string::const_iterator>;
+using sregex = rex::basic_regex<char>;
+using smatch = rex::match_results<std::string::const_iterator>;
 
 // Helper macros for test cases
 #define TEST_CASE(name) \
@@ -19,7 +19,7 @@ using smatch = myns::match_results<std::string::const_iterator>;
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const myns::regex_error& e) { \
+	} catch (const rex::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -39,7 +39,7 @@ void TestBasicNumericBackref() {
 	sregex re("(.+)\\1");
 	smatch m;
 	std::string input = "abab";
-	bool found = myns::regex_search(input, m, re);
+	bool found = rex::regex_search(input, m, re);
 	assert(found);
 	assert(m.size() >= 2);
 	assert(m[0].str() == "abab");
@@ -48,7 +48,7 @@ void TestBasicNumericBackref() {
 	// Should not match "abc" since there's no repetition
 	std::string input2 = "abc";
 	smatch m2;
-	bool found2 = myns::regex_search(input2, m2, re);
+	bool found2 = rex::regex_search(input2, m2, re);
 	assert(!found2);
 	
 	TEST_CASE_END("TestBasicNumericBackref")
@@ -64,14 +64,14 @@ void TestBackrefMismatch() {
 	
 	// "hi hi" should match (same word repeated)
 	std::string input1 = "hi hi";
-	bool found1 = myns::regex_search(input1, m, re);
+	bool found1 = rex::regex_search(input1, m, re);
 	assert(found1);
 	assert(m[1].str() == "hi");
 	
 	// "hi bye" should not match (different words)
 	std::string input2 = "hi bye";
 	smatch m2;
-	bool found2 = myns::regex_search(input2, m2, re);
+	bool found2 = rex::regex_search(input2, m2, re);
 	assert(!found2);
 	
 	TEST_CASE_END("TestBackrefMismatch")
@@ -86,7 +86,7 @@ void TestNamedBackrefAngleBrackets() {
 	smatch m;
 	
 	std::string input = "hello hello";
-	bool found = myns::regex_search(input, m, re);
+	bool found = rex::regex_search(input, m, re);
 	assert(found);
 	assert(m.size() >= 2);
 	assert(m[0].str() == "hello hello");
@@ -104,7 +104,7 @@ void TestNamedBackrefSingleQuotes() {
 	smatch m;
 	
 	std::string input = "world world";
-	bool found = myns::regex_search(input, m, re);
+	bool found = rex::regex_search(input, m, re);
 	assert(found);
 	assert(m.size() >= 2);
 	assert(m[0].str() == "world world");
@@ -122,7 +122,7 @@ void TestMultipleBackrefs() {
 	smatch m;
 	
 	std::string input = "abcddcba";
-	bool found = myns::regex_match(input, m, re);
+	bool found = rex::regex_match(input, m, re);
 	assert(found);
 	assert(m[0].str() == "abcddcba");
 	assert(m[1].str() == "a");
@@ -144,7 +144,7 @@ void TestAmbiguousDigitResolutionGroup10() {
 	smatch m;
 	
 	std::string input = "abcdefghijj";
-	bool found = myns::regex_match(input, m, re);
+	bool found = rex::regex_match(input, m, re);
 	assert(found);
 	assert(m.size() == 11);  // 10 groups + full match
 	assert(m[10].str() == "j");
@@ -163,7 +163,7 @@ void TestAmbiguousDigitResolutionOctal() {
 	
 	// "abc\n" should match: groups capture a, b, c; \12 = newline (octal 012)
 	std::string input = "abc\n";
-	bool found = myns::regex_match(input, m, re);
+	bool found = rex::regex_match(input, m, re);
 	assert(found);
 	assert(m[1].str() == "a");
 	assert(m[2].str() == "b");
@@ -180,7 +180,7 @@ void TestReplacementCaptures() {
 	// Replace with "$2=$1" to swap them
 	sregex re("(\\w+):(\\w+)");
 	std::string input = "key:value";
-	std::string result = myns::regex_replace(input, re, std::string("$2=$1"));
+	std::string result = rex::regex_replace(input, re, std::string("$2=$1"));
 	assert(result == "value=key");
 	
 	TEST_CASE_END("TestReplacementCaptures")
@@ -195,13 +195,13 @@ void TestReplacementUnmatchedGroup() {
 	
 	// Input "b" - group 1 is unmatched, group 2 matches "b"
 	std::string input = "b";
-	std::string result = myns::regex_replace(input, re, std::string("[$1][$2]"));
+	std::string result = rex::regex_replace(input, re, std::string("[$1][$2]"));
 	// Unmatched group should expand to empty string
 	assert(result == "[][b]");
 	
 	// Input "ab" - both groups match
 	std::string input2 = "ab";
-	std::string result2 = myns::regex_replace(input2, re, std::string("[$1][$2]"));
+	std::string result2 = rex::regex_replace(input2, re, std::string("[$1][$2]"));
 	assert(result2 == "[a][b]");
 	
 	TEST_CASE_END("TestReplacementUnmatchedGroup")
@@ -213,7 +213,7 @@ void TestReplacementEntireMatch() {
 	
 	sregex re("\\w+");
 	std::string input = "hello world";
-	std::string result = myns::regex_replace(input, re, std::string("[$&]"));
+	std::string result = rex::regex_replace(input, re, std::string("[$&]"));
 	assert(result == "[hello] [world]");
 	
 	TEST_CASE_END("TestReplacementEntireMatch")
@@ -227,11 +227,11 @@ void TestReplacementPrefixSuffix() {
 	std::string input = "hello world!";
 	
 	// Replace with prefix
-	std::string result1 = myns::regex_replace(input, re, std::string("[prefix:$`]"));
+	std::string result1 = rex::regex_replace(input, re, std::string("[prefix:$`]"));
 	assert(result1 == "hello [prefix:hello ]!");
 	
 	// Replace with suffix
-	std::string result2 = myns::regex_replace(input, re, std::string("[suffix:$']"));
+	std::string result2 = rex::regex_replace(input, re, std::string("[suffix:$']"));
 	assert(result2 == "hello [suffix:!]!");
 	
 	TEST_CASE_END("TestReplacementPrefixSuffix")
@@ -245,7 +245,7 @@ void TestReplacementLiteralBackslash() {
 	std::string input = "hello";
 	
 	// $$ should produce literal $
-	std::string result = myns::regex_replace(input, re, std::string("$$1"));
+	std::string result = rex::regex_replace(input, re, std::string("$$1"));
 	assert(result == "$1");
 	
 	TEST_CASE_END("TestReplacementLiteralBackslash")
@@ -257,11 +257,11 @@ void TestCaseInsensitiveBackref() {
 	
 	// With icase flag, backreference should match case-insensitively
 	std::string pattern = "(\\w+)\\s+\\1";
-	sregex re(pattern, myns::regex_constants::ECMAScript | myns::regex_constants::icase);
+	sregex re(pattern, rex::regex_constants::ECMAScript | rex::regex_constants::icase);
 	smatch m;
 	
 	std::string input = "Hello HELLO";
-	bool found = myns::regex_search(input, m, re);
+	bool found = rex::regex_search(input, m, re);
 	assert(found);
 	assert(m[0].str() == "Hello HELLO");
 	assert(m[1].str() == "Hello");
@@ -281,7 +281,7 @@ void TestForwardReference() {
 	
 	// This pattern is tricky - testing that it doesn't crash
 	std::string input = "bba";
-	bool found = myns::regex_search(input, m, re);
+	bool found = rex::regex_search(input, m, re);
 	// Just verify it doesn't crash; exact behavior may vary
 	std::cout << "  Forward reference test: found=" << found << std::endl;
 	
@@ -295,9 +295,9 @@ void TestNoOnigurumaFlagBackslashLiteral() {
 #ifndef USE_STD_FOR_TESTS
 	// Without oniguruma flag, \1 should be literal backslash followed by '1'
 	std::string pattern = "(\\w+):(\\w+)";
-	sregex re(pattern, myns::regex_constants::ECMAScript);  // No oniguruma flag
+	sregex re(pattern, rex::regex_constants::ECMAScript);  // No oniguruma flag
 	std::string input = "key:value";
-	std::string result = myns::regex_replace(input, re, std::string("\\1-\\2"));
+	std::string result = rex::regex_replace(input, re, std::string("\\1-\\2"));
 	// \1 and \2 are NOT expanded, they remain as literal \1 and \2
 	assert(result == "\\1-\\2");
 	std::cout << "  Without oniguruma flag, \\1 is literal: PASSED" << std::endl;

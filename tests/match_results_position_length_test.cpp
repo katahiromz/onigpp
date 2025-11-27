@@ -14,10 +14,10 @@ int main() {
 	// Test 1: Basic position() and length() test with cmatch
 	{
 		const char* text = "Hello World 123";
-		myns::regex re("World (\\d+)");
-		myns::cmatch m;
+		rex::regex re("World (\\d+)");
+		rex::cmatch m;
 
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.size() == 2);
 		
@@ -47,10 +47,10 @@ int main() {
 	// Test 2: Test with smatch (string iterator)
 	{
 		std::string text = "Test smatch 456";
-		myns::regex re("smatch (\\d+)");
-		myns::smatch m;
+		rex::regex re("smatch (\\d+)");
+		rex::smatch m;
 
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.size() == 2);
 		
@@ -81,15 +81,15 @@ int main() {
 	// Test 3: Test npos constant for invalid submatch
 	{
 		const char* text = "Hello World";
-		myns::regex re("World");
-		myns::cmatch m;
+		rex::regex re("World");
+		rex::cmatch m;
 
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		
 		// Test position() for out-of-bounds submatch index
 		auto pos_invalid = m.position(5);
-		assert(pos_invalid == myns::cmatch::npos);
+		assert(pos_invalid == rex::cmatch::npos);
 		std::cout << "  position(5) = npos ✓\n";
 		
 		// Test length() for out-of-bounds submatch index
@@ -104,10 +104,10 @@ int main() {
 	// Test 4: Test with multiple capture groups
 	{
 		std::string text = "Date: 2024-11-24";
-		myns::regex re("(\\d{4})-(\\d{2})-(\\d{2})");
-		myns::smatch m;
+		rex::regex re("(\\d{4})-(\\d{2})-(\\d{2})");
+		rex::smatch m;
 
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.size() == 4); // Full match + 3 capture groups
 		
@@ -136,10 +136,10 @@ int main() {
 	// Test 5: Test with wstring
 	{
 		std::wstring text = L"wsmatch test 789";
-		myns::wregex re(L"test (\\d+)");
-		myns::wsmatch m;
+		rex::wregex re(L"test (\\d+)");
+		rex::wsmatch m;
 
-		bool found = myns::regex_search(text, m, re);
+		bool found = rex::regex_search(text, m, re);
 		assert(found);
 		assert(m.size() == 2);
 		

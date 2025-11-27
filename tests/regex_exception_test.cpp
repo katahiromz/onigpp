@@ -11,8 +11,8 @@ void test_invalid_pattern_parenthesis() {
 
 	bool threw = false;
 	try {
-		myns::regex re("(");
-	} catch (const myns::regex_error& e) {
+		rex::regex re("(");
+	} catch (const rex::regex_error& e) {
 		threw = true;
 		std::cout << "  Caught regex_error: " << e.what() << std::endl;
 	}
@@ -26,8 +26,8 @@ void test_invalid_pattern_bracket() {
 
 	bool threw = false;
 	try {
-		myns::regex re("[a-");
-	} catch (const myns::regex_error& e) {
+		rex::regex re("[a-");
+	} catch (const rex::regex_error& e) {
 		threw = true;
 		std::cout << "  Caught regex_error: " << e.what() << std::endl;
 	}
@@ -41,8 +41,8 @@ void test_invalid_pattern_quantifier() {
 
 	bool threw = false;
 	try {
-		myns::regex re("*a");
-	} catch (const myns::regex_error& e) {
+		rex::regex re("*a");
+	} catch (const rex::regex_error& e) {
 		threw = true;
 		std::cout << "  Caught regex_error: " << e.what() << std::endl;
 	}
@@ -56,8 +56,8 @@ void test_invalid_backreference() {
 
 	bool threw = false;
 	try {
-		myns::regex re("\\1");  // No capture group defined
-	} catch (const myns::regex_error& e) {
+		rex::regex re("\\1");  // No capture group defined
+	} catch (const rex::regex_error& e) {
 		threw = true;
 		std::cout << "  Caught regex_error: " << e.what() << std::endl;
 	}
@@ -71,12 +71,12 @@ void test_valid_regex_no_exception() {
 
 	bool threw = false;
 	try {
-		myns::regex re1("abc");
-		myns::regex re2("(a)(b)\\1\\2");  // Valid backreference
-		myns::regex re3("a+b*c?");
-		myns::regex re4("[a-z]+");
-		myns::regex re5("^start.*end$");
-	} catch (const myns::regex_error& e) {
+		rex::regex re1("abc");
+		rex::regex re2("(a)(b)\\1\\2");  // Valid backreference
+		rex::regex re3("a+b*c?");
+		rex::regex re4("[a-z]+");
+		rex::regex re5("^start.*end$");
+	} catch (const rex::regex_error& e) {
 		threw = true;
 		std::cout << "  Unexpected regex_error: " << e.what() << std::endl;
 	}
@@ -90,10 +90,10 @@ void test_iterator_no_exception_on_no_match() {
 
 	bool threw = false;
 	try {
-		myns::regex re("xyz");
+		rex::regex re("xyz");
 		std::string input = "abcdef";
-		auto it = myns::sregex_iterator(input.begin(), input.end(), re);
-		auto end = myns::sregex_iterator();
+		auto it = rex::sregex_iterator(input.begin(), input.end(), re);
+		auto end = rex::sregex_iterator();
 
 		// Iterator should be equal to end immediately
 		assert(it == end && "Should have no matches");
@@ -111,10 +111,10 @@ void test_search_no_exception_on_no_match() {
 
 	bool threw = false;
 	try {
-		myns::regex re("xyz");
+		rex::regex re("xyz");
 		std::string input = "abcdef";
-		myns::smatch m;
-		bool found = myns::regex_search(input, m, re);
+		rex::smatch m;
+		bool found = rex::regex_search(input, m, re);
 		assert(!found && "Should not find match");
 		assert(m.ready() && "match_results should be ready even on no match");
 	} catch (const std::exception& e) {
@@ -131,10 +131,10 @@ void test_match_no_exception_on_no_match() {
 
 	bool threw = false;
 	try {
-		myns::regex re("xyz");
+		rex::regex re("xyz");
 		std::string input = "abcdef";
-		myns::smatch m;
-		bool found = myns::regex_match(input, m, re);
+		rex::smatch m;
+		bool found = rex::regex_match(input, m, re);
 		assert(!found && "Should not match");
 		assert(m.ready() && "match_results should be ready even on no match");
 	} catch (const std::exception& e) {
@@ -151,22 +151,22 @@ void test_empty_range() {
 
 	bool threw = false;
 	try {
-		myns::regex re(".*");
+		rex::regex re(".*");
 		std::string input = "";
-		myns::smatch m;
+		rex::smatch m;
 
 		// regex_search on empty range - result not checked, testing that no exception is thrown
-		bool found_search = myns::regex_search(input, m, re);
+		bool found_search = rex::regex_search(input, m, re);
 		(void)found_search;  // Result varies by pattern; we're only testing no exception
 
 		// regex_match on empty range
-		myns::regex re_empty("");
-		bool found_match = myns::regex_match(input, m, re_empty);
+		rex::regex re_empty("");
+		bool found_match = rex::regex_match(input, m, re_empty);
 		assert(found_match && "Empty pattern should match empty string");
 
 		// Iterator on empty range
-		auto it = myns::sregex_iterator(input.begin(), input.end(), re);
-		auto end = myns::sregex_iterator();
+		auto it = rex::sregex_iterator(input.begin(), input.end(), re);
+		auto end = rex::sregex_iterator();
 		// Count matches (should be at least 1 for .*)
 		int count = 0;
 		while (it != end) {
@@ -187,9 +187,9 @@ void test_regex_error_code() {
 	std::cout << "Test: regex_error has valid error code" << std::endl;
 
 	try {
-		myns::regex re("(");
+		rex::regex re("(");
 		assert(false && "Should have thrown");
-	} catch (const myns::regex_error& e) {
+	} catch (const rex::regex_error& e) {
 		// Check that code() returns a valid error type
 		auto code = e.code();
 		// In onigpp, error_paren is expected for unbalanced parenthesis
@@ -215,8 +215,8 @@ void test_comparison_with_std_exceptions() {
 
 		bool onigpp_threw = false;
 		try {
-			myns::regex re(pattern);
-		} catch (const myns::regex_error&) {
+			rex::regex re(pattern);
+		} catch (const rex::regex_error&) {
 			onigpp_threw = true;
 		}
 

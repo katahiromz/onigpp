@@ -5,10 +5,10 @@
 #include <iterator>
 
 // Using aliases defined in onigpp.h
-using sregex = myns::basic_regex<char>;
-using smatch = myns::match_results<std::string::const_iterator>;
-using sregex_iterator = myns::regex_iterator<std::string::const_iterator, char>;
-using sregex_token_iterator = myns::regex_token_iterator<std::string::const_iterator, char>;
+using sregex = rex::basic_regex<char>;
+using smatch = rex::match_results<std::string::const_iterator>;
+using sregex_iterator = rex::regex_iterator<std::string::const_iterator, char>;
+using sregex_token_iterator = rex::regex_token_iterator<std::string::const_iterator, char>;
 
 // =================================================================
 // Helper Functions
@@ -21,7 +21,7 @@ using sregex_token_iterator = myns::regex_token_iterator<std::string::const_iter
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const myns::regex_error& e) { \
+	} catch (const rex::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -44,7 +44,7 @@ void TestCoreFunctions() {
 	smatch m;
 
 	// 1.1. Testing regex_search
-	bool found = myns::regex_search(text, m, re);
+	bool found = rex::regex_search(text, m, re);
 	assert(found);
 	assert(m.size() == 3); // Entire match + 2 capture groups
 
@@ -64,13 +64,13 @@ void TestCoreFunctions() {
 #ifndef USE_STD_FOR_TESTS
 	assert(re_full.pattern() == std::string("start\\s+end"));
 #endif
-	assert(myns::regex_match(full_text, m_full, re_full));
+	assert(rex::regex_match(full_text, m_full, re_full));
 	assert(m_full[0].str() == full_text);
 
 	// 1.4. Testing regex_match (Partial match -> Failure)
 	std::string partial_text = "start end extra";
 	smatch m_partial;
-	assert(!myns::regex_match(partial_text, m_partial, re_full));
+	assert(!rex::regex_match(partial_text, m_partial, re_full));
 
 	TEST_CASE_END("TestCoreFunctions")
 }
@@ -95,9 +95,9 @@ void TestResourceManagement() {
 	smatch m1, m2, m3;
 
 	// Verify they function as independent objects
-	assert(myns::regex_search(data, m1, re1));
-	assert(myns::regex_search(data, m2, re2));
-	assert(myns::regex_search(data, m3, re3));
+	assert(rex::regex_search(data, m1, re1));
+	assert(rex::regex_search(data, m2, re2));
+	assert(rex::regex_search(data, m3, re3));
 	assert(m1[1].str() == "bbb");
 	assert(m2[1].str() == "bbb");
 	assert(m3[1].str() == "bbb");
@@ -116,7 +116,7 @@ void TestResourceManagement() {
 
 	// Verify the moved-to object works
 	std::string test_str = "uvvvw";
-	assert(myns::regex_search(test_str, m1, re_target));
+	assert(rex::regex_search(test_str, m1, re_target));
 	assert(m1[1].str() == "vvv");
 
 	TEST_CASE_END("TestResourceManagement")
@@ -203,21 +203,21 @@ void TestReplacement() {
 	std::string s1 = "a b c a b c";
 	sregex re1("b");
 	std::string fmt1 = "X";
-	std::string result1 = myns::regex_replace(s1, re1, fmt1);
+	std::string result1 = rex::regex_replace(s1, re1, fmt1);
 	assert(result1 == "a X c a X c");
 
 	// 4.2. Capture Group Replacement
 	std::string s2 = "Name: John Doe, ID: 123";
 	sregex re2("Name: (.*?), ID: (\\d+)");
 	std::string fmt2 = "ID $2, Name $1"; // Using $1, $2
-	std::string result2 = myns::regex_replace(s2, re2, fmt2);
+	std::string result2 = rex::regex_replace(s2, re2, fmt2);
 	assert(result2 == "ID 123, Name John Doe");
 
 	// 4.3. Zero-Width Match Replacement (Verification of previous fix)
 	std::string s3 = "word";
 	sregex re3("\\b"); // Word boundary (zero-width)
 	std::string fmt3 = "-";
-	std::string result3 = myns::regex_replace(s3, re3, fmt3);
+	std::string result3 = rex::regex_replace(s3, re3, fmt3);
 	std::cout << "result3: " << result3 << std::endl;
 	// Expected result: -word-
 	// If it forced the next character output after a zero-width match, it would be "-w-o-r-d-"
@@ -229,12 +229,12 @@ void TestReplacement() {
 	// 4.3a Zero-width anchors: '^' (start) and '$' (end)
 	{
 		sregex re_start("^");
-		std::string res_start = myns::regex_replace(s3, re_start, fmt3);
+		std::string res_start = rex::regex_replace(s3, re_start, fmt3);
 		assert(res_start == "-word");
 		assert(std::count(res_start.begin(), res_start.end(), '-') == 1);
 
 		sregex re_end("$");
-		std::string res_end = myns::regex_replace(s3, re_end, fmt3);
+		std::string res_end = rex::regex_replace(s3, re_end, fmt3);
 		assert(res_end == "word-");
 		assert(std::count(res_end.begin(), res_end.end(), '-') == 1);
 	}
@@ -243,7 +243,7 @@ void TestReplacement() {
 	std::string s4 = "1 2 3 4";
 	sregex re4(" ");
 	std::string fmt4 = "-";
-	std::string result4 = myns::regex_replace(s4, re4, fmt4, myns::regex_constants::format_first_only);
+	std::string result4 = rex::regex_replace(s4, re4, fmt4, rex::regex_constants::format_first_only);
 	assert(result4 == "1-2 3 4");
 
 	TEST_CASE_END("TestReplacement")
@@ -268,7 +268,7 @@ void TestSpecialReplacementPatterns() {
 	{
 		std::string fmt = "Found: $&. Next Word is $1.";
 		std::string expected = "Start Found: ABC-123-DEF. Next Word is ABC. End";
-		std::string result = myns::regex_replace(text, re, fmt);
+		std::string result = rex::regex_replace(text, re, fmt);
 		assert(result == expected);
 		std::cout << "  $&: OK\n";
 	}
@@ -281,7 +281,7 @@ void TestSpecialReplacementPatterns() {
 		std::string fmt = "Prefix is: $`."; 
 		// After replacement: "Start Prefix is: Start . End"
 		std::string expected = "Start Prefix is: Start . End"; 
-		std::string result = myns::regex_replace(text, re, fmt);
+		std::string result = rex::regex_replace(text, re, fmt);
 		assert(result == expected);
 		std::cout << "  $`: OK\n";
 	}
@@ -294,7 +294,7 @@ void TestSpecialReplacementPatterns() {
 		std::string fmt = "Literal is $$, group is $1.";
 		// After replacement: "Start Literal is $, group is ABC. End"
 		std::string expected = "Start Literal is $, group is ABC. End";
-		std::string result = myns::regex_replace(text, re, fmt);
+		std::string result = rex::regex_replace(text, re, fmt);
 		assert(result == expected);
 		std::cout << "  $$: OK\n";
 	}
@@ -310,29 +310,29 @@ void TestEncodingAndError() {
 	TEST_CASE("TestEncodingAndError")
 
 #ifndef USE_STD_FOR_TESTS
-	auto UTF8 = myns::encoding_constants::UTF8;
-	auto SJIS = myns::encoding_constants::SJIS;
+	auto UTF8 = rex::encoding_constants::UTF8;
+	auto SJIS = rex::encoding_constants::SJIS;
 
 	// 5.1. Encoding Test (UTF-8, Japanese)
 	// Assuming Oniguruma's default encoding is UTF-8
 	std::string text_utf8 = u8"あいうえお";
-	sregex re_utf8(u8"あ", myns::regex_constants::normal, UTF8);
+	sregex re_utf8(u8"あ", rex::regex_constants::normal, UTF8);
 	smatch m_utf8;
-	assert(myns::regex_search(text_utf8, m_utf8, re_utf8));
+	assert(rex::regex_search(text_utf8, m_utf8, re_utf8));
 	assert(m_utf8.str() == u8"あ");
 
 	// 5.2. Encoding Test (Shift_JIS)
 	std::string text_sjis = "\x82\xa0\x82\xa2\x82\xa4"; // "a i u" in SJIS (Japanese hiragana)
 
 	// Compile with SJIS encoding specified
-	sregex re_sjis("\x82\xA0", myns::regex_constants::normal, SJIS);
+	sregex re_sjis("\x82\xA0", rex::regex_constants::normal, SJIS);
 
 	// The search string is also "a" in SJIS (Japanese hiragana)
 	std::string pattern_sjis = "\x82\xa0";
 
 	smatch m_sjis;
 	// Pass begin/end iterators for the std::string text_sjis
-	assert(myns::regex_search(text_sjis, m_sjis, re_sjis));
+	assert(rex::regex_search(text_sjis, m_sjis, re_sjis));
 
 	// The match result is a byte-segment of the original string
 	assert(m_sjis.str() == pattern_sjis);
@@ -342,7 +342,7 @@ void TestEncodingAndError() {
 	bool caught_error = false;
 	try {
 		sregex re_invalid("[a-"); // Unclosed character class
-	} catch (const myns::regex_error& e) {
+	} catch (const rex::regex_error& e) {
 		std::cout << "  (Caught expected error: " << e.what() << ")\n";
 		caught_error = true;
 	}
@@ -350,9 +350,9 @@ void TestEncodingAndError() {
 
 	// 5.4. Testing `basic_regex::assign`
 	sregex re_test;
-	re_test.assign(std::string("(x+)"), myns::regex_constants::icase, SJIS); // Assign with ignore-case option
+	re_test.assign(std::string("(x+)"), rex::regex_constants::icase, SJIS); // Assign with ignore-case option
 	std::string test_str = "AXA";
-	assert(myns::regex_search(test_str, m_utf8, re_test));
+	assert(rex::regex_search(test_str, m_utf8, re_test));
 	assert(m_utf8.str() == "X"); // icase option is effective
 #endif
 
@@ -368,20 +368,20 @@ void TestSyntaxSelection() {
 
 	// 6.1. POSIX Basic: '+' is literal unless escaped
 	std::cout << "  6.1. POSIX Basic Syntax:\n";
-	sregex re_basic(std::string("a\\+b"), myns::regex_constants::basic);
+	sregex re_basic(std::string("a\\+b"), rex::regex_constants::basic);
 	smatch m_basic;
 	std::string str1 = "a+b";
-	assert(myns::regex_search(str1, m_basic, re_basic));
+	assert(rex::regex_search(str1, m_basic, re_basic));
 	assert(m_basic[0].str() == "a+b");
 	std::cout << "  POSIX Basic matched 'a+b' as literal\n";
 
 	// 6.2. POSIX Extended: '+' is a quantifier
 	std::cout << "  6.2. POSIX Extended Syntax:\n";
 	std::string str2 = "ab+";
-	sregex re_ext(str2, myns::regex_constants::extended);
+	sregex re_ext(str2, rex::regex_constants::extended);
 	smatch m_ext;
 	std::string str3 = "abb";
-	assert(myns::regex_search(str3, m_ext, re_ext));
+	assert(rex::regex_search(str3, m_ext, re_ext));
 	assert(m_ext[0].str() == "abb");
 	std::cout << "  POSIX Extended matched 'abb' with '+' as quantifier\n";
 
@@ -397,69 +397,69 @@ void TestPOSIXClasses() {
 
 	// 7.1. Test [:digit:] POSIX class
 	std::cout << "  7.1. POSIX [:digit:] class:\n";
-	sregex re_digit(std::string("[[:digit:]]+"), myns::regex_constants::extended);
+	sregex re_digit(std::string("[[:digit:]]+"), rex::regex_constants::extended);
 	smatch m_digit;
 	std::string str1 = "abc12345def";
-	assert(myns::regex_search(str1, m_digit, re_digit));
+	assert(rex::regex_search(str1, m_digit, re_digit));
 	assert(m_digit[0].str() == "12345");
 	std::cout << "  [:digit:] matched '12345'\n";
 	
 	// 7.2. Test [:alpha:] POSIX class
 	std::cout << "  7.2. POSIX [:alpha:] class:\n";
 	std::string str2 = "[[:alpha:]]+";
-	sregex re_alpha(str2, myns::regex_constants::extended);
+	sregex re_alpha(str2, rex::regex_constants::extended);
 	smatch m_alpha;
 	std::string str3 = "123abc456";
-	assert(myns::regex_search(str3, m_alpha, re_alpha));
+	assert(rex::regex_search(str3, m_alpha, re_alpha));
 	assert(m_alpha[0].str() == "abc");
 	std::cout << "  [:alpha:] matched 'abc'\n";
 	
 	// 7.3. Test [:alnum:] POSIX class
 	std::cout << "  7.3. POSIX [:alnum:] class:\n";
 	std::string str4 = "[[:alnum:]]+";
-	sregex re_alnum(str4, myns::regex_constants::extended);
+	sregex re_alnum(str4, rex::regex_constants::extended);
 	smatch m_alnum;
 	std::string str5 ="!@#abc123$%^";
-	assert(myns::regex_search(str5, m_alnum, re_alnum));
+	assert(rex::regex_search(str5, m_alnum, re_alnum));
 	assert(m_alnum[0].str() == "abc123");
 	std::cout << "  [:alnum:] matched 'abc123'\n";
 	
 	// 7.4. Test [:space:] POSIX class
 	std::cout << "  7.4. POSIX [:space:] class:\n";
-	sregex re_space(std::string("[[:space:]]+"), myns::regex_constants::extended);
+	sregex re_space(std::string("[[:space:]]+"), rex::regex_constants::extended);
 	smatch m_space;
 	std::string str6 = "hello   world";
-	assert(myns::regex_search(str6, m_space, re_space));
+	assert(rex::regex_search(str6, m_space, re_space));
 	assert(m_space[0].str() == "   ");
 	std::cout << "  [:space:] matched three spaces\n";
 	
 	// 7.5. Test [:upper:] POSIX class
 	std::cout << "  7.5. POSIX [:upper:] class:\n";
 	std::string str7 = "[[:upper:]]+";
-	sregex re_upper(str7, myns::regex_constants::extended);
+	sregex re_upper(str7, rex::regex_constants::extended);
 	smatch m_upper;
 	std::string str8 = "abcDEFghi";
-	assert(myns::regex_search(str8, m_upper, re_upper));
+	assert(rex::regex_search(str8, m_upper, re_upper));
 	assert(m_upper[0].str() == "DEF");
 	std::cout << "  [:upper:] matched 'DEF'\n";
 	
 	// 7.6. Test [:lower:] POSIX class
 	std::cout << "  7.6. POSIX [:lower:] class:\n";
 	std::string str9 = "[[:lower:]]+";
-	sregex re_lower(str9, myns::regex_constants::extended);
+	sregex re_lower(str9, rex::regex_constants::extended);
 	smatch m_lower;
 	std::string str10 = "ABCdefGHI";
-	assert(myns::regex_search(str10, m_lower, re_lower));
+	assert(rex::regex_search(str10, m_lower, re_lower));
 	assert(m_lower[0].str() == "def");
 	std::cout << "  [:lower:] matched 'def'\n";
 	
 	// 7.7. Test [:punct:] POSIX class
 	std::cout << "  7.7. POSIX [:punct:] class:\n";
 	std::string str11 = "[[:punct:]]+";
-	sregex re_punct(str11, myns::regex_constants::extended);
+	sregex re_punct(str11, rex::regex_constants::extended);
 	smatch m_punct;
 	std::string str12 = "hello!@#world";
-	assert(myns::regex_search(str12, m_punct, re_punct));
+	assert(rex::regex_search(str12, m_punct, re_punct));
 	// Match should contain punctuation characters
 	assert(m_punct[0].matched);
 	std::cout << "  [:punct:] matched punctuation\n";
@@ -467,10 +467,10 @@ void TestPOSIXClasses() {
 	// 7.8. Test [:xdigit:] POSIX class
 	std::cout << "  7.8. POSIX [:xdigit:] class:\n";
 	std::string str13 = "[[:xdigit:]]+";
-	sregex re_xdigit(str13, myns::regex_constants::extended);
+	sregex re_xdigit(str13, rex::regex_constants::extended);
 	smatch m_xdigit;
 	std::string str14 = "xyz1A2FGzz";
-	assert(myns::regex_search(str14, m_xdigit, re_xdigit));
+	assert(rex::regex_search(str14, m_xdigit, re_xdigit));
 	assert(m_xdigit[0].str() == "1A2F");
 	std::cout << "  [:xdigit:] matched '1A2F'\n";
 
@@ -488,11 +488,11 @@ void TestTokenizeTest() {
 	// tokenization (non-matched fragments)
 	// Note that regex is matched only two times: when the third value is obtained
 	// the iterator is a suffix iterator.
-	myns::regex ws_re("\\s+"); // whitespace
+	rex::regex ws_re("\\s+"); // whitespace
 
 	size_t index = 0;
-	for (auto it = myns::sregex_token_iterator(text.begin(), text.end(), ws_re, -1),
-		      end = myns::sregex_token_iterator(); it != end; ++it) {
+	for (auto it = rex::sregex_token_iterator(text.begin(), text.end(), ws_re, -1),
+		      end = rex::sregex_token_iterator(); it != end; ++it) {
 		std::cout << "<" << it->str() << ">" << std::endl;
 		switch (index) {
 		case 0: assert(it->str() == "Quick"); break;
@@ -506,10 +506,10 @@ void TestTokenizeTest() {
 
 	std::string html = "<p><a href=\"http://google.com\">google</a> "
 	                   "< a HREF =\"http://cppreference.com\">cppreference</a>\n</p>";
-	myns::regex url_re(std::string("<\\s*A\\s+[^>]*href\\s*=\\s*\"([^\"]*)\""), myns::regex::icase);
+	rex::regex url_re(std::string("<\\s*A\\s+[^>]*href\\s*=\\s*\"([^\"]*)\""), rex::regex::icase);
 	index = 0;
-	for (auto it = myns::sregex_token_iterator(html.begin(), html.end(), url_re, 1),
-		      end = myns::sregex_token_iterator(); it != end; ++it) {
+	for (auto it = rex::sregex_token_iterator(html.begin(), html.end(), url_re, 1),
+		      end = rex::sregex_token_iterator(); it != end; ++it) {
 		std::cout << "<" << it->str() << ">" << std::endl;
 		switch (index) {
 		case 0: assert(it->str() == "http://google.com"); break;

@@ -16,7 +16,7 @@
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const myns::regex_error& e) { \
+	} catch (const rex::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -39,13 +39,13 @@ void TestListRegexSearch() {
 	std::list<char> subject_list(subject_str.begin(), subject_str.end());
 
 	// Create a regex pattern
-	myns::regex re("World\\s+(\\d+)");
+	rex::regex re("World\\s+(\\d+)");
 
 	// Create match_results for list iterators
-	myns::match_results<std::list<char>::iterator> m;
+	rex::match_results<std::list<char>::iterator> m;
 
 	// Perform regex_search
-	bool found = myns::regex_search(subject_list.begin(), subject_list.end(), m, re);
+	bool found = rex::regex_search(subject_list.begin(), subject_list.end(), m, re);
 
 	assert(found);
 	assert(m.size() == 2); // Entire match + 1 capture group
@@ -72,13 +72,13 @@ void TestDequeRegexMatch() {
 	std::deque<char> subject_deque(subject_str.begin(), subject_str.end());
 
 	// Create a regex pattern that matches the entire string
-	myns::regex re("test\\d+");
+	rex::regex re("test\\d+");
 
 	// Create match_results for deque iterators
-	myns::match_results<std::deque<char>::iterator> m;
+	rex::match_results<std::deque<char>::iterator> m;
 
 	// Perform regex_match (should match the entire string)
-	bool matched = myns::regex_match(subject_deque.begin(), subject_deque.end(), m, re);
+	bool matched = rex::regex_match(subject_deque.begin(), subject_deque.end(), m, re);
 
 	assert(matched);
 	assert(m.size() == 1); // Only the entire match, no capture groups
@@ -90,9 +90,9 @@ void TestDequeRegexMatch() {
 	// Test that partial match fails
 	std::string partial_str = "test123extra";
 	std::deque<char> partial_deque(partial_str.begin(), partial_str.end());
-	myns::match_results<std::deque<char>::iterator> m2;
+	rex::match_results<std::deque<char>::iterator> m2;
 
-	bool matched2 = myns::regex_match(partial_deque.begin(), partial_deque.end(), m2, re);
+	bool matched2 = rex::regex_match(partial_deque.begin(), partial_deque.end(), m2, re);
 	assert(!matched2);
 
 	TEST_CASE_END("TestDequeRegexMatch")
@@ -110,12 +110,12 @@ void TestListRegexIterator() {
 	std::list<char> subject_list(subject_str.begin(), subject_str.end());
 
 	// Create a regex pattern to find word-digit sequences
-	myns::regex re("([a-z]+)(\\d+)");
+	rex::regex re("([a-z]+)(\\d+)");
 
 	// Create regex_iterator for list iterators
 	using list_iter = std::list<char>::iterator;
-	myns::regex_iterator<list_iter, char> it(subject_list.begin(), subject_list.end(), re);
-	myns::regex_iterator<list_iter, char> end;
+	rex::regex_iterator<list_iter, char> it(subject_list.begin(), subject_list.end(), re);
+	rex::regex_iterator<list_iter, char> end;
 
 	// Collect all matches
 	std::vector<std::string> matches;
@@ -157,13 +157,13 @@ void TestEmptyListRegexSearch() {
 	std::list<char> empty_list;
 
 	// Create a regex pattern
-	myns::regex re(".*");
+	rex::regex re(".*");
 
 	// Create match_results for list iterators
-	myns::match_results<std::list<char>::iterator> m;
+	rex::match_results<std::list<char>::iterator> m;
 
 	// Perform regex_search on empty range
-	bool found = myns::regex_search(empty_list.begin(), empty_list.end(), m, re);
+	bool found = rex::regex_search(empty_list.begin(), empty_list.end(), m, re);
 
 	// For .* pattern, it should match empty string
 	assert(found);
@@ -188,13 +188,13 @@ void TestDequeCaptureGroups() {
 	std::deque<char> subject_deque(subject_str.begin(), subject_str.end());
 
 	// Create a regex pattern with capture groups
-	myns::regex re("Name: (\\w+), Age: (\\d+)");
+	rex::regex re("Name: (\\w+), Age: (\\d+)");
 
 	// Create match_results for deque iterators
-	myns::match_results<std::deque<char>::iterator> m;
+	rex::match_results<std::deque<char>::iterator> m;
 
 	// Perform regex_search
-	bool found = myns::regex_search(subject_deque.begin(), subject_deque.end(), m, re);
+	bool found = rex::regex_search(subject_deque.begin(), subject_deque.end(), m, re);
 
 	assert(found);
 	assert(m.size() == 3); // Entire match + 2 capture groups
@@ -223,10 +223,10 @@ void TestVectorStillWorks() {
 	std::string subject_str = "test vector 42";
 	std::vector<char> subject_vec(subject_str.begin(), subject_str.end());
 
-	myns::regex re("vector (\\d+)");
-	myns::match_results<std::vector<char>::iterator> m;
+	rex::regex re("vector (\\d+)");
+	rex::match_results<std::vector<char>::iterator> m;
 
-	bool found = myns::regex_search(subject_vec.begin(), subject_vec.end(), m, re);
+	bool found = rex::regex_search(subject_vec.begin(), subject_vec.end(), m, re);
 
 	assert(found);
 	assert(m.size() == 2);

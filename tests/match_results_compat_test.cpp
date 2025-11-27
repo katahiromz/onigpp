@@ -17,7 +17,7 @@
 
 #define TEST_CASE_END(name) \
 	std::cout << "✅ " << (name) << " PASSED.\n"; \
-	} catch (const myns::regex_error& e) { \
+	} catch (const rex::regex_error& e) { \
 		std::cout << "❌ " << (name) << " FAILED with regex_error: " << e.what() << "\n"; \
 		assert(false); \
 	} catch (const std::exception& e) { \
@@ -35,15 +35,15 @@
 void TestMatchResultsSwapMember() {
 	TEST_CASE("TestMatchResultsSwapMember")
 
-	myns::regex re1("(\\d+)");
-	myns::regex re2("(\\w+)");
+	rex::regex re1("(\\d+)");
+	rex::regex re2("(\\w+)");
 	
 	std::string text1 = "abc123def";
 	std::string text2 = "hello world";
 	
-	myns::smatch m1, m2;
-	bool found1 = myns::regex_search(text1, m1, re1);
-	bool found2 = myns::regex_search(text2, m2, re2);
+	rex::smatch m1, m2;
+	bool found1 = rex::regex_search(text1, m1, re1);
+	bool found2 = rex::regex_search(text2, m2, re2);
 	
 	assert(found1);
 	assert(found2);
@@ -67,14 +67,14 @@ void TestMatchResultsSwapMember() {
 void TestMatchResultsSwapNonMember() {
 	TEST_CASE("TestMatchResultsSwapNonMember")
 
-	myns::regex re("([a-z]+)(\\d+)");
+	rex::regex re("([a-z]+)(\\d+)");
 	
 	std::string text1 = "abc123";
 	std::string text2 = "xyz789";
 	
-	myns::smatch m1, m2;
-	bool found1 = myns::regex_search(text1, m1, re);
-	bool found2 = myns::regex_search(text2, m2, re);
+	rex::smatch m1, m2;
+	bool found1 = rex::regex_search(text1, m1, re);
+	bool found2 = rex::regex_search(text2, m2, re);
 	
 	assert(found1);
 	assert(found2);
@@ -84,7 +84,7 @@ void TestMatchResultsSwapNonMember() {
 	assert(m2[2].str() == "789");
 	
 	// Swap using non-member function
-	myns::swap(m1, m2);
+	rex::swap(m1, m2);
 	
 	// After swap, m1 should have m2's content and vice versa
 	assert(m1[1].str() == "xyz");
@@ -102,14 +102,14 @@ void TestMatchResultsSwapNonMember() {
 void TestMatchResultsSwapADL() {
 	TEST_CASE("TestMatchResultsSwapADL")
 
-	myns::regex re("(test)(\\d+)");
+	rex::regex re("(test)(\\d+)");
 	
 	std::string text1 = "test111";
 	std::string text2 = "test222";
 	
-	myns::smatch m1, m2;
-	myns::regex_search(text1, m1, re);
-	myns::regex_search(text2, m2, re);
+	rex::smatch m1, m2;
+	rex::regex_search(text1, m1, re);
+	rex::regex_search(text2, m2, re);
 	
 	assert(m1[0].str() == "test111");
 	assert(m2[0].str() == "test222");
@@ -131,19 +131,19 @@ void TestMatchResultsSwapADL() {
 void TestMatchResultsEquality() {
 	TEST_CASE("TestMatchResultsEquality")
 
-	myns::regex re("(\\d+)");
+	rex::regex re("(\\d+)");
 	std::string text = "abc123def";
 	
-	myns::smatch m1, m2;
+	rex::smatch m1, m2;
 	
 	// Two default-constructed match_results should be equal
-	myns::smatch empty1, empty2;
+	rex::smatch empty1, empty2;
 	assert(empty1 == empty2);
 	assert(!(empty1 != empty2));
 	
 	// Search and compare
-	myns::regex_search(text, m1, re);
-	myns::regex_search(text, m2, re);
+	rex::regex_search(text, m1, re);
+	rex::regex_search(text, m2, re);
 	
 	// Same results should be equal
 	assert(m1 == m2);
@@ -151,8 +151,8 @@ void TestMatchResultsEquality() {
 	
 	// Different text should produce different results
 	std::string text2 = "xyz456";
-	myns::smatch m3;
-	myns::regex_search(text2, m3, re);
+	rex::smatch m3;
+	rex::regex_search(text2, m3, re);
 	
 	assert(m1 != m3);
 	assert(!(m1 == m3));
@@ -167,22 +167,22 @@ void TestMatchResultsEquality() {
 void TestMatchResultsInequality() {
 	TEST_CASE("TestMatchResultsInequality")
 
-	myns::regex re("([a-z]+)");
+	rex::regex re("([a-z]+)");
 	
 	std::string text1 = "hello";
 	std::string text2 = "world";
 	
-	myns::smatch m1, m2;
-	myns::regex_search(text1, m1, re);
-	myns::regex_search(text2, m2, re);
+	rex::smatch m1, m2;
+	rex::regex_search(text1, m1, re);
+	rex::regex_search(text2, m2, re);
 	
 	// Different match results should not be equal
 	assert(m1 != m2);
 	assert(!(m1 == m2));
 	
 	// Same match results should be equal
-	myns::smatch m3;
-	myns::regex_search(text1, m3, re);
+	rex::smatch m3;
+	rex::regex_search(text1, m3, re);
 	
 	assert(m1 == m3);
 	assert(!(m1 != m3));
@@ -197,7 +197,7 @@ void TestMatchResultsInequality() {
 void TestMatchResultsGetAllocator() {
 	TEST_CASE("TestMatchResultsGetAllocator")
 
-	myns::smatch m;
+	rex::smatch m;
 	
 	// get_allocator should return the allocator
 	auto alloc = m.get_allocator();
@@ -207,7 +207,7 @@ void TestMatchResultsGetAllocator() {
 	(void)alloc;
 	
 	// Verify the allocator_type is accessible
-	using alloc_type = myns::smatch::allocator_type;
+	using alloc_type = rex::smatch::allocator_type;
 	static_assert(std::is_same<alloc_type, decltype(alloc)>::value, "allocator_type mismatch");
 	
 	std::cout << "get_allocator() returned valid allocator\n";
@@ -223,7 +223,7 @@ void TestMatchResultsTypeAliases() {
 	TEST_CASE("TestMatchResultsTypeAliases")
 
 	// Verify all type aliases are accessible
-	using smatch = myns::smatch;
+	using smatch = rex::smatch;
 	
 	// value_type
 	using vt = typename smatch::value_type;
@@ -277,7 +277,7 @@ void TestMatchResultsTypeAliases() {
 void TestMatchResultsEmptyNoexcept() {
 	TEST_CASE("TestMatchResultsEmptyNoexcept")
 
-	myns::smatch m;
+	rex::smatch m;
 	
 #ifndef USE_STD_FOR_TESTS
 	// empty() should be noexcept (only check for onigpp, std::match_results may vary)
@@ -288,9 +288,9 @@ void TestMatchResultsEmptyNoexcept() {
 	assert(m.empty());
 	
 	// After a search that finds a match, should not be empty
-	myns::regex re("\\d+");
+	rex::regex re("\\d+");
 	std::string text = "123";
-	myns::regex_search(text, m, re);
+	rex::regex_search(text, m, re);
 	assert(!m.empty());
 	
 	std::cout << "empty() is noexcept and works correctly\n";
@@ -305,7 +305,7 @@ void TestMatchResultsEmptyNoexcept() {
 void TestMatchResultsReadyNoexcept() {
 	TEST_CASE("TestMatchResultsReadyNoexcept")
 
-	myns::smatch m;
+	rex::smatch m;
 	
 #ifndef USE_STD_FOR_TESTS
 	// ready() should be noexcept (only check for onigpp, std::match_results may vary)
@@ -316,9 +316,9 @@ void TestMatchResultsReadyNoexcept() {
 	assert(!m.ready());
 	
 	// After a search, should be ready
-	myns::regex re("\\d+");
+	rex::regex re("\\d+");
 	std::string text = "abc";  // No match
-	myns::regex_search(text, m, re);
+	rex::regex_search(text, m, re);
 	assert(m.ready());  // Even if no match, ready() returns true after search
 	
 	std::cout << "ready() is noexcept and works correctly\n";
@@ -333,14 +333,14 @@ void TestMatchResultsReadyNoexcept() {
 void TestMatchResultsSwapNoexcept() {
 	TEST_CASE("TestMatchResultsSwapNoexcept")
 
-	myns::smatch m1, m2;
+	rex::smatch m1, m2;
 	
 #ifndef USE_STD_FOR_TESTS
 	// Member swap should be noexcept (only check for onigpp, std::match_results may vary)
 	static_assert(noexcept(m1.swap(m2)), "swap() member should be noexcept");
 	
 	// Non-member swap should be noexcept
-	static_assert(noexcept(myns::swap(m1, m2)), "swap() non-member should be noexcept");
+	static_assert(noexcept(rex::swap(m1, m2)), "swap() non-member should be noexcept");
 #endif
 	
 	std::cout << "swap() is noexcept\n";
@@ -357,10 +357,10 @@ void TestMatchResultsWithAllocator() {
 
 	// Test construction with allocator
 	// Use the allocator_type from smatch to ensure type consistency
-	using alloc_type = typename myns::smatch::allocator_type;
+	using alloc_type = typename rex::smatch::allocator_type;
 	alloc_type alloc;
 	
-	myns::smatch m(alloc);
+	rex::smatch m(alloc);
 	
 	// The allocator should be stored
 	auto retrieved_alloc = m.get_allocator();
@@ -378,29 +378,29 @@ void TestMatchResultsWithAllocator() {
 void TestMatchResultsCopyMove() {
 	TEST_CASE("TestMatchResultsCopyMove")
 
-	myns::regex re("(\\w+)");
+	rex::regex re("(\\w+)");
 	std::string text = "hello";
 	
-	myns::smatch m1;
-	myns::regex_search(text, m1, re);
+	rex::smatch m1;
+	rex::regex_search(text, m1, re);
 	
 	// Copy constructor
-	myns::smatch m2(m1);
+	rex::smatch m2(m1);
 	assert(m1 == m2);
 	assert(m2[0].str() == "hello");
 	
 	// Move constructor
-	myns::smatch m3(std::move(m2));
+	rex::smatch m3(std::move(m2));
 	assert(m3[0].str() == "hello");
 	
 	// Copy assignment
-	myns::smatch m4;
+	rex::smatch m4;
 	m4 = m1;
 	assert(m4 == m1);
 	assert(m4[0].str() == "hello");
 	
 	// Move assignment
-	myns::smatch m5;
+	rex::smatch m5;
 	m5 = std::move(m4);
 	assert(m5[0].str() == "hello");
 	
@@ -417,19 +417,19 @@ void TestMatchResultsEqualityReady() {
 	TEST_CASE("TestMatchResultsEqualityReady")
 
 	// Two default-constructed (not ready) match_results should be equal
-	myns::smatch m1, m2;
+	rex::smatch m1, m2;
 	assert(!m1.ready() && !m2.ready());
 	assert(m1 == m2);
 	
 	// One ready, one not ready - should not be equal
-	myns::regex re("\\d+");
+	rex::regex re("\\d+");
 	std::string text = "123";
-	myns::regex_search(text, m1, re);
+	rex::regex_search(text, m1, re);
 	assert(m1.ready() && !m2.ready());
 	assert(m1 != m2);
 	
 	// Both ready with same match - should be equal
-	myns::regex_search(text, m2, re);
+	rex::regex_search(text, m2, re);
 	assert(m1.ready() && m2.ready());
 	assert(m1 == m2);
 	
@@ -443,12 +443,12 @@ void TestMatchResultsEqualityReady() {
 void TestMatchResultsEqualityEmpty() {
 	TEST_CASE("TestMatchResultsEqualityEmpty")
 
-	myns::regex re("\\d+");
+	rex::regex re("\\d+");
 	std::string text_nomatch = "abc";
 	
-	myns::smatch m1, m2;
-	myns::regex_search(text_nomatch, m1, re);
-	myns::regex_search(text_nomatch, m2, re);
+	rex::smatch m1, m2;
+	rex::regex_search(text_nomatch, m1, re);
+	rex::regex_search(text_nomatch, m2, re);
 	
 	// Both should be ready but empty (no match)
 	assert(m1.ready() && m2.ready());

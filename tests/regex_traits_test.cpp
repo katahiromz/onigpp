@@ -28,16 +28,16 @@ int main() {
 
 	// Test 1: Typedefs and basic construction
 	TEST_CASE("Typedefs and Constructors")
-		myns::regex_traits<char> traits1;
-		myns::regex_traits<wchar_t> wtraits1;
+		rex::regex_traits<char> traits1;
+		rex::regex_traits<wchar_t> wtraits1;
 #ifndef USE_STD_FOR_TESTS
-		myns::regex_traits<char> traits2{std::locale()};
-		myns::regex_traits<wchar_t> wtraits2{std::locale()};
+		rex::regex_traits<char> traits2{std::locale()};
+		rex::regex_traits<wchar_t> wtraits2{std::locale()};
 #endif
 
 		// Check that locale_type and char_class_type exist
-		myns::regex_traits<char>::locale_type loc;
-		myns::regex_traits<char>::char_class_type cct = 0;
+		rex::regex_traits<char>::locale_type loc;
+		rex::regex_traits<char>::char_class_type cct = 0;
 		(void)loc;
 		(void)cct;
 		
@@ -46,7 +46,7 @@ int main() {
 
 	// Test 2: getloc and imbue
 	TEST_CASE("getloc and imbue")
-		myns::regex_traits<char> traits;
+		rex::regex_traits<char> traits;
 		std::locale default_loc = traits.getloc();
 		
 		std::locale new_loc = std::locale::classic();
@@ -58,7 +58,7 @@ int main() {
 
 	// Test 3: translate
 	TEST_CASE("translate")
-		myns::regex_traits<char> traits;
+		rex::regex_traits<char> traits;
 		
 		// translate should return the character as-is
 		assert(traits.translate('A') == 'A');
@@ -71,7 +71,7 @@ int main() {
 
 	// Test 4: transform
 	TEST_CASE("transform")
-		myns::regex_traits<char> traits;
+		rex::regex_traits<char> traits;
 		
 		std::string s1 = "test";
 		std::string result = traits.transform(s1.data(), s1.data() + s1.size());
@@ -83,7 +83,7 @@ int main() {
 
 	// Test 5: value with different bases
 	TEST_CASE("value")
-		myns::regex_traits<char> traits;
+		rex::regex_traits<char> traits;
 		
 		// Base 10 (default)
 		assert(traits.value('0', 10) == 0);
@@ -125,13 +125,13 @@ int main() {
 
 	// Test 6: isctype
 	TEST_CASE("isctype")
-		myns::regex_traits<char> traits;
+		rex::regex_traits<char> traits;
 		
 		// Test with some common character class types
 		// Note: The exact behavior depends on locale and char_class_type values
-		myns::regex_traits<char>::char_class_type digit_class = std::ctype_base::digit;
-		myns::regex_traits<char>::char_class_type alpha_class = std::ctype_base::alpha;
-		myns::regex_traits<char>::char_class_type space_class = std::ctype_base::space;
+		rex::regex_traits<char>::char_class_type digit_class = std::ctype_base::digit;
+		rex::regex_traits<char>::char_class_type alpha_class = std::ctype_base::alpha;
+		rex::regex_traits<char>::char_class_type space_class = std::ctype_base::space;
 		
 		// These should work with standard locale
 		bool is_digit = traits.isctype('5', digit_class);
@@ -149,7 +149,7 @@ int main() {
 
 	// Test 7: lookup_collatename
 	TEST_CASE("lookup_collatename")
-		myns::regex_traits<char> traits;
+		rex::regex_traits<char> traits;
 		
 		std::string name = "a";
 		std::string result = traits.lookup_collatename(name.data(), name.data() + name.size());
@@ -161,7 +161,7 @@ int main() {
 
 	// Test 8: wchar_t traits
 	TEST_CASE("wchar_t traits")
-		myns::regex_traits<wchar_t> wtraits;
+		rex::regex_traits<wchar_t> wtraits;
 		
 		// Test translate
 		assert(wtraits.translate(L'A') == L'A');
@@ -188,8 +188,8 @@ int main() {
 	std::cout << "SKIPPED: std::ctype<char16_t> and std::ctype<char32_t> not available with this standard library\n";
 #else
 	TEST_CASE("char16_t and char32_t traits")
-		myns::regex_traits<char16_t> u16traits;
-		myns::regex_traits<char32_t> u32traits;
+		rex::regex_traits<char16_t> u16traits;
+		rex::regex_traits<char32_t> u32traits;
 		
 		// Test translate
 		assert(u16traits.translate(u'A') == u'A');
@@ -218,17 +218,17 @@ int main() {
 	TEST_CASE("length")
 		// Ensure existing length method still works
 		const char* str = "hello";
-		assert(myns::regex_traits<char>::length(str) == 5);
+		assert(rex::regex_traits<char>::length(str) == 5);
 		
 		const wchar_t* wstr = L"hello";
-		assert(myns::regex_traits<wchar_t>::length(wstr) == 5);
+		assert(rex::regex_traits<wchar_t>::length(wstr) == 5);
 		
 		std::cout << "length method works correctly\n";
 	TEST_CASE_END("length")
 
 	// Test 11: translate_nocase (new method)
 	TEST_CASE("translate_nocase")
-		myns::regex_traits<char> traits;
+		rex::regex_traits<char> traits;
 		
 		// translate_nocase should return lowercase version of the character
 		assert(traits.translate_nocase('A') == 'a');
@@ -239,7 +239,7 @@ int main() {
 		assert(traits.translate_nocase(' ') == ' ');
 		
 		// Test wchar_t
-		myns::regex_traits<wchar_t> wtraits;
+		rex::regex_traits<wchar_t> wtraits;
 		assert(wtraits.translate_nocase(L'A') == L'a');
 		assert(wtraits.translate_nocase(L'Z') == L'z');
 		assert(wtraits.translate_nocase(L'a') == L'a');
@@ -249,7 +249,7 @@ int main() {
 
 	// Test 12: transform_primary (new method)
 	TEST_CASE("transform_primary")
-		myns::regex_traits<char> traits;
+		rex::regex_traits<char> traits;
 		
 		// transform_primary should return a lowercase collation key
 		std::string s1 = "TEST";
@@ -266,7 +266,7 @@ int main() {
 		assert(result == result2);
 		
 		// Test wchar_t
-		myns::regex_traits<wchar_t> wtraits;
+		rex::regex_traits<wchar_t> wtraits;
 		std::wstring ws1 = L"TEST";
 		std::wstring ws2 = L"test";
 		std::wstring wresult1 = wtraits.transform_primary(ws1.data(), ws1.data() + ws1.size());
@@ -278,7 +278,7 @@ int main() {
 
 	// Test 13: lookup_classname (new method)
 	TEST_CASE("lookup_classname")
-		myns::regex_traits<char> traits;
+		rex::regex_traits<char> traits;
 		
 		// Test standard POSIX character class names
 		const char* digit = "digit";
@@ -344,8 +344,8 @@ int main() {
 #ifndef USE_STD_FOR_TESTS // char16_t/char32_t tests are onigpp-specific
 	// Test 14: char16_t and char32_t translate_nocase
 	TEST_CASE("char16_t and char32_t translate_nocase")
-		myns::regex_traits<char16_t> u16traits;
-		myns::regex_traits<char32_t> u32traits;
+		rex::regex_traits<char16_t> u16traits;
+		rex::regex_traits<char32_t> u32traits;
 		
 		// Test translate_nocase for char16_t
 		assert(u16traits.translate_nocase(u'A') == u'a');
@@ -362,8 +362,8 @@ int main() {
 
 	// Test 15: char16_t and char32_t isctype with lookup_classname
 	TEST_CASE("char16_t and char32_t isctype with lookup_classname")
-		myns::regex_traits<char16_t> u16traits;
-		myns::regex_traits<char32_t> u32traits;
+		rex::regex_traits<char16_t> u16traits;
+		rex::regex_traits<char32_t> u32traits;
 		
 		// Test char16_t lookup_classname and isctype
 		const char16_t* u16_digit = u"digit";
