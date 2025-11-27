@@ -1,6 +1,6 @@
 # Oniguruma++ Regular Expressions
 
-**Version 6.9.15** — 2025/11/26
+**Version 6.9.16** — 2025/11/27
 
 ---
 
@@ -623,6 +623,81 @@ regex re3(R"((?<word>\w+))", regex::oniguruma);
 string result3 = regex_replace("hello", re3, "${word}!");
 // result3: "hello!"
 ```
+
+---
+
+## 12. format_literal Function
+
+The `format_literal` function processes C++ escape sequences in a string literal, converting them to their actual character values. This is useful when working with regex patterns from configuration files or user input where escape sequences should be interpreted as in C++ string literals.
+
+### Supported Escape Sequences
+
+| Escape | Description | Value |
+|--------|-------------|-------|
+| `\\` | backslash | `\` |
+| `\n` | newline (LF) | `0x0A` |
+| `\r` | carriage return (CR) | `0x0D` |
+| `\t` | horizontal tab | `0x09` |
+| `\v` | vertical tab | `0x0B` |
+| `\f` | form feed | `0x0C` |
+| `\a` | alert (bell) | `0x07` |
+| `\b` | backspace | `0x08` |
+| `\0` | null character | `0x00` |
+| `\xHH` | hexadecimal escape (2 hex digits) | encoded byte value |
+| `\uHHHH` | Unicode escape (4 hex digits) | UTF-8 encoded |
+| `\UHHHHHHHH` | Unicode escape (8 hex digits) | UTF-8 encoded |
+| `\ooo` | octal escape (1-3 octal digits) | encoded byte value |
+
+Unknown escape sequences (e.g., `\q`) are passed through unchanged.
+
+### Usage
+
+```cpp
+#include "onigpp.h"
+#include <iostream>
+
+int main() {
+    using namespace onigpp;
+    
+    // Process escape sequences from a configuration string
+    std::string pattern = format_literal("\\d+\\.\\d+");
+    // pattern: "\d+\.\d+" (actual backslash characters)
+    
+    // Process newlines and tabs
+    std::string text = format_literal("line1\\nline2\\ttabbed");
+    // text: "line1\nline2\ttabbed" (actual newline and tab)
+    
+    // Unicode characters
+    std::string euro = format_literal("Price: \\u20AC100");
+    // euro: "Price: €100"
+    
+    // Use with regex - pattern from config file
+    regex re(format_literal("\\\\w+"));  // matches word characters
+    smatch m;
+    if (regex_search("hello world", m, re)) {
+        std::cout << m[0] << std::endl;  // prints "hello"
+    }
+    
+    return 0;
+}
+```
+
+### Function Signatures
+
+```cpp
+namespace onigpp {
+    template <class CharT>
+    std::basic_string<CharT> format_literal(const std::basic_string<CharT>& str);
+    
+    template <class CharT>
+    std::basic_string<CharT> format_literal(const CharT* str);
+    
+    template <class CharT>
+    std::basic_string<CharT> format_literal(const CharT* str, size_type len);
+}
+```
+
+> **Note:** Raw string literals (e.g., `R"(pattern)"`) do not need processing as they already preserve the literal text without escape interpretation.
 
 ---
 

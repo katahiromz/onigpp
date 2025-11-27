@@ -44,6 +44,43 @@ struct auto_init {
 using size_type = std::size_t;
 
 ////////////////////////////////////////////
+// onigpp::format_literal
+//
+// Processes C++ escape sequences in a string literal, converting them to
+// their actual character values. This is useful when working with regex
+// patterns from configuration files or user input where escape sequences
+// should be interpreted as in C++ string literals.
+//
+// Supported escape sequences:
+//   \\    - backslash
+//   \n    - newline (LF)
+//   \r    - carriage return (CR)
+//   \t    - horizontal tab
+//   \v    - vertical tab
+//   \f    - form feed
+//   \a    - alert (bell)
+//   \b    - backspace
+//   \0    - null character
+//   \xHH  - hexadecimal escape (2 hex digits)
+//   \uHHHH - Unicode escape (4 hex digits, UTF-8 encoded for char)
+//   \UHHHHHHHH - Unicode escape (8 hex digits, UTF-8 encoded for char)
+//   \ooo  - octal escape (1-3 octal digits)
+//
+// Unknown escape sequences are passed through unchanged (e.g., \q becomes \q).
+// Raw string literals (R"(...)") do not need processing as they already
+// preserve the literal text without escape interpretation.
+
+template <class CharT>
+std::basic_string<CharT> format_literal(const std::basic_string<CharT>& str);
+
+template <class CharT>
+std::basic_string<CharT> format_literal(const CharT* str);
+
+// Convenience overload for string literals with size
+template <class CharT>
+std::basic_string<CharT> format_literal(const CharT* str, size_type len);
+
+////////////////////////////////////////////
 // onigpp::basic_string
 
 template <class CharT>

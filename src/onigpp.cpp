@@ -1837,6 +1837,230 @@ void uninit() { onig_end(); }
 
 const char* version() { return onig_version(); }
 
+////////////////////////////////////////////
+// onigpp::format_literal
+//
+// Helper functions for format_literal implementation
+
+namespace {
+
+// Check if a character is a hexadecimal digit
+template <class CharT>
+bool _is_hex_digit(CharT ch) {
+	return (ch >= CharT('0') && ch <= CharT('9')) ||
+	       (ch >= CharT('a') && ch <= CharT('f')) ||
+	       (ch >= CharT('A') && ch <= CharT('F'));
+}
+
+// Convert hexadecimal character to its numeric value
+template <class CharT>
+int _hex_value(CharT ch) {
+	if (ch >= CharT('0') && ch <= CharT('9')) return ch - CharT('0');
+	if (ch >= CharT('a') && ch <= CharT('f')) return ch - CharT('a') + 10;
+	if (ch >= CharT('A') && ch <= CharT('F')) return ch - CharT('A') + 10;
+	return 0;
+}
+
+// Check if a character is an octal digit
+template <class CharT>
+bool _is_octal_digit(CharT ch) {
+	return ch >= CharT('0') && ch <= CharT('7');
+}
+
+// Encode a Unicode code point as UTF-8 and append to the result string
+// For char type, encodes as UTF-8 bytes
+// For wider character types (char16_t, char32_t, wchar_t), stores directly
+template <class CharT>
+void _append_unicode_codepoint(std::basic_string<CharT>& result, unsigned int codepoint) {
+	if (sizeof(CharT) == 1) {
+		// UTF-8 encoding for char
+		if (codepoint <= 0x7F) {
+			result += static_cast<CharT>(codepoint);
+		} else if (codepoint <= 0x7FF) {
+			result += static_cast<CharT>(0xC0 | (codepoint >> 6));
+			result += static_cast<CharT>(0x80 | (codepoint & 0x3F));
+		} else if (codepoint <= 0xFFFF) {
+			result += static_cast<CharT>(0xE0 | (codepoint >> 12));
+			result += static_cast<CharT>(0x80 | ((codepoint >> 6) & 0x3F));
+			result += static_cast<CharT>(0x80 | (codepoint & 0x3F));
+		} else if (codepoint <= 0x10FFFF) {
+			result += static_cast<CharT>(0xF0 | (codepoint >> 18));
+			result += static_cast<CharT>(0x80 | ((codepoint >> 12) & 0x3F));
+			result += static_cast<CharT>(0x80 | ((codepoint >> 6) & 0x3F));
+			result += static_cast<CharT>(0x80 | (codepoint & 0x3F));
+		} else {
+			// Invalid code point, use replacement character U+FFFD
+			result += static_cast<CharT>(0xEF);
+			result += static_cast<CharT>(0xBF);
+			result += static_cast<CharT>(0xBD);
+		}
+	} else {
+		// For wider character types, store directly
+		// Note: For char16_t with surrogate pairs, this doesn't handle
+		// code points > U+FFFF properly, but it's sufficient for most use cases
+		result += static_cast<CharT>(codepoint);
+	}
+}
+
+} // anonymous namespace
+
+// Implementation of format_literal
+// Processes C++ escape sequences in a string, converting them to actual characters
+template <class CharT>
+std::basic_string<CharT> format_literal(const CharT* str, size_type len) {
+	std::basic_string<CharT> result;
+	result.reserve(len);
+
+	size_type i = 0;
+	while (i < len) {
+		if (str[i] == CharT('\\') && i + 1 < len) {
+			CharT next = str[i + 1];
+
+			// Simple escape sequences
+			switch (next) {
+				case CharT('\\'):
+					result += CharT('\\');
+					i += 2;
+					continue;
+				case CharT('n'):
+					result += CharT('\n');
+					i += 2;
+					continue;
+				case CharT('r'):
+					result += CharT('\r');
+					i += 2;
+					continue;
+				case CharT('t'):
+					result += CharT('\t');
+					i += 2;
+					continue;
+				case CharT('v'):
+					result += CharT('\v');
+					i += 2;
+					continue;
+				case CharT('f'):
+					result += CharT('\f');
+					i += 2;
+					continue;
+				case CharT('a'):
+					result += CharT('\a');
+					i += 2;
+					continue;
+				case CharT('b'):
+					result += CharT('\b');
+					i += 2;
+					continue;
+				case CharT('0'):
+					// \0 followed by non-octal is null, otherwise it's octal
+					if (i + 2 >= len || !_is_octal_digit(str[i + 2])) {
+						result += CharT('\0');
+						i += 2;
+						continue;
+					}
+					// Fall through to octal handling below
+					break;
+				default:
+					break;
+			}
+
+			// \xHH - hexadecimal escape (2 hex digits)
+			if (next == CharT('x') && i + 3 < len &&
+			    _is_hex_digit(str[i + 2]) && _is_hex_digit(str[i + 3])) {
+				int val = _hex_value(str[i + 2]) * 16 + _hex_value(str[i + 3]);
+				result += static_cast<CharT>(val);
+				i += 4;
+				continue;
+			}
+
+			// \uHHHH - Unicode escape (4 hex digits)
+			if (next == CharT('u') && i + 5 < len &&
+			    _is_hex_digit(str[i + 2]) && _is_hex_digit(str[i + 3]) &&
+			    _is_hex_digit(str[i + 4]) && _is_hex_digit(str[i + 5])) {
+				unsigned int val = static_cast<unsigned int>(
+					_hex_value(str[i + 2]) * 4096 +
+					_hex_value(str[i + 3]) * 256 +
+					_hex_value(str[i + 4]) * 16 +
+					_hex_value(str[i + 5]));
+				_append_unicode_codepoint(result, val);
+				i += 6;
+				continue;
+			}
+
+			// \UHHHHHHHH - Unicode escape (8 hex digits)
+			if (next == CharT('U') && i + 9 < len &&
+			    _is_hex_digit(str[i + 2]) && _is_hex_digit(str[i + 3]) &&
+			    _is_hex_digit(str[i + 4]) && _is_hex_digit(str[i + 5]) &&
+			    _is_hex_digit(str[i + 6]) && _is_hex_digit(str[i + 7]) &&
+			    _is_hex_digit(str[i + 8]) && _is_hex_digit(str[i + 9])) {
+				unsigned int val = 0;
+				for (int j = 2; j < 10; ++j) {
+					val = val * 16 + static_cast<unsigned int>(_hex_value(str[i + j]));
+				}
+				_append_unicode_codepoint(result, val);
+				i += 10;
+				continue;
+			}
+
+			// \ooo - octal escape (1-3 octal digits)
+			if (_is_octal_digit(next)) {
+				int val = next - CharT('0');
+				size_type digits = 1;
+				size_type j = i + 2;
+				while (j < len && digits < 3 && _is_octal_digit(str[j])) {
+					val = val * 8 + (str[j] - CharT('0'));
+					++j;
+					++digits;
+				}
+				// Clamp to max byte value for char
+				if (sizeof(CharT) == 1 && val > 255) {
+					val = val & 0xFF;
+				}
+				result += static_cast<CharT>(val);
+				i = j;
+				continue;
+			}
+
+			// Unknown escape sequence - pass through unchanged
+			result += str[i++];
+			result += str[i++];
+		} else {
+			// Regular character
+			result += str[i++];
+		}
+	}
+
+	return result;
+}
+
+// Overload for basic_string
+template <class CharT>
+std::basic_string<CharT> format_literal(const std::basic_string<CharT>& str) {
+	return format_literal(str.c_str(), str.size());
+}
+
+// Overload for null-terminated C-string
+template <class CharT>
+std::basic_string<CharT> format_literal(const CharT* str) {
+	return format_literal(str, std::char_traits<CharT>::length(str));
+}
+
+// Explicit template instantiations for format_literal
+template std::basic_string<char> format_literal(const char*, size_type);
+template std::basic_string<char> format_literal(const std::basic_string<char>&);
+template std::basic_string<char> format_literal(const char*);
+
+template std::basic_string<wchar_t> format_literal(const wchar_t*, size_type);
+template std::basic_string<wchar_t> format_literal(const std::basic_string<wchar_t>&);
+template std::basic_string<wchar_t> format_literal(const wchar_t*);
+
+template std::basic_string<char16_t> format_literal(const char16_t*, size_type);
+template std::basic_string<char16_t> format_literal(const std::basic_string<char16_t>&);
+template std::basic_string<char16_t> format_literal(const char16_t*);
+
+template std::basic_string<char32_t> format_literal(const char32_t*, size_type);
+template std::basic_string<char32_t> format_literal(const std::basic_string<char32_t>&);
+template std::basic_string<char32_t> format_literal(const char32_t*);
+
 // -------------------- Explicit template instantiations --------------------
 // Instantiates for: char, wchar_t, char16_t, char32_t
 // ---------------------------------------------------------------------------
