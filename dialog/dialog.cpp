@@ -5,6 +5,7 @@
 #include <windowsx.h>
 #include <commctrl.h>
 #include <string>
+#include <cassert>
 #include <tchar.h>
 #include "onigpp.h"
 
@@ -25,6 +26,47 @@ namespace {
 
 using size_type = typename string_type::size_type;
 using const_iter = typename string_type::const_iterator;
+
+BOOL get_window_text(HWND hwnd, string_type& text) {
+	int length = ::GetWindowTextLength(hwnd);
+	if (length < 0) {
+		assert(0);
+		text.clear();
+		return FALSE;
+	}
+	string_type buffer(length, TEXT('\0'));
+	int copied = ::GetWindowText(hwnd, &buffer[0], length + 1);
+	if (copied == 0 && length > 0) {
+		assert(0);
+		text.clear();
+		return FALSE;
+	}
+	buffer.resize(copied);
+	text = std::move(buffer);
+	return TRUE;
+}
+
+string_type get_window_text(HWND hwnd, int item_id) {
+	string_type text;
+	get_window_text(hwnd, text);
+	return text;
+}
+
+BOOL get_dialog_item_text(HWND hwnd, int item_id, string_type& text) {
+	HWND item = ::GetDlgItem(hwnd, item_id);
+	if (!item) {
+		assert(0);
+		text.clear();
+		return FALSE;
+	}
+	return get_window_text(item, text);
+}
+
+string_type get_dialog_item_text(HWND hwnd, int item_id) {
+	string_type text;
+	get_dialog_control_text(hwnd, item_id, text);
+	return text;
+}
 
 string_type mstr_unescape(const string_type& input) {
 	string_type output;
@@ -222,13 +264,9 @@ void OnFindReplace(HWND hwnd, int action) {
 	BOOL icase = IsDlgButtonChecked(hwnd, chx3) == BST_CHECKED;
 	BOOL multiline = IsDlgButtonChecked(hwnd, chx4) == BST_CHECKED;
 
-	TCHAR input_text[256], pattern_text[256], replacement_text[256];
-	GetDlgItemText(hwnd, edt1, input_text, _countof(input_text));
-	GetDlgItemText(hwnd, edt3, pattern_text, _countof(pattern_text));
-	GetDlgItemText(hwnd, edt4, replacement_text, _countof(replacement_text));
-	string_type input = input_text;
-	string_type pattern = pattern_text;
-	string_type replacement = replacement_text;
+	string_type input = get_dialog_item_text(hwnd, edt1);
+	string_type pattern = get_dialog_item_text(hwnd, edt3);
+	string_type replacement = get_dialog_item_text(hwnd, edt4);
 
 	int flags = 0;
 	if (ecma) flags |= rex::regex::ECMAScript;
