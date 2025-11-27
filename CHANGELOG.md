@@ -1,6 +1,6 @@
 # Changelog
 
-## 20XX-YY-ZZ Ver.6.9.16
+## 2025-11-27 Ver.6.9.16
 
 - Added `format_literal` flag for `regex_replace` (similar to Boost.Regex):
   - When set, the replacement string is treated as literal text without any escape processing.
