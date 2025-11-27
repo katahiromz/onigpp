@@ -64,7 +64,7 @@ BOOL get_dialog_item_text(HWND hwnd, int item_id, string_type& text) {
 
 string_type get_dialog_item_text(HWND hwnd, int item_id) {
 	string_type text;
-	get_dialog_control_text(hwnd, item_id, text);
+	get_dialog_item_text(hwnd, item_id, text);
 	return text;
 }
 
@@ -384,6 +384,10 @@ void OnFindReplace(HWND hwnd, int action) {
 
 // WM_INITDIALOG
 BOOL OnInitDialog(HWND hwnd, HWND hwndFocus, LPARAM lParam) {
+	SendDlgItemMessage(hwnd, edt1, EM_LIMITTEXT, 0, 0);
+	SendDlgItemMessage(hwnd, edt2, EM_LIMITTEXT, 0, 0);
+	SendDlgItemMessage(hwnd, edt3, EM_LIMITTEXT, 0, 0);
+	SendDlgItemMessage(hwnd, edt4, EM_LIMITTEXT, 0, 0);
 	CheckDlgButton(hwnd, chx1, BST_CHECKED); // ECMAScript
 	SetDlgItemText(hwnd, edt1, TEXT("This is a test.\r\n\r\nThis is a test.\r\n"));
 	return TRUE;
